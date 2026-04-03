@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PastBlast — Host</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="host.css">
+</head>
+<body>
+    <!-- LOBBY -->
+    <div id="lobby" class="screen">
+        <h1 class="logo">PASTBLAST</h1>
+        <p class="sub">Join at <span id="join-url"></span></p>
+        <div class="code-display" id="room-code">...</div>
+        <div id="qr-code" class="qr-box"></div>
+        <div class="players-list" id="players-list">
+            <p class="waiting-text">Waiting for players...</p>
+        </div>
+        <div class="mode-select">
+            <label>Game Mode</label>
+            <div class="mode-buttons">
+                <button class="mode-btn active" id="mode-timeline" onclick="selectMode('timeline')">Timeline</button>
+                <button class="mode-btn" id="mode-quiz" onclick="selectMode('quiz')">Flag Quiz</button>
+            </div>
+        </div>
+        <button class="btn start-btn" id="start-btn" disabled onclick="startGame()">START GAME</button>
+    </div>
+
+    <!-- GAME -->
+    <div id="game-screen" class="screen" style="display:none;">
+        <div class="game-header">
+            <div class="game-header-left">
+                <div class="turn-label" id="turn-label"></div>
+                <div class="timer-bar"><div class="timer-bar-fill" id="timer-fill"></div></div>
+                <div class="timer-number" id="timer-number"></div>
+            </div>
+            <div class="game-header-right">
+                <div class="round-label" id="round-label"></div>
+            </div>
+        </div>
+
+        <div class="steal-bar" id="steal-bar">
+            <div class="steal-title">STEAL!</div>
+            <div class="steal-info" id="steal-info"></div>
+        </div>
+
+        <div class="game-body">
+            <div class="card-area" id="card-area"></div>
+            <div class="score-area">
+                <div class="score-chart" id="score-chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME OVER -->
+    <div id="end-screen" class="screen" style="display:none;">
+        <h1 class="logo">GAME OVER!</h1>
+        <div id="winner-banner" class="winner-banner"></div>
+        <div class="scoreboard" id="scoreboard"></div>
+        <button class="btn" onclick="playAgain()" style="max-width:300px;margin:20px auto;">PLAY AGAIN</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="host.js"></script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+.screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 30px;
+}
+
+.logo {
+    font-size: 3.5rem;
+    color: #ffd43b;
+    letter-spacing: 4px;
+    text-shadow: 3px 3px 0 #e8590c;
+    margin-bottom: 6px;
+}
+
+.sub {
+    color: rgba(255,255,255,0.5);
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+}
+.sub span { color: #ffd43b; font-weight: 700; }
+
+.code-display {
+    font-size: 6rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 16px;
+    background: rgba(255,255,255,0.08);
+    padding: 16px 48px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+}
+
+.qr-box {
+    margin-bottom: 20px;
+}
+.qr-box canvas { border-radius: 12px; }
+
+.players-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 24px;
+    min-height: 50px;
+}
+
+.player-chip {
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    animation: chipPop 0.3s ease;
+}
+
+@keyframes chipPop {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}
+
+.player-chip.disconnected { opacity: 0.4; }
+
+.waiting-text { color: rgba(255,255,255,0.3); font-size: 1rem; }
+
+.mode-select { margin-bottom: 20px; text-align: center; }
+.mode-select label { display: block; color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 8px; }
+.mode-buttons { display: flex; gap: 8px; }
+.mode-btn {
+    padding: 10px 28px;
+    border-radius: 30px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 3px solid rgba(255,255,255,0.15);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    font-family: 'Fredoka', sans-serif;
+    transition: all 0.2s;
+}
+.mode-btn:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+.mode-btn.active { border-color: #ffd43b; color: #ffd43b; background: rgba(255,212,59,0.1); }
+
+.start-btn { max-width: 300px; }
+
+/* Game screen */
+.game-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.game-header-left { flex: 1; }
+.game-header-right { text-align: right; }
+
+.turn-label {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.timer-number {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #ffd43b;
+    margin-top: 2px;
+}
+.timer-number.urgent { color: #ff6b6b; }
+
+.round-label {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.5);
+}
+
+.game-body {
+    display: flex;
+    width: 100%;
+    gap: 24px;
+    flex: 1;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.card-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+}
+
+.host-card {
+    background: #2b2280;
+    border: 4px solid #ffd43b;
+    border-radius: 24px;
+    padding: 30px 48px;
+    text-align: center;
+    box-shadow: 0 6px 0 #e8590c, 0 12px 30px rgba(0,0,0,0.3);
+}
+
+.host-card .card-category {
+    display: inline-block;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #1b1464;
+    background: #ffd43b;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.host-card .card-emoji {
+    font-size: 8rem;
+    line-height: 1.1;
+}
+
+.host-card .card-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+.host-card .card-desc {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.55);
+    margin-top: 6px;
+}
+
+.score-area {
+    flex: 0 0 auto;
+}
+
+/* End screen */
+.winner-banner {
+    font-size: 2.2rem;
+    font-weight: 700;
+    padding: 14px 40px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    border: 4px solid #fff;
+    background: rgba(255,255,255,0.1);
+}
+
+.scoreboard {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.sb-card {
+    padding: 16px 28px;
+    border-radius: 14px;
+    text-align: center;
+    min-width: 130px;
+    border: 3px solid rgba(255,255,255,0.15);
+}
+.sb-card .sb-rank { font-size: 1.6rem; margin-bottom: 4px; }
+.sb-card .sb-name { font-size: 1.1rem; font-weight: 700; }
+.sb-card .sb-score { font-size: 2.4rem; font-weight: 900; }

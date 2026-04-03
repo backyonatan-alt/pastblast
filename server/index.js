@@ -14,6 +14,11 @@ const io = new Server(server, {
 // Serve static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+// API
+const { ALL_CARDS } = require('./questions');
+const countryNames = ALL_CARDS.filter(c => c.type === 'flag').map(c => c.name).sort();
+app.get('/countries', (req, res) => res.json(countryNames));
+
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));

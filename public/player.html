@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PastBlast</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="player.css">
+</head>
+<body>
+    <!-- WAITING IN LOBBY -->
+    <div id="waiting" class="p-screen">
+        <div class="p-logo">PASTBLAST</div>
+        <div class="player-name" id="my-name"></div>
+        <div class="waiting-msg">Waiting for host to start...</div>
+    </div>
+
+    <!-- YOUR TURN — TIMELINE -->
+    <div id="turn-timeline" class="p-screen" style="display:none;">
+        <div class="p-timer-bar"><div class="p-timer-fill" id="tl-timer-fill"></div></div>
+        <div class="p-card" id="tl-card"></div>
+        <div class="p-instruction">Tap where it belongs!</div>
+        <div class="p-timeline" id="tl-timeline"></div>
+    </div>
+
+    <!-- YOUR TURN — QUIZ -->
+    <div id="turn-quiz" class="p-screen" style="display:none;">
+        <div class="p-timer-bar"><div class="p-timer-fill" id="quiz-timer-fill"></div></div>
+        <div class="p-card" id="quiz-card"></div>
+        <div class="p-input-wrap">
+            <input type="text" class="p-input" id="quiz-input" placeholder="Type country name..." autocomplete="off">
+            <div class="p-autocomplete" id="quiz-autocomplete"></div>
+        </div>
+    </div>
+
+    <!-- WAITING FOR OTHERS -->
+    <div id="wait-screen" class="p-screen" style="display:none;">
+        <div class="wait-emoji">👀</div>
+        <div class="wait-msg" id="wait-msg">Waiting...</div>
+        <div class="wait-scores" id="wait-scores"></div>
+    </div>
+
+    <!-- STEAL TURN -->
+    <div id="steal-screen" class="p-screen" style="display:none;">
+        <div class="p-timer-bar"><div class="p-timer-fill" id="steal-timer-fill"></div></div>
+        <div class="steal-banner">STEAL!</div>
+        <div class="steal-warning">Wrong = lose a point!</div>
+        <div class="p-card" id="steal-card"></div>
+        <div id="steal-input-area"></div>
+        <button class="btn btn-pass" onclick="passSteal()">PASS</button>
+    </div>
+
+    <!-- STEAL WAIT -->
+    <div id="steal-wait-screen" class="p-screen" style="display:none;">
+        <div class="steal-banner">STEAL!</div>
+        <div class="wait-msg" id="steal-wait-msg"></div>
+    </div>
+
+    <!-- RESULT FLASH -->
+    <div id="result-screen" class="p-screen" style="display:none;">
+        <div class="result-icon" id="result-icon"></div>
+        <div class="result-text" id="result-text"></div>
+    </div>
+
+    <!-- GAME OVER -->
+    <div id="end-screen" class="p-screen" style="display:none;">
+        <div class="p-logo">GAME OVER</div>
+        <div class="end-rank" id="end-rank"></div>
+        <div class="end-score" id="end-score"></div>
+    </div>
+
+    <!-- HOST LEFT -->
+    <div id="host-left" class="p-screen" style="display:none;">
+        <div class="wait-emoji">😢</div>
+        <div class="wait-msg">Host disconnected</div>
+        <a href="/" class="btn" style="max-width:200px;margin-top:20px;display:inline-block;">Back Home</a>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="player.js"></script>
+</body>
+</html>
