@@ -277,8 +277,9 @@ io.on('connection', (socket) => {
     if (room.players.length === 0) return;
 
     game.startGame(room, mode);
-    io.to(room.code).emit('game_started', { mode, totalRounds: room.totalRounds });
-    io.to(room.hostSocketId).emit('game_started', { mode, totalRounds: room.totalRounds });
+    const startData = { mode, totalRounds: room.totalRounds, scores: game.getScores(room) };
+    io.to(room.code).emit('game_started', startData);
+    io.to(room.hostSocketId).emit('game_started', startData);
 
     // Send first card
     game.nextCard(room);

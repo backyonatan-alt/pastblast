@@ -56,10 +56,11 @@ socket.on('player_joined', ({ players }) => {
 });
 
 // --- GAME START ---
-socket.on('game_started', ({ mode }) => {
+socket.on('game_started', ({ mode, scores }) => {
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('game-screen').style.display = 'flex';
     document.getElementById('end-screen').style.display = 'none';
+    if (scores) renderScores(scores);
 });
 
 // --- NEW ROUND ---

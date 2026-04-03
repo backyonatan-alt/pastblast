@@ -6,6 +6,7 @@ const playerName = params.get('name');
 let currentMode = '';
 let timerMax = 30;
 let allCountryNames = [];
+let resultLock = false; // prevent wait screen from overriding result
 
 // Load country names for autocomplete
 fetch('/countries')
@@ -45,25 +46,38 @@ socket.on('game_started', ({ mode }) => {
 
 // --- YOUR TURN ---
 socket.on('your_turn', ({ card, timeline, mode, timeLimit }) => {
-    timerMax = timeLimit;
-    currentMode = mode;
-
-    if (mode === 'timeline') {
-        showScreen('turn-timeline');
-        renderPlayerCard('tl-card', card);
-        renderPlayerTimeline(timeline);
+    function doTurn() {
+        timerMax = timeLimit;
+        currentMode = mode;
+        if (mode === 'timeline') {
+            showScreen('turn-timeline');
+            renderPlayerCard('tl-card', card);
+            renderPlayerTimeline(timeline);
+        } else {
+            showScreen('turn-quiz');
+            renderPlayerCard('quiz-card', card);
+            resetQuizInput();
+        }
+    }
+    if (resultLock) {
+        setTimeout(doTurn, 2500);
     } else {
-        showScreen('turn-quiz');
-        renderPlayerCard('quiz-card', card);
-        resetQuizInput();
+        doTurn();
     }
 });
 
 // --- WAIT ---
 socket.on('wait', ({ activePlayerName, scores }) => {
-    showScreen('wait-screen');
-    document.getElementById('wait-msg').textContent = `${activePlayerName} is playing...`;
-    renderWaitScores(scores);
+    function doWait() {
+        showScreen('wait-screen');
+        document.getElementById('wait-msg').textContent = `${activePlayerName} is playing...`;
+        renderWaitScores(scores);
+    }
+    if (resultLock) {
+        setTimeout(doWait, 2500);
+    } else {
+        doWait();
+    }
 });
 
 // --- TIMER ---
@@ -76,16 +90,18 @@ socket.on('timer_tick', ({ secondsLeft }) => {
 });
 
 // --- ROUND RESULT ---
-socket.on('round_result', ({ correct, card, playerName, reveal, scores }) => {
+socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores }) => {
+    resultLock = true;
     showScreen('result-screen');
     if (reveal && card) {
         document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
         document.getElementById('result-text').innerHTML = `${card.emoji} ${card.name}<br>${formatYear(card.year)}`;
-    } else if (playerName) {
-        // Wrong but no reveal yet (steal incoming)
+    } else if (pName) {
         document.getElementById('result-icon').textContent = '❌';
-        document.getElementById('result-text').textContent = `${playerName} got it wrong...`;
+        document.getElementById('result-text').textContent = `${pName} got it wrong...`;
     }
+    // Hold result screen for 2.5s before allowing other screens
+    setTimeout(() => { resultLock = false; }, 2500);
 });
 
 // --- STEAL TURN (you can steal) ---
@@ -267,11 +283,13 @@ function setupAutocomplete(inputId, listId, isSteal) {
         const matches = allCountryNames.filter(n => n.toLowerCase().includes(val));
         if (matches.length === 0) { list.style.display = 'none'; return; }
 
-        // Sort: exact start matches first, then contains
+        // Sort: prefix matches first, then by length (shorter = better), then contains
         matches.sort((a, b) => {
             const aStarts = a.toLowerCase().startsWith(val) ? 0 : 1;
             const bStarts = b.toLowerCase().startsWith(val) ? 0 : 1;
-            return aStarts - bStarts || a.localeCompare(b);
+            if (aStarts !== bStarts) return aStarts - bStarts;
+            if (aStarts === 0) return a.length - b.length; // shorter prefix match first
+            return a.localeCompare(b);
         });
 
         list.style.display = 'block';
