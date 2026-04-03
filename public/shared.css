@@ -1,0 +1,184 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Fredoka', 'Segoe UI', system-ui, sans-serif;
+    background: #1b1464;
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 16px 36px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: #ffd43b;
+    color: #1b1464;
+    box-shadow: 0 5px 0 #e8590c;
+    transition: transform 0.15s;
+    font-family: 'Fredoka', sans-serif;
+    text-align: center;
+}
+
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #e8590c; }
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Score chart */
+.score-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    height: 200px;
+    padding: 12px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 16px;
+}
+
+.score-chart-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    min-width: 48px;
+}
+
+.score-chart-score {
+    font-size: 1.3rem;
+    font-weight: 900;
+    margin-bottom: 4px;
+}
+
+.score-chart-bar {
+    width: 38px;
+    border-radius: 8px 8px 4px 4px;
+    transition: height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-height: 6px;
+}
+
+.score-chart-bar.active {
+    box-shadow: 0 0 10px rgba(255,255,255,0.4);
+    border: 2px solid #fff;
+}
+
+.score-chart-emoji { font-size: 1.3rem; margin-top: 4px; }
+.score-chart-name { font-size: 0.75rem; font-weight: 700; text-align: center; max-width: 56px; }
+
+/* Timer bar */
+.timer-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.timer-bar-fill {
+    height: 100%;
+    background: #ffd43b;
+    border-radius: 3px;
+    transition: width 1s linear;
+}
+
+.timer-bar-fill.urgent { background: #ff6b6b; }
+
+/* Feedback popup */
+.feedback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-size: 2rem;
+    font-weight: 900;
+    padding: 20px 36px;
+    border-radius: 20px;
+    z-index: 100;
+    animation: popIn 0.8s ease forwards;
+    pointer-events: none;
+    border: 4px solid #fff;
+    text-align: center;
+    min-width: 220px;
+}
+
+.feedback.correct { background: #51cf66; color: #fff; }
+.feedback.wrong { background: #ff6b6b; color: #fff; }
+
+.feedback .fb-flag { font-size: 3rem; }
+.feedback .fb-name { font-size: 1.4rem; margin: 4px 0; }
+.feedback .fb-year { font-size: 1.8rem; }
+
+@keyframes popIn {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(-8deg); opacity: 0; }
+    30% { transform: translate(-50%, -50%) scale(1.15) rotate(2deg); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+    80% { opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
+}
+
+/* Confetti */
+.confetti {
+    position: fixed;
+    top: -10px;
+    font-size: 2rem;
+    animation: confettiFall linear forwards;
+    pointer-events: none;
+    z-index: 200;
+}
+
+@keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* Steal bar */
+.steal-bar {
+    display: none;
+    background: #ff6b6b;
+    padding: 8px 20px;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 10px 0;
+}
+
+.steal-bar .steal-title {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 3px;
+}
+
+.steal-bar .steal-info {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.9);
+}
+
+.steal-bar .steal-pass {
+    padding: 4px 18px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 2px solid rgba(255,255,255,0.4);
+    font-family: 'Fredoka', sans-serif;
+}
+
+.steal-bar .steal-pass:hover {
+    background: rgba(0,0,0,0.45);
+    border-color: #fff;
+}

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PastBlast</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <style>
+        .home-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .home-screen h1 {
+            font-size: 3.5rem;
+            color: #ffd43b;
+            letter-spacing: 4px;
+            text-shadow: 3px 3px 0 #e8590c;
+            margin-bottom: 10px;
+        }
+
+        .home-screen .tagline {
+            color: rgba(255,255,255,0.6);
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+        }
+
+        .home-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            max-width: 340px;
+        }
+
+        .join-section {
+            background: rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 10px;
+        }
+
+        .join-section label {
+            display: block;
+            font-size: 1rem;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 8px;
+            text-align: left;
+        }
+
+        .join-section input {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 1.3rem;
+            font-family: 'Fredoka', sans-serif;
+            border-radius: 14px;
+            border: 3px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .join-section input::placeholder { color: rgba(255,255,255,0.3); }
+        .join-section input:focus { outline: none; border-color: #ffd43b; }
+
+        .join-section input.code-input {
+            text-transform: uppercase;
+            font-size: 2rem;
+            letter-spacing: 8px;
+            font-weight: 700;
+        }
+
+        .or-divider {
+            color: rgba(255,255,255,0.3);
+            font-size: 1rem;
+            margin: 16px 0;
+        }
+
+        .btn-host {
+            background: rgba(255,255,255,0.1);
+            color: #ffd43b;
+            border: 3px solid rgba(255,212,59,0.3);
+        }
+
+        .btn-host:hover {
+            background: rgba(255,212,59,0.15);
+            border-color: #ffd43b;
+        }
+
+        .error-msg {
+            color: #ff6b6b;
+            font-size: 0.95rem;
+            margin-top: 8px;
+            min-height: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="home-screen">
+        <h1>PASTBLAST</h1>
+        <p class="tagline">History, flags & landmarks party game</p>
+
+        <div class="home-actions">
+            <div class="join-section">
+                <label>Game Code</label>
+                <input type="text" id="code-input" class="code-input" placeholder="ABCD" maxlength="4" autocomplete="off">
+                <label>Your Name</label>
+                <input type="text" id="name-input" placeholder="Enter your name" maxlength="12" autocomplete="off">
+                <button class="btn" id="join-btn" onclick="joinGame()">JOIN GAME</button>
+                <div class="error-msg" id="error-msg"></div>
+            </div>
+
+            <div class="or-divider">— or —</div>
+
+            <button class="btn btn-host" onclick="hostGame()">HOST A NEW GAME</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        // Pre-fill code from URL
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('code')) {
+            document.getElementById('code-input').value = params.get('code');
+            document.getElementById('name-input').focus();
+        }
+
+        function joinGame() {
+            const code = document.getElementById('code-input').value.trim().toUpperCase();
+            const name = document.getElementById('name-input').value.trim();
+            const err = document.getElementById('error-msg');
+
+            if (!code || code.length !== 4) { err.textContent = 'Enter a 4-letter code'; return; }
+            if (!name) { err.textContent = 'Enter your name'; return; }
+            err.textContent = '';
+
+            socket.emit('join_room', { code, name }, (response) => {
+                if (response.error) {
+                    err.textContent = response.error;
+                } else {
+                    // Save name for reconnection
+                    sessionStorage.setItem('pb_code', code);
+                    sessionStorage.setItem('pb_name', name);
+                    window.location.href = `/play?code=${code}&name=${encodeURIComponent(name)}`;
+                }
+            });
+        }
+
+        function hostGame() {
+            window.location.href = '/host';
+        }
+
+        // Enter key support
+        document.getElementById('code-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('name-input').focus();
+        });
+        document.getElementById('name-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') joinGame();
+        });
+    </script>
+</body>
+</html>
