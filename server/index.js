@@ -261,6 +261,23 @@ io.on('connection', (socket) => {
         io.to(room.hostSocketId).emit('player_joined', {
           players: room.players.map(p => ({ name: p.name, color: p.color, emoji: p.emoji, connected: p.connected })),
         });
+        // Send current game state so player can rejoin mid-game
+        const playerIndex = room.players.findIndex(p => p.name === name);
+        if (room.phase === 'ended') {
+          socket.emit('game_over', { scores: game.getScores(room), winner: game.getScores(room).sort((a, b) => b.score - a.score)[0] });
+        } else if (playerIndex === room.currentPlayerIndex) {
+          socket.emit('game_started', { mode: room.mode });
+          socket.emit('your_turn', {
+            card: room.currentCard,
+            timeline: room.mode === 'timeline' ? game.getPlayerTimeline(room, playerIndex) : null,
+            mode: room.mode,
+            timeLimit: room.timerSeconds || 30,
+          });
+        } else {
+          socket.emit('game_started', { mode: room.mode });
+          const activePlayer = room.players[room.currentPlayerIndex];
+          socket.emit('wait', { activePlayerName: activePlayer ? activePlayer.name : '...', scores: game.getScores(room) });
+        }
         return callback({ success: true, reconnected: true });
       }
       return callback({ error: 'Game already started' });

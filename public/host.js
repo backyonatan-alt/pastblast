@@ -38,6 +38,9 @@ function startGame() {
 }
 
 function playAgain() {
+    // Disable button immediately to prevent double-click
+    const btn = document.querySelector('.play-again-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
     socket.emit('play_again');
     // Fallback: if server doesn't respond in 2s, force back to lobby
     setTimeout(() => {

@@ -65,7 +65,7 @@
 
 .player-chip.disconnected { opacity: 0.4; }
 
-.waiting-text { color: rgba(255,255,255,0.3); font-size: 1rem; }
+.waiting-text { color: rgba(255,255,255,0.55); font-size: 1rem; }
 
 .mode-select { margin-bottom: 20px; text-align: center; }
 .mode-select span { display: block; color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 8px; }

@@ -40,7 +40,7 @@
 }
 
 .waiting-msg {
-    color: rgba(255,255,255,0.4);
+    color: rgba(255,255,255,0.6);
     font-size: 1.1rem;
 }
 
@@ -68,7 +68,7 @@
 .p-card { margin: 8px 0; }
 .p-card .card-emoji { font-size: 7rem; line-height: 1.1; }
 .p-card .card-title { font-size: 1.3rem; font-weight: 700; margin-top: 4px; }
-.p-card .card-desc { font-size: 0.9rem; color: rgba(255,255,255,0.5); }
+.p-card .card-desc { font-size: 0.9rem; color: rgba(255,255,255,0.65); }
 .p-card .card-category {
     display: inline-block;
     font-size: 0.75rem;
@@ -83,7 +83,7 @@
 }
 
 .p-instruction {
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.65);
     font-size: 0.95rem;
     margin-bottom: 8px;
 }
@@ -185,7 +185,7 @@
     color: #fff;
 }
 
-.p-input::placeholder { color: rgba(255,255,255,0.3); }
+.p-input::placeholder { color: rgba(255,255,255,0.45); }
 .p-input:focus { outline: none; border-color: #ffd43b; box-shadow: 0 0 0 3px rgba(255,212,59,0.3); }
 
 .p-autocomplete {
@@ -222,7 +222,7 @@
 
 /* Wait screen */
 .wait-emoji { font-size: 3.5rem; margin-bottom: 10px; }
-.wait-msg { font-size: 1.2rem; color: rgba(255,255,255,0.5); }
+.wait-msg { font-size: 1.2rem; color: rgba(255,255,255,0.65); }
 .wait-scores {
     margin-top: 16px;
     font-size: 0.95rem;
