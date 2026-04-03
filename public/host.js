@@ -86,11 +86,11 @@ socket.on('new_round', ({ card, round, activePlayerName, activePlayerEmoji, scor
 function renderCard(card, mode) {
     const area = document.getElementById('card-area');
     if (card.type === 'flag' && mode === 'timeline') {
-        // Flag in timeline mode: show only emoji
+        // Flag in timeline mode: show only emoji + hint
         area.innerHTML = `
             <div class="host-card">
-                <div class="card-category">Flag</div>
                 <div class="card-emoji">${card.emoji}</div>
+                <div class="card-desc">When was this country founded?</div>
             </div>`;
     } else if (card.type === 'flag') {
         // Flag in quiz mode: just the flag

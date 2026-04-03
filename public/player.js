@@ -220,7 +220,7 @@ socket.on('connect', () => {
 function renderPlayerCard(containerId, card) {
     const el = document.getElementById(containerId);
     if (card.type === 'flag' && currentMode === 'timeline') {
-        el.innerHTML = `<div class="card-category">Flag</div><div class="card-emoji">${card.emoji}</div>`;
+        el.innerHTML = `<div class="card-emoji">${card.emoji}</div><div class="card-desc">When was this country founded?</div>`;
     } else if (card.type === 'flag') {
         el.innerHTML = `<div class="card-emoji">${card.emoji}</div>`;
     } else {
