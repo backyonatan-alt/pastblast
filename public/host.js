@@ -3,6 +3,12 @@ let roomCode = '';
 let selectedMode = 'timeline';
 let timerMax = 30;
 
+function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
 // --- CREATE ROOM ---
 socket.emit('create_room', (response) => {
     roomCode = response.code;
@@ -78,7 +84,7 @@ socket.on('game_started', ({ mode, scores }) => {
 // --- NEW ROUND ---
 socket.on('new_round', ({ card, round, activePlayerName, activePlayerEmoji, scores, mode, deckLeft }) => {
     document.getElementById('steal-bar').style.display = 'none';
-    document.getElementById('turn-label').innerHTML = `${activePlayerEmoji} ${activePlayerName}'s turn`;
+    document.getElementById('turn-label').innerHTML = `${activePlayerEmoji} ${esc(activePlayerName)}'s turn`;
     document.getElementById('round-label').textContent = `${deckLeft} cards left`;
 
     renderCard(card, mode);
@@ -131,7 +137,7 @@ socket.on('round_result', ({ correct, card, playerName, reveal, scores }) => {
         showFeedback(correct, card);
     } else if (!correct && playerName) {
         // Wrong but no reveal (steal incoming)
-        document.getElementById('turn-label').innerHTML = `${playerName} got it wrong...`;
+        document.getElementById('turn-label').innerHTML = `${esc(playerName)} got it wrong…`;
     }
     if (scores) renderScores(scores);
 });
@@ -139,15 +145,15 @@ socket.on('round_result', ({ correct, card, playerName, reveal, scores }) => {
 // --- STEAL ---
 socket.on('steal_start', ({ stealerName, stealerEmoji, card, scores }) => {
     document.getElementById('steal-bar').style.display = 'flex';
-    document.getElementById('steal-info').innerHTML = `${stealerEmoji} <b>${stealerName}</b> can steal!`;
-    document.getElementById('turn-label').innerHTML = `${stealerEmoji} ${stealerName}'s steal`;
+    document.getElementById('steal-info').innerHTML = `${stealerEmoji} <b>${esc(stealerName)}</b> can steal!`;
+    document.getElementById('turn-label').innerHTML = `${stealerEmoji} ${esc(stealerName)}'s steal`;
     timerMax = 15;
     if (scores) renderScores(scores, stealerName);
 });
 
 socket.on('steal_result', ({ correct, stealerName, scores }) => {
     if (!correct) {
-        document.getElementById('turn-label').innerHTML = `${stealerName} missed!`;
+        document.getElementById('turn-label').innerHTML = `${esc(stealerName)} missed!`;
     }
     if (scores) renderScores(scores);
 });
@@ -157,7 +163,7 @@ socket.on('game_over', ({ scores, winner }) => {
     document.getElementById('game-screen').style.display = 'none';
     document.getElementById('end-screen').style.display = 'flex';
 
-    document.getElementById('winner-banner').innerHTML = `${winner.emoji} ${winner.name} wins with ${winner.score}!`;
+    document.getElementById('winner-banner').innerHTML = `${winner.emoji} ${esc(winner.name)} wins with ${winner.score}!`;
 
     const sb = document.getElementById('scoreboard');
     sb.innerHTML = '';
@@ -168,7 +174,7 @@ socket.on('game_over', ({ scores, winner }) => {
         card.style.background = p.color;
         card.innerHTML = `
             <div class="sb-rank">${medals[i] || '#' + (i + 1)}</div>
-            <div class="sb-name">${p.name}</div>
+            <div class="sb-name">${esc(p.name)}</div>
             <div class="sb-score">${p.score}</div>
         `;
         sb.appendChild(card);
@@ -200,7 +206,7 @@ function renderScores(scores, activeName) {
             <div class="score-chart-score">${p.score}</div>
             <div class="score-chart-bar ${isActive ? 'active' : ''}" style="height:${barH}px;background:${p.color};"></div>
             <div class="score-chart-emoji">${p.emoji}</div>
-            <div class="score-chart-name">${p.name}</div>
+            <div class="score-chart-name">${esc(p.name)}</div>
         `;
         chart.appendChild(col);
     });

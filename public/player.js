@@ -1,5 +1,12 @@
 const socket = io();
 
+// Client-side HTML escaping (defense-in-depth — server also sanitizes)
+function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
 const params = new URLSearchParams(window.location.search);
 const roomCode = params.get('code');
 const playerName = params.get('name');
@@ -26,7 +33,7 @@ socket.emit('join_room', { code: roomCode, name: playerName }, (response) => {
     if (response.error) {
         document.getElementById('waiting').innerHTML = `
             <div class="wait-emoji">😕</div>
-            <div class="wait-msg">${response.error}</div>
+            <div class="wait-msg">${esc(response.error)}</div>
             <a href="/" class="btn" style="max-width:200px;margin-top:20px;display:inline-block;">Back</a>
         `;
     }
@@ -155,7 +162,7 @@ socket.on('game_over', ({ scores, winner }) => {
     } else {
         html += `<div class="end-rank">${medals[myRank - 1] || '#' + myRank}</div>`;
     }
-    html += `<div style="font-size:1.2rem;margin-bottom:4px;">${playerName}</div>`;
+    html += `<div style="font-size:1.2rem;margin-bottom:4px;">${esc(playerName)}</div>`;
     html += `<div class="end-score">${myScore ? myScore.score : 0} points</div>`;
 
     // Leaderboard
@@ -163,7 +170,7 @@ socket.on('game_over', ({ scores, winner }) => {
     scores.forEach((s, i) => {
         const me = s.name === playerName;
         html += `<div style="display:flex;justify-content:space-between;padding:6px 12px;border-radius:10px;margin:4px 0;background:${me ? 'rgba(255,212,59,0.15)' : 'rgba(255,255,255,0.05)'};font-weight:${me ? '700' : '400'};">
-            <span>${medals[i] || '#' + (i + 1)} ${s.name}</span>
+            <span>${medals[i] || '#' + (i + 1)} ${esc(s.name)}</span>
             <span style="color:#ffd43b;">${s.score}</span>
         </div>`;
     });
@@ -321,7 +328,7 @@ function passSteal() {
 function renderWaitScores(scores) {
     if (!scores) return;
     const el = document.getElementById('wait-scores');
-    el.innerHTML = scores.map(s => `${s.emoji} ${s.name}: ${s.score}`).join(' &nbsp; ');
+    el.innerHTML = scores.map(s => `${s.emoji} ${esc(s.name)}: ${s.score}`).join(' &nbsp; ');
 }
 
 // --- QUIZ AUTOCOMPLETE ---
