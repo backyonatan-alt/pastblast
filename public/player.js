@@ -27,20 +27,31 @@ let hasJoined = false;
 // Show player name
 document.getElementById('my-name').textContent = playerName;
 
-// Join the room
-socket.emit('join_room', { code: roomCode, name: playerName }, (response) => {
-    hasJoined = true;
-    if (response.error) {
-        trackEvent('join_error', { error_type: response.error, room_code: roomCode });
-        document.getElementById('waiting').innerHTML = `
-            <div class="wait-emoji">😕</div>
-            <div class="wait-msg">${esc(response.error)}</div>
-            <a href="/" class="btn" style="max-width:200px;margin-top:20px;display:inline-block;">Back</a>
-        `;
-    } else {
-        trackEvent('player_joined', { room_code: roomCode });
-    }
-});
+// Join the room (wait for connection first)
+function joinRoom() {
+    socket.emit('join_room', { code: roomCode, name: playerName }, (response) => {
+        hasJoined = true;
+        if (response.error) {
+            trackEvent('join_error', { error_type: response.error, room_code: roomCode });
+            document.getElementById('waiting').innerHTML = `
+                <div class="wait-emoji">😕</div>
+                <div class="wait-msg">${esc(response.error)}</div>
+                <a href="/" class="btn" style="max-width:200px;margin-top:20px;display:inline-block;">Back</a>
+            `;
+        } else {
+            trackEvent('player_joined', { room_code: roomCode });
+        }
+    });
+}
+
+if (socket.connected) {
+    joinRoom();
+} else {
+    socket.on('connect', function onFirstConnect() {
+        socket.off('connect', onFirstConnect);
+        joinRoom();
+    });
+}
 
 function showScreen(id) {
     document.querySelectorAll('.p-screen').forEach(s => s.style.display = 'none');

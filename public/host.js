@@ -9,8 +9,9 @@ function esc(str) {
     return d.innerHTML;
 }
 
-// --- CREATE ROOM ---
-socket.emit('create_room', (response) => {
+// --- CREATE ROOM (wait for connection first) ---
+function createRoom() {
+    socket.emit('create_room', (response) => {
     roomCode = response.code;
     trackEvent('room_created', { room_code: roomCode });
     document.getElementById('room-code').textContent = roomCode;
@@ -21,7 +22,15 @@ socket.emit('create_room', (response) => {
 
     // Generate QR code
     generateQR(joinUrl);
-});
+    });
+}
+
+// Wait for socket to connect before creating room
+if (socket.connected) {
+    createRoom();
+} else {
+    socket.on('connect', createRoom);
+}
 
 function generateQR(url) {
     const qrBox = document.getElementById('qr-code');
