@@ -198,7 +198,7 @@
 
         .timeline {
             display: flex;
-            align-items: stretch;
+            align-items: center;
             min-height: 150px;
             position: relative;
             gap: 0;
@@ -233,27 +233,25 @@
         }
 
         .timeline-slot.drop-zone {
-            min-width: 40px;
+            min-width: 32px;
             border: none;
-            border-radius: 20px;
-            background: rgba(255,212,59,0.1);
-            padding: 6px 12px;
+            border-radius: 16px;
+            background: rgba(255,212,59,0.08);
+            padding: 8px 6px;
             cursor: pointer;
             transition: background-color 0.15s, transform 0.1s;
         }
 
         .timeline-slot.drop-zone:hover {
-            background: rgba(255,212,59,0.3);
-            transform: scale(1.05);
+            background: rgba(255,212,59,0.25);
+            transform: scale(1.08);
         }
 
         .timeline-slot.drop-zone .drop-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #ffd43b;
             text-align: center;
             font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .timeline-slot.drop-zone .drop-text {
