@@ -10,10 +10,10 @@ const server = http.createServer(app);
 
 const ALLOWED_ORIGINS = process.env.PUBLIC_URL
   ? [process.env.PUBLIC_URL, 'http://localhost:3000']
-  : ['http://localhost:3000', /\.railway\.app$/];
+  : true; // Allow all origins when PUBLIC_URL not set (Railway auto-deploys)
 
 const io = new Server(server, {
-  cors: { origin: ALLOWED_ORIGINS },
+  cors: { origin: ALLOWED_ORIGINS, credentials: true },
   pingInterval: 5000,
   pingTimeout: 10000,
   maxHttpBufferSize: 10240, // 10KB max per message
