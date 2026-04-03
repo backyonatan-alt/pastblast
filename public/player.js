@@ -244,7 +244,7 @@ function renderPlayerTimeline(timeline) {
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.textContent = i === 0 ? '👆 Before' : i === sorted.length ? '👇 After' : '👉 Here';
+        dropBtn.innerHTML = i === 0 ? '+ before' : i === sorted.length ? '+ after' : '+ here';
         dropBtn.addEventListener('click', () => {
             if (submitLock) return;
             submitLock = true;
@@ -255,7 +255,6 @@ function renderPlayerTimeline(timeline) {
         drop.appendChild(dropBtn);
         el.appendChild(drop);
 
-        // Card
         if (i < sorted.length) {
             const card = sorted[i];
             const cardEl = document.createElement('div');
@@ -285,7 +284,7 @@ function renderStealTimeline(timeline, card) {
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.textContent = i === 0 ? '👆 Before' : i === sorted.length ? '👇 After' : '👉 Here';
+        dropBtn.innerHTML = i === 0 ? '+ before' : i === sorted.length ? '+ after' : '+ here';
         dropBtn.addEventListener('click', () => {
             if (submitLock) return;
             submitLock = true;
