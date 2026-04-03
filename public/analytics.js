@@ -1,6 +1,6 @@
 // PastBlast Analytics — Google Analytics 4
 // Set your GA4 Measurement ID here or via server config
-const GA_ID = window.__GA_ID || 'G-XXXXXXXXXX';
+const GA_ID = window.__GA_ID || 'G-GL1EL8EVB2';
 
 // Load gtag.js
 (function() {
