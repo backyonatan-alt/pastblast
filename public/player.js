@@ -7,6 +7,7 @@ let currentMode = '';
 let timerMax = 30;
 let allCountryNames = [];
 let resultLock = false; // prevent wait screen from overriding result
+let submitLock = false; // prevent double-submit on rapid tap
 
 // Load country names for autocomplete
 fetch('/countries')
@@ -47,6 +48,7 @@ socket.on('game_started', ({ mode }) => {
 // --- YOUR TURN ---
 socket.on('your_turn', ({ card, timeline, mode, timeLimit }) => {
     function doTurn() {
+        submitLock = false;
         timerMax = timeLimit;
         currentMode = mode;
         if (mode === 'timeline') {
@@ -106,6 +108,7 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
 
 // --- STEAL TURN (you can steal) ---
 socket.on('steal_turn', ({ card, timeline, mode, timeLimit }) => {
+    submitLock = false;
     timerMax = timeLimit;
     showScreen('steal-screen');
     renderPlayerCard('steal-card', card);
@@ -182,9 +185,11 @@ function renderPlayerTimeline(timeline) {
         dropBtn.className = 'tl-drop';
         dropBtn.textContent = i === 0 ? '👆 Before' : i === sorted.length ? '👇 After' : '👉 Here';
         dropBtn.addEventListener('click', () => {
+            if (submitLock) return;
+            submitLock = true;
             socket.emit('place_card', { slotIndex: i });
             showScreen('wait-screen');
-            document.getElementById('wait-msg').textContent = 'Placing...';
+            document.getElementById('wait-msg').textContent = 'Placing…';
         });
         drop.appendChild(dropBtn);
         el.appendChild(drop);
@@ -221,9 +226,11 @@ function renderStealTimeline(timeline, card) {
         dropBtn.className = 'tl-drop';
         dropBtn.textContent = i === 0 ? '👆 Before' : i === sorted.length ? '👇 After' : '👉 Here';
         dropBtn.addEventListener('click', () => {
+            if (submitLock) return;
+            submitLock = true;
             socket.emit('place_card', { slotIndex: i });
             showScreen('wait-screen');
-            document.getElementById('wait-msg').textContent = 'Stealing...';
+            document.getElementById('wait-msg').textContent = 'Stealing…';
         });
         drop.appendChild(dropBtn);
         el.appendChild(drop);
@@ -301,12 +308,14 @@ function setupAutocomplete(inputId, listId, isSteal) {
                 '<span class="match">' + name.substring(idx, idx + val.length) + '</span>' +
                 name.substring(idx + val.length);
             item.addEventListener('click', () => {
+                if (submitLock) return;
+                submitLock = true;
                 newInput.value = name;
                 list.style.display = 'none';
                 if (isSteal) {
                     socket.emit('submit_answer', { answer: name });
                     showScreen('wait-screen');
-                    document.getElementById('wait-msg').textContent = 'Stealing...';
+                    document.getElementById('wait-msg').textContent = 'Stealing…';
                 } else {
                     socket.emit('submit_answer', { answer: name });
                     showScreen('wait-screen');
