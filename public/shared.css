@@ -29,9 +29,11 @@ body {
 .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #e8590c; }
 
 .btn:disabled {
-    opacity: 0.4;
+    opacity: 0.25;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
+    filter: grayscale(1);
 }
 
 /* Score chart */

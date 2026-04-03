@@ -54,7 +54,7 @@
 
 /* Card on phone */
 .p-card { margin: 8px 0; }
-.p-card .card-emoji { font-size: 4.5rem; line-height: 1.1; }
+.p-card .card-emoji { font-size: 7rem; line-height: 1.1; }
 .p-card .card-title { font-size: 1.3rem; font-weight: 700; margin-top: 4px; }
 .p-card .card-desc { font-size: 0.9rem; color: rgba(255,255,255,0.5); }
 .p-card .card-category {

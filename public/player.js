@@ -77,10 +77,14 @@ socket.on('timer_tick', ({ secondsLeft }) => {
 
 // --- ROUND RESULT ---
 socket.on('round_result', ({ correct, card, playerName, reveal, scores }) => {
+    showScreen('result-screen');
     if (reveal && card) {
-        showScreen('result-screen');
         document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
         document.getElementById('result-text').innerHTML = `${card.emoji} ${card.name}<br>${formatYear(card.year)}`;
+    } else if (playerName) {
+        // Wrong but no reveal yet (steal incoming)
+        document.getElementById('result-icon').textContent = '❌';
+        document.getElementById('result-text').textContent = `${playerName} got it wrong...`;
     }
 });
 
@@ -262,6 +266,13 @@ function setupAutocomplete(inputId, listId, isSteal) {
 
         const matches = allCountryNames.filter(n => n.toLowerCase().includes(val));
         if (matches.length === 0) { list.style.display = 'none'; return; }
+
+        // Sort: exact start matches first, then contains
+        matches.sort((a, b) => {
+            const aStarts = a.toLowerCase().startsWith(val) ? 0 : 1;
+            const bStarts = b.toLowerCase().startsWith(val) ? 0 : 1;
+            return aStarts - bStarts || a.localeCompare(b);
+        });
 
         list.style.display = 'block';
         matches.slice(0, 8).forEach(name => {

@@ -168,6 +168,7 @@ socket.on('back_to_lobby', () => {
     document.getElementById('game-screen').style.display = 'none';
     document.getElementById('end-screen').style.display = 'none';
     document.getElementById('lobby').style.display = 'flex';
+    document.getElementById('score-chart').innerHTML = '';
 });
 
 // --- HELPERS ---
