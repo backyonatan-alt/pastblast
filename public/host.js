@@ -12,6 +12,7 @@ function esc(str) {
 // --- CREATE ROOM ---
 socket.emit('create_room', (response) => {
     roomCode = response.code;
+    trackEvent('room_created', { room_code: roomCode });
     document.getElementById('room-code').textContent = roomCode;
 
     const baseUrl = response.serverUrl || window.location.origin;
@@ -41,9 +42,11 @@ function selectMode(mode) {
 
 function startGame() {
     socket.emit('start_game', { mode: selectedMode });
+    trackEvent('game_started_by_host', { game_mode: selectedMode, room_code: roomCode });
 }
 
 function playAgain() {
+    trackEvent('play_again_clicked', { room_code: roomCode });
     // Disable button immediately to prevent double-click
     const btn = document.querySelector('.play-again-btn');
     if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
@@ -159,7 +162,8 @@ socket.on('steal_result', ({ correct, stealerName, scores }) => {
 });
 
 // --- GAME OVER ---
-socket.on('game_over', ({ scores, winner }) => {
+socket.on('game_over', ({ scores, winner, mode }) => {
+    trackEvent('game_completed', { game_mode: mode, player_count: scores.length, winner_score: winner ? winner.score : 0 });
     document.getElementById('game-screen').style.display = 'none';
     document.getElementById('end-screen').style.display = 'flex';
 

@@ -31,11 +31,14 @@ document.getElementById('my-name').textContent = playerName;
 socket.emit('join_room', { code: roomCode, name: playerName }, (response) => {
     hasJoined = true;
     if (response.error) {
+        trackEvent('join_error', { error_type: response.error, room_code: roomCode });
         document.getElementById('waiting').innerHTML = `
             <div class="wait-emoji">😕</div>
             <div class="wait-msg">${esc(response.error)}</div>
             <a href="/" class="btn" style="max-width:200px;margin-top:20px;display:inline-block;">Back</a>
         `;
+    } else {
+        trackEvent('player_joined', { room_code: roomCode });
     }
 });
 
@@ -320,6 +323,7 @@ function renderStealTimeline(timeline, card) {
 }
 
 function passSteal() {
+    trackEvent('steal_passed', { room_code: roomCode, game_mode: currentMode });
     socket.emit('pass_steal');
     showScreen('wait-screen');
     document.getElementById('wait-msg').textContent = 'Passed...';
