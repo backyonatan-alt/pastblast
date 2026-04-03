@@ -65,6 +65,14 @@ function addPlayer(room, socketId, name) {
   if (room.players.length >= C.MAX_PLAYERS) return null;
   if (room.phase !== 'lobby') return null;
 
+  // Prevent duplicate names — update socket ID if same name reconnects
+  const existing = room.players.find(p => p.name === name.substring(0, 12));
+  if (existing) {
+    existing.id = socketId;
+    existing.connected = true;
+    return existing;
+  }
+
   const colors = ['#ff6b6b', '#51cf66', '#339af0', '#fcc419', '#cc5de8', '#ff922b', '#20c997', '#f06595'];
   const emojis = ['🔴', '🟢', '🔵', '🟡', '🟣', '🟠', '🟢', '🩷'];
 

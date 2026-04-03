@@ -15,11 +15,14 @@ fetch('/countries')
     .then(names => { allCountryNames = names; })
     .catch(() => {});
 
+let hasJoined = false;
+
 // Show player name
 document.getElementById('my-name').textContent = playerName;
 
 // Join the room
 socket.emit('join_room', { code: roomCode, name: playerName }, (response) => {
+    hasJoined = true;
     if (response.error) {
         document.getElementById('waiting').innerHTML = `
             <div class="wait-emoji">😕</div>
@@ -203,8 +206,8 @@ socket.on('disconnect', () => {
 });
 
 socket.on('connect', () => {
-    // On reconnect, rejoin the room
-    if (roomCode && playerName) {
+    // Only rejoin on REconnect (not initial connect)
+    if (hasJoined && roomCode && playerName) {
         socket.emit('join_room', { code: roomCode, name: playerName }, (response) => {
             if (response.error && response.error !== 'Game already started') {
                 showScreen('host-left');
