@@ -236,7 +236,8 @@ io.on('connection', (socket) => {
     const room = game.createRoom(socket.id);
     socket.join(room.code);
     console.log(`Room created: ${room.code} by ${socket.id}`);
-    callback({ code: room.code });
+    // Send server URL if configured, otherwise client uses window.location.origin
+    callback({ code: room.code, serverUrl: process.env.PUBLIC_URL || null });
   });
 
   // PLAYER joins a room

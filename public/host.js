@@ -8,7 +8,7 @@ socket.emit('create_room', (response) => {
     roomCode = response.code;
     document.getElementById('room-code').textContent = roomCode;
 
-    const baseUrl = window.location.origin;
+    const baseUrl = response.serverUrl || window.location.origin;
     const joinUrl = `${baseUrl}/?code=${roomCode}`;
     document.getElementById('join-url').textContent = baseUrl;
 

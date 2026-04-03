@@ -641,9 +641,47 @@
             .current-card { padding: 20px; }
             .current-card .flag-display { font-size: 5rem; }
             .screen h2 { font-size: 2.2rem; }
-            .placed-card { min-width: 90px; padding: 8px 10px; }
             .quiz-card .quiz-flag { font-size: 6rem; }
             .mode-tab { padding: 8px 16px; font-size: 0.95rem; }
+
+            .timeline-container { overflow-x: visible; padding: 10px 16px 30px; }
+
+            .timeline {
+                flex-direction: column;
+                align-items: center;
+                min-height: auto;
+            }
+
+            .timeline::before {
+                top: 0; bottom: 0; left: 50%; right: auto;
+                width: 4px; height: 100%;
+                transform: translateX(-50%);
+            }
+
+            .timeline-slot { min-width: auto; width: 100%; max-width: 280px; }
+
+            .timeline-slot.drop-zone {
+                min-width: auto;
+                width: 90%;
+                padding: 10px 0;
+                margin: 3px auto;
+            }
+
+            .placed-card {
+                min-width: auto;
+                max-width: none;
+                width: 85%;
+                margin: 3px auto;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                text-align: left;
+                padding: 8px 14px;
+            }
+
+            .placed-card .card-emoji { font-size: 1.5rem; flex: 0 0 auto; }
+            .placed-card .card-name { font-size: 0.8rem; }
+            .placed-card .card-year { font-size: 0.85rem; }
         }
     </style>
 </head>
