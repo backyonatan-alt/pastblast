@@ -160,7 +160,7 @@ function renderPlayerTimeline(timeline) {
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.textContent = '👇';
+        dropBtn.textContent = i === 0 ? '👆 Before' : i === sorted.length ? '👇 After' : '👉 Here';
         dropBtn.addEventListener('click', () => {
             socket.emit('place_card', { slotIndex: i });
             showScreen('wait-screen');
@@ -177,8 +177,10 @@ function renderPlayerTimeline(timeline) {
             cardEl.innerHTML = `
                 <div class="tl-card">
                     <div class="tl-emoji">${card.emoji}</div>
-                    <div class="tl-name">${card.name}</div>
-                    <div class="tl-year">${formatYear(card.year)}</div>
+                    <div class="tl-info">
+                        <div class="tl-name">${card.name}</div>
+                        <div class="tl-year">${formatYear(card.year)}</div>
+                    </div>
                 </div>`;
             el.appendChild(cardEl);
         }
@@ -197,7 +199,7 @@ function renderStealTimeline(timeline, card) {
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.textContent = '👇';
+        dropBtn.textContent = i === 0 ? '👆 Before' : i === sorted.length ? '👇 After' : '👉 Here';
         dropBtn.addEventListener('click', () => {
             socket.emit('place_card', { slotIndex: i });
             showScreen('wait-screen');
@@ -213,8 +215,10 @@ function renderStealTimeline(timeline, card) {
             cardEl.innerHTML = `
                 <div class="tl-card">
                     <div class="tl-emoji">${c.emoji}</div>
-                    <div class="tl-name">${c.name}</div>
-                    <div class="tl-year">${formatYear(c.year)}</div>
+                    <div class="tl-info">
+                        <div class="tl-name">${c.name}</div>
+                        <div class="tl-year">${formatYear(c.year)}</div>
+                    </div>
                 </div>`;
             el.appendChild(cardEl);
         }

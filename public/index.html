@@ -123,10 +123,7 @@
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
-
         // Pre-fill code from URL
         const params = new URLSearchParams(window.location.search);
         if (params.get('code')) {
@@ -143,23 +140,23 @@
             if (!name) { err.textContent = 'Enter your name'; return; }
             err.textContent = '';
 
-            socket.emit('join_room', { code, name }, (response) => {
-                if (response.error) {
-                    err.textContent = response.error;
-                } else {
-                    // Save name for reconnection
-                    sessionStorage.setItem('pb_code', code);
-                    sessionStorage.setItem('pb_name', name);
-                    window.location.href = `/play?code=${code}&name=${encodeURIComponent(name)}`;
-                }
-            });
+            // Just validate code exists via API, then redirect — player.html does the actual join
+            fetch(`/check-room/${code}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.exists) {
+                        window.location.href = `/play?code=${code}&name=${encodeURIComponent(name)}`;
+                    } else {
+                        err.textContent = 'Room not found';
+                    }
+                })
+                .catch(() => { err.textContent = 'Connection error'; });
         }
 
         function hostGame() {
             window.location.href = '/host';
         }
 
-        // Enter key support
         document.getElementById('code-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') document.getElementById('name-input').focus();
         });

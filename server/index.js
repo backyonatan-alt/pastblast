@@ -18,6 +18,10 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 const { ALL_CARDS } = require('./questions');
 const countryNames = ALL_CARDS.filter(c => c.type === 'flag').map(c => c.name).sort();
 app.get('/countries', (req, res) => res.json(countryNames));
+app.get('/check-room/:code', (req, res) => {
+  const room = game.getRoom(req.params.code.toUpperCase());
+  res.json({ exists: !!room });
+});
 
 // Routes
 app.get('/', (req, res) => {

@@ -85,6 +85,20 @@
 
 .start-btn { max-width: 300px; }
 
+.or-divider { color: rgba(255,255,255,0.25); font-size: 0.95rem; margin: 12px 0; }
+.btn-local {
+    max-width: 300px;
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.6);
+    border: 2px solid rgba(255,255,255,0.15);
+    box-shadow: none;
+    font-size: 1rem;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+}
+.btn-local:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
 /* Game screen */
 .game-header {
     width: 100%;

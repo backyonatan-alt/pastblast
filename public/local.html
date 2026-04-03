@@ -1,0 +1,1746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PastBlast</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Fredoka', 'Segoe UI', system-ui, sans-serif;
+            background: #1b1464;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 16px 20px;
+            background: #120e3f;
+            border-bottom: 4px solid #ff6b6b;
+        }
+
+        header h1 {
+            font-size: 2.4rem;
+            color: #ffd43b;
+            letter-spacing: 3px;
+            text-shadow: 3px 3px 0 #e8590c;
+        }
+
+        .player-tabs { display: none; }
+
+        .player-colors-0 { background: #ff6b6b; }
+        .player-colors-1 { background: #51cf66; }
+        .player-colors-2 { background: #339af0; }
+        .player-colors-3 { background: #fcc419; color: #333; }
+        .player-colors-4 { background: #cc5de8; }
+        .player-colors-5 { background: #ff922b; }
+
+        /* Score bar chart sidebar */
+        .score-chart {
+            position: fixed;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            height: 300px;
+            padding: 16px 12px 10px;
+            background: rgba(0,0,0,0.35);
+            border-radius: 18px;
+            z-index: 50;
+        }
+
+        .score-chart-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            height: 100%;
+            min-width: 48px;
+        }
+
+        .score-chart-score {
+            font-size: 1.4rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+        }
+
+        .score-chart-bar {
+            width: 40px;
+            border-radius: 10px 10px 6px 6px;
+            transition: height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            min-height: 8px;
+            position: relative;
+        }
+
+        .score-chart-bar.active-player {
+            box-shadow: 0 0 12px rgba(255,255,255,0.5);
+            border: 2px solid #fff;
+        }
+
+        .score-chart-name {
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-top: 6px;
+            text-align: center;
+            max-width: 56px;
+            line-height: 1.1;
+        }
+
+        .score-chart-emoji {
+            font-size: 1.6rem;
+            margin-top: 2px;
+        }
+
+        @media (max-width: 700px) {
+            .score-chart {
+                position: fixed;
+                right: auto;
+                left: 50%;
+                top: auto;
+                bottom: 10px;
+                transform: translateX(-50%);
+                height: 120px;
+                flex-direction: row;
+                padding: 10px 16px 8px;
+            }
+            .score-chart-col { min-width: 40px; }
+            .score-chart-bar { width: 32px; }
+            .score-chart-score { font-size: 1.1rem; }
+        }
+
+        .score-bar {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 8px;
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .score-bar span { font-weight: 700; color: #ffd43b; }
+
+        .lives { font-size: 1.6rem; letter-spacing: 4px; }
+
+        #game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* The mystery flag card */
+        .current-card {
+            background: #2b2280;
+            border: 4px solid #ffd43b;
+            border-radius: 24px;
+            padding: 24px 40px;
+            text-align: center;
+            max-width: 340px;
+            width: 100%;
+            box-shadow: 0 6px 0 #e8590c, 0 12px 30px rgba(0,0,0,0.3);
+            animation: cardBounce 0.4s ease;
+        }
+
+        .current-card .category {
+            display: inline-block;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #1b1464;
+            background: #ffd43b;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .current-card .flag-display {
+            font-size: 7rem;
+            line-height: 1.1;
+            margin: 8px 0;
+        }
+
+        .current-card .hint {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 6px;
+        }
+
+        .current-card .description {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.55);
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+
+        .instruction {
+            margin-top: 16px;
+            font-size: 1.2rem;
+            color: #ffd43b;
+            font-weight: 600;
+        }
+
+        /* Timeline */
+        .timeline-container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 16px auto 0;
+            overflow-x: auto;
+            padding: 10px 20px 30px;
+        }
+
+        .timeline {
+            display: flex;
+            align-items: stretch;
+            min-height: 150px;
+            position: relative;
+            gap: 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: #ff6b6b;
+            border-radius: 3px;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        .timeline-slot {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+            padding: 8px 4px;
+            cursor: pointer;
+            border-radius: 14px;
+            transition: all 0.2s;
+            z-index: 1;
+            position: relative;
+        }
+
+        .timeline-slot.drop-zone {
+            min-width: 56px;
+            border: 3px dashed #ffd43b;
+            border-radius: 14px;
+            background: rgba(255,212,59,0.08);
+        }
+
+        .timeline-slot.drop-zone:hover {
+            background: rgba(255,212,59,0.25);
+            border-color: #fff;
+            transform: scale(1.1);
+        }
+
+        .timeline-slot.drop-zone .drop-label {
+            font-size: 1.6rem;
+            color: #ffd43b;
+            text-align: center;
+        }
+
+        .timeline-slot.drop-zone .drop-text {
+            font-size: 0.8rem;
+            color: rgba(255,212,59,0.6);
+            font-weight: 600;
+        }
+
+        .placed-card {
+            background: #2b2280;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-radius: 14px;
+            padding: 10px 14px;
+            text-align: center;
+            min-width: 110px;
+            max-width: 150px;
+        }
+
+        .placed-card .card-emoji { font-size: 2.4rem; }
+        .placed-card .card-name { font-size: 0.85rem; font-weight: 700; margin: 4px 0; }
+        .placed-card .card-year { font-size: 1.15rem; color: #ffd43b; font-weight: 700; }
+
+        /* Feedback overlay */
+        .feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 2rem;
+            font-weight: 900;
+            padding: 24px 40px;
+            border-radius: 20px;
+            z-index: 100;
+            animation: popIn 1s ease forwards;
+            pointer-events: none;
+            border: 4px solid #fff;
+            text-align: center;
+            min-width: 260px;
+        }
+
+        .feedback .fb-flag { font-size: 3.5rem; }
+        .feedback .fb-name { font-size: 1.6rem; margin: 4px 0; }
+        .feedback .fb-year { font-size: 2.2rem; }
+
+        .feedback.correct { background: #51cf66; color: #fff; }
+        .feedback.wrong { background: #ff6b6b; color: #fff; }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.2) rotate(3deg); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            80% { opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
+        }
+
+        @keyframes cardBounce {
+            0% { opacity: 0; transform: translateY(-30px) scale(0.9); }
+            60% { transform: translateY(8px) scale(1.02); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Screens */
+        .screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .screen h2 {
+            font-size: 3.2rem;
+            color: #ffd43b;
+            text-shadow: 3px 3px 0 #e8590c;
+            margin-bottom: 16px;
+        }
+
+        .screen p {
+            color: rgba(255,255,255,0.7);
+            max-width: 520px;
+            line-height: 1.7;
+            margin-bottom: 28px;
+            font-size: 1.25rem;
+        }
+
+        .player-select { margin-bottom: 28px; }
+
+        .player-select label {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffd43b;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .player-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .player-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.2);
+            background: #2b2280;
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .player-btn:hover { border-color: #ffd43b; transform: scale(1.1); }
+        .player-btn.selected {
+            border-color: #ffd43b;
+            background: #ffd43b;
+            color: #1b1464;
+            transform: scale(1.15);
+        }
+
+        .btn {
+            padding: 16px 44px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            cursor: pointer;
+            background: #ffd43b;
+            color: #1b1464;
+            box-shadow: 0 5px 0 #e8590c;
+            transition: transform 0.15s;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #e8590c; }
+
+        .final-score {
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: #ffd43b;
+            text-shadow: 3px 3px 0 #e8590c;
+            margin: 10px 0;
+        }
+
+        /* Steal mode */
+        .steal-bar {
+            display: none;
+            background: #ff6b6b;
+            padding: 8px 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .steal-bar .steal-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 3px;
+        }
+
+        .steal-bar .steal-info {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .steal-bar .steal-pass {
+            padding: 4px 18px;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.25);
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.4);
+            font-family: 'Fredoka', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .steal-bar .steal-pass:hover {
+            background: rgba(0,0,0,0.45);
+            border-color: #fff;
+        }
+
+        body.steal-active .current-card {
+            border-color: #ff6b6b !important;
+        }
+
+        .winner-banner {
+            font-size: 1.8rem;
+            font-weight: 700;
+            padding: 12px 30px;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            border: 4px solid #fff;
+        }
+
+        .scoreboard {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .scoreboard-card {
+            padding: 14px 24px;
+            border-radius: 14px;
+            text-align: center;
+            min-width: 120px;
+            border: 3px solid rgba(255,255,255,0.15);
+        }
+
+        .scoreboard-card .sb-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+        .scoreboard-card .sb-score { font-size: 2.2rem; font-weight: 900; }
+        .scoreboard-card .sb-lives { font-size: 1rem; }
+
+        .confetti {
+            position: fixed;
+            top: -10px;
+            font-size: 2rem;
+            animation: confettiFall linear forwards;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Game mode tabs */
+        .mode-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-top: 10px;
+        }
+
+        .mode-tab {
+            padding: 10px 28px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            background: transparent;
+            border-bottom: 4px solid transparent;
+            font-family: 'Fredoka', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .mode-tab:hover { color: #fff; }
+        .mode-tab.active {
+            color: #ffd43b;
+            border-bottom-color: #ffd43b;
+        }
+
+        /* Flag Quiz styles */
+        .quiz-card {
+            background: #2b2280;
+            border: 4px solid #ffd43b;
+            border-radius: 24px;
+            padding: 30px 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 6px 0 #e8590c, 0 12px 30px rgba(0,0,0,0.3);
+            animation: cardBounce 0.4s ease;
+        }
+
+        .quiz-card .quiz-flag {
+            font-size: 8rem;
+            line-height: 1.1;
+            margin: 10px 0 20px;
+        }
+
+        .quiz-input-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .quiz-input {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 1.3rem;
+            font-family: 'Fredoka', sans-serif;
+            border-radius: 14px;
+            border: 3px solid rgba(255,255,255,0.2);
+            background: #1b1464;
+            color: #fff;
+        }
+
+        .quiz-input::placeholder { color: rgba(255,255,255,0.35); }
+
+        .quiz-input:focus {
+            outline: none;
+            border-color: #ffd43b;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #1b1464;
+            border: 2px solid #ffd43b;
+            border-top: none;
+            border-radius: 0 0 14px 14px;
+            z-index: 60;
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 10px 18px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: rgba(255,212,59,0.2);
+            color: #ffd43b;
+        }
+
+        .autocomplete-item .match {
+            color: #ffd43b;
+            font-weight: 700;
+        }
+
+        /* Quiz mode colors — warm coral/orange */
+        body.quiz-mode { background: #2d1230; }
+        body.quiz-mode header { background: #1f0b22; border-bottom-color: #ff6b9d; }
+        body.quiz-mode header h1 { color: #ff6b9d; text-shadow: 3px 3px 0 #a83279; }
+        body.quiz-mode .mode-tab.active { color: #ff6b9d; border-bottom-color: #ff6b9d; }
+        body.quiz-mode .quiz-card { background: #3d1742; border-color: #ff6b9d; box-shadow: 0 6px 0 #a83279, 0 12px 30px rgba(0,0,0,0.3); }
+        body.quiz-mode .quiz-card .category { background: #ff6b9d; color: #2d1230; }
+        body.quiz-mode .quiz-input { background: #2d1230; border-color: rgba(255,255,255,0.2); }
+        body.quiz-mode .quiz-input:focus { border-color: #ff6b9d; }
+        body.quiz-mode .autocomplete-list { background: #2d1230; border-color: #ff6b9d; }
+        body.quiz-mode .autocomplete-item:hover,
+        body.quiz-mode .autocomplete-item.active { background: rgba(255,107,157,0.2); color: #ff6b9d; }
+        body.quiz-mode .autocomplete-item .match { color: #ff6b9d; }
+        body.quiz-mode .btn { background: #ff6b9d; color: #2d1230; box-shadow: 0 5px 0 #a83279; }
+        body.quiz-mode .screen h2 { color: #ff6b9d; text-shadow: 3px 3px 0 #a83279; }
+        body.quiz-mode .player-btn.selected { border-color: #ff6b9d; background: #ff6b9d; color: #2d1230; }
+        body.quiz-mode .player-btn:hover { border-color: #ff6b9d; }
+        body.quiz-mode .player-select label { color: #ff6b9d; }
+        body.quiz-mode .quiz-stats span { color: #ff6b9d; }
+        body.quiz-mode .instruction { color: #ff6b9d; }
+        body.quiz-mode .score-chart { background: rgba(0,0,0,0.35); }
+        body.quiz-mode .quiz-streak { color: #ff6b9d; }
+        body.quiz-mode .score-bar span { color: #ff6b9d; }
+        body.quiz-mode .winner-banner { border-color: #ff6b9d; }
+        body.quiz-mode .final-score { color: #ff6b9d; text-shadow: 3px 3px 0 #a83279; }
+        body.quiz-mode .scoreboard-card { border-color: rgba(255,107,157,0.2); }
+
+        .quiz-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 8px;
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .quiz-stats span { font-weight: 700; color: #ffd43b; }
+
+        .quiz-streak {
+            font-size: 1.4rem;
+            color: #ff6b6b;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.6rem; }
+            .current-card { padding: 20px; }
+            .current-card .flag-display { font-size: 5rem; }
+            .screen h2 { font-size: 2.2rem; }
+            .placed-card { min-width: 90px; padding: 8px 10px; }
+            .quiz-card .quiz-flag { font-size: 6rem; }
+            .mode-tab { padding: 8px 16px; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PASTBLAST</h1>
+        <div class="mode-tabs">
+            <button class="mode-tab active" onclick="switchMode('timeline')">Timeline Game</button>
+            <button class="mode-tab" onclick="switchMode('quiz')">Flag Quiz</button>
+        </div>
+        <div id="player-tabs" style="display:none;"></div><!-- kept for hideAll -->
+        <div class="score-bar" id="score-bar" style="display:none;">
+            <div>Score: <span id="score">0</span></div>
+            <div>Round: <span id="round">1</span> / <span id="total-rounds">15</span></div>
+            <div class="lives" id="lives" style="display:none;"></div>
+        </div>
+        <div class="steal-bar" id="steal-overlay">
+            <div class="steal-title">STEAL!</div>
+            <div class="steal-info" id="steal-info"></div>
+            <button class="steal-pass" id="steal-pass-btn">PASS</button>
+        </div>
+    </header>
+
+    <div class="score-chart" id="score-chart" style="display:none;"></div>
+
+    <div id="start-screen" class="screen">
+        <h2>PastBlast</h2>
+        <p>Flags, landmarks and historical events — place them in the right order on the timeline! For flags, you only see the flag — no country name! Most cards on your timeline wins!</p>
+        <div class="player-select">
+            <label>How many players?</label>
+            <div class="player-buttons" id="player-buttons"></div>
+        </div>
+        <button class="btn" onclick="startGame()">LET'S GO!</button>
+    </div>
+
+    <div id="game-area" style="display:none;">
+        <div class="current-card" id="current-card"></div>
+        <p class="instruction" id="instruction"></p>
+        <div class="timeline-container">
+            <div class="timeline" id="timeline"></div>
+        </div>
+    </div>
+
+    <div id="end-screen" class="screen" style="display:none;">
+        <h2 id="end-title">Game Over!</h2>
+        <div id="winner-banner"></div>
+        <div class="scoreboard" id="scoreboard"></div>
+        <p id="end-message"></p>
+        <button class="btn" onclick="showStart()">Play Again</button>
+    </div>
+
+    <!-- Flag Quiz Mode -->
+    <div id="quiz-start" class="screen" style="display:none;">
+        <h2>Flag Quiz</h2>
+        <p>A flag appears — pick the right country from the dropdown. No hints, no mercy! 20 rounds per game!</p>
+        <div class="player-select">
+            <label>How many players?</label>
+            <div class="player-buttons" id="quiz-player-buttons"></div>
+        </div>
+        <button class="btn" onclick="startQuiz()">START QUIZ</button>
+    </div>
+
+    <div id="quiz-area" style="display:none;">
+        <div style="text-align:center;padding:16px 20px 0;">
+            <div class="quiz-stats">
+                <div>Round: <span id="quiz-round">1</span> / <span id="quiz-total">20</span></div>
+            </div>
+            <div id="quiz-streak-text" class="quiz-streak"></div>
+            <div class="steal-bar" id="quiz-steal-bar">
+                <div class="steal-title">STEAL!</div>
+                <div class="steal-info" id="quiz-steal-info"></div>
+                <button class="steal-pass" id="quiz-steal-pass">PASS</button>
+            </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;padding:0 20px 40px;">
+            <p class="instruction" id="quiz-instruction" style="margin-bottom:12px;"></p>
+            <div class="quiz-card" id="quiz-card"></div>
+            <div style="margin-top:20px;width:100%;max-width:400px;">
+                <div class="quiz-input-wrap">
+                    <input type="text" class="quiz-input" id="quiz-input" placeholder="Type a country name..." autocomplete="off">
+                    <div class="autocomplete-list" id="autocomplete-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="quiz-end" class="screen" style="display:none;">
+        <h2 id="quiz-end-title">Game Over!</h2>
+        <div id="quiz-winner-banner"></div>
+        <div class="scoreboard" id="quiz-scoreboard"></div>
+        <p id="quiz-end-message"></p>
+        <button class="btn" onclick="switchMode('quiz')">Play Again</button>
+    </div>
+
+    <script>
+    const PLAYER_NAMES = ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange'];
+    const PLAYER_EMOJIS = ['🔴', '🟢', '🔵', '🟡', '🟣', '🟠'];
+
+    const ALL_CARDS = [
+        // === FLAGS (no country name shown, no "from X" hints) ===
+        { name: "United States", emoji: "🇺🇸", year: 1776, type: "flag" },
+        { name: "France", emoji: "🇫🇷", year: 1794, type: "flag" },
+        { name: "Brazil", emoji: "🇧🇷", year: 1822, type: "flag" },
+        { name: "Italy", emoji: "🇮🇹", year: 1861, type: "flag" },
+        { name: "Germany", emoji: "🇩🇪", year: 1871, type: "flag" },
+        { name: "Australia", emoji: "🇦🇺", year: 1901, type: "flag" },
+        { name: "Israel", emoji: "🇮🇱", year: 1948, type: "flag" },
+        { name: "India", emoji: "🇮🇳", year: 1947, type: "flag" },
+        { name: "South Sudan", emoji: "🇸🇸", year: 2011, type: "flag" },
+        { name: "Pakistan", emoji: "🇵🇰", year: 1947, type: "flag" },
+        { name: "South Africa", emoji: "🇿🇦", year: 1994, type: "flag" },
+        { name: "Japan", emoji: "🇯🇵", year: 1870, type: "flag" },
+        { name: "Mexico", emoji: "🇲🇽", year: 1821, type: "flag" },
+        { name: "Greece", emoji: "🇬🇷", year: 1829, type: "flag" },
+        { name: "Canada", emoji: "🇨🇦", year: 1965, type: "flag" },
+        { name: "China", emoji: "🇨🇳", year: 1949, type: "flag" },
+        { name: "Russia", emoji: "🇷🇺", year: 1991, type: "flag" },
+        { name: "Turkey", emoji: "🇹🇷", year: 1923, type: "flag" },
+        { name: "Argentina", emoji: "🇦🇷", year: 1816, type: "flag" },
+        { name: "Nigeria", emoji: "🇳🇬", year: 1960, type: "flag" },
+        { name: "Indonesia", emoji: "🇮🇩", year: 1945, type: "flag" },
+        { name: "South Korea", emoji: "🇰🇷", year: 1948, type: "flag" },
+        { name: "Ireland", emoji: "🇮🇪", year: 1922, type: "flag" },
+        { name: "Egypt", emoji: "🇪🇬", year: 1984, type: "flag" },
+        { name: "Norway", emoji: "🇳🇴", year: 1905, type: "flag" },
+        { name: "Poland", emoji: "🇵🇱", year: 1918, type: "flag" },
+        { name: "Colombia", emoji: "🇨🇴", year: 1810, type: "flag" },
+        { name: "Thailand", emoji: "🇹🇭", year: 1917, type: "flag" },
+        { name: "Vietnam", emoji: "🇻🇳", year: 1945, type: "flag" },
+        { name: "Kenya", emoji: "🇰🇪", year: 1963, type: "flag" },
+        { name: "Ukraine", emoji: "🇺🇦", year: 1991, type: "flag" },
+        { name: "Chile", emoji: "🇨🇱", year: 1818, type: "flag" },
+        { name: "Saudi Arabia", emoji: "🇸🇦", year: 1932, type: "flag" },
+        { name: "Jamaica", emoji: "🇯🇲", year: 1962, type: "flag" },
+        { name: "Nepal", emoji: "🇳🇵", year: 1962, type: "flag" },
+        { name: "Cuba", emoji: "🇨🇺", year: 1902, type: "flag" },
+        { name: "Ethiopia", emoji: "🇪🇹", year: 1897, type: "flag" },
+        { name: "UAE", emoji: "🇦🇪", year: 1971, type: "flag" },
+        { name: "Switzerland", emoji: "🇨🇭", year: 1848, type: "flag" },
+        { name: "Denmark", emoji: "🇩🇰", year: 1219, type: "flag" },
+        { name: "United Kingdom", emoji: "🇬🇧", year: 1801, type: "flag" },
+        { name: "Spain", emoji: "🇪🇸", year: 1981, type: "flag" },
+        { name: "Portugal", emoji: "🇵🇹", year: 1910, type: "flag" },
+        { name: "Sweden", emoji: "🇸🇪", year: 1906, type: "flag" },
+        { name: "Finland", emoji: "🇫🇮", year: 1917, type: "flag" },
+        { name: "Belgium", emoji: "🇧🇪", year: 1830, type: "flag" },
+        { name: "Netherlands", emoji: "🇳🇱", year: 1815, type: "flag" },
+        { name: "Austria", emoji: "🇦🇹", year: 1230, type: "flag" },
+        { name: "Czech Republic", emoji: "🇨🇿", year: 1993, type: "flag" },
+        { name: "Romania", emoji: "🇷🇴", year: 1848, type: "flag" },
+        { name: "Hungary", emoji: "🇭🇺", year: 1918, type: "flag" },
+        { name: "Croatia", emoji: "🇭🇷", year: 1991, type: "flag" },
+        { name: "Serbia", emoji: "🇷🇸", year: 2006, type: "flag" },
+        { name: "Iceland", emoji: "🇮🇸", year: 1944, type: "flag" },
+        { name: "New Zealand", emoji: "🇳🇿", year: 1907, type: "flag" },
+        { name: "Philippines", emoji: "🇵🇭", year: 1898, type: "flag" },
+        { name: "Malaysia", emoji: "🇲🇾", year: 1963, type: "flag" },
+        { name: "Singapore", emoji: "🇸🇬", year: 1965, type: "flag" },
+        { name: "Bangladesh", emoji: "🇧🇩", year: 1971, type: "flag" },
+        { name: "Peru", emoji: "🇵🇪", year: 1821, type: "flag" },
+        { name: "Venezuela", emoji: "🇻🇪", year: 1811, type: "flag" },
+        { name: "Ecuador", emoji: "🇪🇨", year: 1830, type: "flag" },
+        { name: "Morocco", emoji: "🇲🇦", year: 1956, type: "flag" },
+        { name: "Tunisia", emoji: "🇹🇳", year: 1956, type: "flag" },
+        { name: "Algeria", emoji: "🇩🇿", year: 1962, type: "flag" },
+        { name: "Ghana", emoji: "🇬🇭", year: 1957, type: "flag" },
+        { name: "Tanzania", emoji: "🇹🇿", year: 1964, type: "flag" },
+        { name: "Libya", emoji: "🇱🇾", year: 2011, type: "flag" },
+        { name: "Iraq", emoji: "🇮🇶", year: 1932, type: "flag" },
+        { name: "Iran", emoji: "🇮🇷", year: 1980, type: "flag" },
+        { name: "Jordan", emoji: "🇯🇴", year: 1946, type: "flag" },
+        { name: "Lebanon", emoji: "🇱🇧", year: 1943, type: "flag" },
+        { name: "Qatar", emoji: "🇶🇦", year: 1971, type: "flag" },
+        { name: "Bahrain", emoji: "🇧🇭", year: 1971, type: "flag" },
+        { name: "Kuwait", emoji: "🇰🇼", year: 1961, type: "flag" },
+        { name: "Oman", emoji: "🇴🇲", year: 1970, type: "flag" },
+        { name: "Panama", emoji: "🇵🇦", year: 1903, type: "flag" },
+        { name: "Costa Rica", emoji: "🇨🇷", year: 1821, type: "flag" },
+        { name: "Dominican Republic", emoji: "🇩🇴", year: 1844, type: "flag" },
+        { name: "Haiti", emoji: "🇭🇹", year: 1804, type: "flag" },
+        { name: "Bolivia", emoji: "🇧🇴", year: 1825, type: "flag" },
+        { name: "Paraguay", emoji: "🇵🇾", year: 1811, type: "flag" },
+        { name: "Uruguay", emoji: "🇺🇾", year: 1825, type: "flag" },
+        { name: "Sri Lanka", emoji: "🇱🇰", year: 1948, type: "flag" },
+        { name: "Myanmar", emoji: "🇲🇲", year: 2010, type: "flag" },
+        { name: "Cambodia", emoji: "🇰🇭", year: 1953, type: "flag" },
+        { name: "Laos", emoji: "🇱🇦", year: 1975, type: "flag" },
+        { name: "Mongolia", emoji: "🇲🇳", year: 1911, type: "flag" },
+        { name: "North Korea", emoji: "🇰🇵", year: 1948, type: "flag" },
+        { name: "Afghanistan", emoji: "🇦🇫", year: 1919, type: "flag" },
+        { name: "Congo (DRC)", emoji: "🇨🇩", year: 1960, type: "flag" },
+        { name: "Mozambique", emoji: "🇲🇿", year: 1975, type: "flag" },
+        { name: "Zimbabwe", emoji: "🇿🇼", year: 1980, type: "flag" },
+        { name: "Namibia", emoji: "🇳🇦", year: 1990, type: "flag" },
+        { name: "Eritrea", emoji: "🇪🇷", year: 1993, type: "flag" },
+        { name: "East Timor", emoji: "🇹🇱", year: 2002, type: "flag" },
+        { name: "Kosovo", emoji: "🇽🇰", year: 2008, type: "flag" },
+        { name: "Montenegro", emoji: "🇲🇪", year: 2006, type: "flag" },
+        { name: "Albania", emoji: "🇦🇱", year: 1912, type: "flag" },
+        { name: "Andorra", emoji: "🇦🇩", year: 1278, type: "flag" },
+        { name: "Angola", emoji: "🇦🇴", year: 1975, type: "flag" },
+        { name: "Antigua and Barbuda", emoji: "🇦🇬", year: 1981, type: "flag" },
+        { name: "Armenia", emoji: "🇦🇲", year: 1991, type: "flag" },
+        { name: "Azerbaijan", emoji: "🇦🇿", year: 1991, type: "flag" },
+        { name: "Bahamas", emoji: "🇧🇸", year: 1973, type: "flag" },
+        { name: "Barbados", emoji: "🇧🇧", year: 1966, type: "flag" },
+        { name: "Belarus", emoji: "🇧🇾", year: 1991, type: "flag" },
+        { name: "Belize", emoji: "🇧🇿", year: 1981, type: "flag" },
+        { name: "Benin", emoji: "🇧🇯", year: 1960, type: "flag" },
+        { name: "Bhutan", emoji: "🇧🇹", year: 1949, type: "flag" },
+        { name: "Bosnia and Herzegovina", emoji: "🇧🇦", year: 1992, type: "flag" },
+        { name: "Botswana", emoji: "🇧🇼", year: 1966, type: "flag" },
+        { name: "Brunei", emoji: "🇧🇳", year: 1984, type: "flag" },
+        { name: "Bulgaria", emoji: "🇧🇬", year: 1908, type: "flag" },
+        { name: "Burkina Faso", emoji: "🇧🇫", year: 1960, type: "flag" },
+        { name: "Burundi", emoji: "🇧🇮", year: 1962, type: "flag" },
+        { name: "Cabo Verde", emoji: "🇨🇻", year: 1975, type: "flag" },
+        { name: "Cameroon", emoji: "🇨🇲", year: 1960, type: "flag" },
+        { name: "Central African Republic", emoji: "🇨🇫", year: 1960, type: "flag" },
+        { name: "Chad", emoji: "🇹🇩", year: 1960, type: "flag" },
+        { name: "Comoros", emoji: "🇰🇲", year: 1975, type: "flag" },
+        { name: "Congo (Republic)", emoji: "🇨🇬", year: 1960, type: "flag" },
+        { name: "Cyprus", emoji: "🇨🇾", year: 1960, type: "flag" },
+        { name: "Djibouti", emoji: "🇩🇯", year: 1977, type: "flag" },
+        { name: "Dominica", emoji: "🇩🇲", year: 1978, type: "flag" },
+        { name: "El Salvador", emoji: "🇸🇻", year: 1821, type: "flag" },
+        { name: "Equatorial Guinea", emoji: "🇬🇶", year: 1968, type: "flag" },
+        { name: "Eswatini", emoji: "🇸🇿", year: 1968, type: "flag" },
+        { name: "Fiji", emoji: "🇫🇯", year: 1970, type: "flag" },
+        { name: "Gabon", emoji: "🇬🇦", year: 1960, type: "flag" },
+        { name: "Gambia", emoji: "🇬🇲", year: 1965, type: "flag" },
+        { name: "Georgia", emoji: "🇬🇪", year: 1991, type: "flag" },
+        { name: "Grenada", emoji: "🇬🇩", year: 1974, type: "flag" },
+        { name: "Guatemala", emoji: "🇬🇹", year: 1821, type: "flag" },
+        { name: "Guinea", emoji: "🇬🇳", year: 1958, type: "flag" },
+        { name: "Guinea-Bissau", emoji: "🇬🇼", year: 1973, type: "flag" },
+        { name: "Guyana", emoji: "🇬🇾", year: 1966, type: "flag" },
+        { name: "Honduras", emoji: "🇭🇳", year: 1821, type: "flag" },
+        { name: "Ivory Coast", emoji: "🇨🇮", year: 1960, type: "flag" },
+        { name: "Kazakhstan", emoji: "🇰🇿", year: 1991, type: "flag" },
+        { name: "Kiribati", emoji: "🇰🇮", year: 1979, type: "flag" },
+        { name: "Kyrgyzstan", emoji: "🇰🇬", year: 1991, type: "flag" },
+        { name: "Latvia", emoji: "🇱🇻", year: 1918, type: "flag" },
+        { name: "Lesotho", emoji: "🇱🇸", year: 1966, type: "flag" },
+        { name: "Liberia", emoji: "🇱🇷", year: 1847, type: "flag" },
+        { name: "Liechtenstein", emoji: "🇱🇮", year: 1719, type: "flag" },
+        { name: "Lithuania", emoji: "🇱🇹", year: 1918, type: "flag" },
+        { name: "Luxembourg", emoji: "🇱🇺", year: 1839, type: "flag" },
+        { name: "Madagascar", emoji: "🇲🇬", year: 1960, type: "flag" },
+        { name: "Malawi", emoji: "🇲🇼", year: 1964, type: "flag" },
+        { name: "Maldives", emoji: "🇲🇻", year: 1965, type: "flag" },
+        { name: "Mali", emoji: "🇲🇱", year: 1960, type: "flag" },
+        { name: "Malta", emoji: "🇲🇹", year: 1964, type: "flag" },
+        { name: "Marshall Islands", emoji: "🇲🇭", year: 1986, type: "flag" },
+        { name: "Mauritania", emoji: "🇲🇷", year: 1960, type: "flag" },
+        { name: "Mauritius", emoji: "🇲🇺", year: 1968, type: "flag" },
+        { name: "Micronesia", emoji: "🇫🇲", year: 1986, type: "flag" },
+        { name: "Moldova", emoji: "🇲🇩", year: 1991, type: "flag" },
+        { name: "Monaco", emoji: "🇲🇨", year: 1297, type: "flag" },
+        { name: "Nicaragua", emoji: "🇳🇮", year: 1821, type: "flag" },
+        { name: "Niger", emoji: "🇳🇪", year: 1960, type: "flag" },
+        { name: "North Macedonia", emoji: "🇲🇰", year: 1991, type: "flag" },
+        { name: "Palau", emoji: "🇵🇼", year: 1994, type: "flag" },
+        { name: "Palestine", emoji: "🇵🇸", year: 1988, type: "flag" },
+        { name: "Papua New Guinea", emoji: "🇵🇬", year: 1975, type: "flag" },
+        { name: "Rwanda", emoji: "🇷🇼", year: 1962, type: "flag" },
+        { name: "Saint Kitts and Nevis", emoji: "🇰🇳", year: 1983, type: "flag" },
+        { name: "Saint Lucia", emoji: "🇱🇨", year: 1979, type: "flag" },
+        { name: "Saint Vincent and the Grenadines", emoji: "🇻🇨", year: 1979, type: "flag" },
+        { name: "Samoa", emoji: "🇼🇸", year: 1962, type: "flag" },
+        { name: "San Marino", emoji: "🇸🇲", year: 301, type: "flag" },
+        { name: "Sao Tome and Principe", emoji: "🇸🇹", year: 1975, type: "flag" },
+        { name: "Senegal", emoji: "🇸🇳", year: 1960, type: "flag" },
+        { name: "Seychelles", emoji: "🇸🇨", year: 1976, type: "flag" },
+        { name: "Sierra Leone", emoji: "🇸🇱", year: 1961, type: "flag" },
+        { name: "Slovakia", emoji: "🇸🇰", year: 1993, type: "flag" },
+        { name: "Slovenia", emoji: "🇸🇮", year: 1991, type: "flag" },
+        { name: "Solomon Islands", emoji: "🇸🇧", year: 1978, type: "flag" },
+        { name: "Somalia", emoji: "🇸🇴", year: 1960, type: "flag" },
+        { name: "Sudan", emoji: "🇸🇩", year: 1956, type: "flag" },
+        { name: "Suriname", emoji: "🇸🇷", year: 1975, type: "flag" },
+        { name: "Syria", emoji: "🇸🇾", year: 1946, type: "flag" },
+        { name: "Taiwan", emoji: "🇹🇼", year: 1949, type: "flag" },
+        { name: "Tajikistan", emoji: "🇹🇯", year: 1991, type: "flag" },
+        { name: "Togo", emoji: "🇹🇬", year: 1960, type: "flag" },
+        { name: "Tonga", emoji: "🇹🇴", year: 1970, type: "flag" },
+        { name: "Trinidad and Tobago", emoji: "🇹🇹", year: 1962, type: "flag" },
+        { name: "Turkmenistan", emoji: "🇹🇲", year: 1991, type: "flag" },
+        { name: "Tuvalu", emoji: "🇹🇻", year: 1978, type: "flag" },
+        { name: "Uganda", emoji: "🇺🇬", year: 1962, type: "flag" },
+        { name: "Uzbekistan", emoji: "🇺🇿", year: 1991, type: "flag" },
+        { name: "Vanuatu", emoji: "🇻🇺", year: 1980, type: "flag" },
+        { name: "Vatican City", emoji: "🇻🇦", year: 1929, type: "flag" },
+        { name: "Yemen", emoji: "🇾🇪", year: 1990, type: "flag" },
+        { name: "Zambia", emoji: "🇿🇲", year: 1964, type: "flag" },
+
+        // === LANDMARKS ===
+        { name: "Great Pyramid of Giza", emoji: "🔺", year: -2560, type: "landmark", desc: "Ancient tomb in Egypt" },
+        { name: "Stonehenge", emoji: "🪨", year: -3000, type: "landmark", desc: "Prehistoric stone circle in England" },
+        { name: "Parthenon", emoji: "🏛️", year: -432, type: "landmark", desc: "Temple in Athens" },
+        { name: "Colosseum", emoji: "🏟️", year: 80, type: "landmark", desc: "Amphitheatre in Rome" },
+        { name: "Hagia Sophia", emoji: "🕌", year: 537, type: "landmark", desc: "Cathedral turned mosque in Istanbul" },
+        { name: "Angkor Wat", emoji: "🛕", year: 1150, type: "landmark", desc: "Largest religious monument" },
+        { name: "Notre-Dame Cathedral", emoji: "⛪", year: 1345, type: "landmark", desc: "Gothic cathedral in Paris" },
+        { name: "Leaning Tower of Pisa", emoji: "🏗️", year: 1372, type: "landmark", desc: "Famous tilted tower in Italy" },
+        { name: "Machu Picchu", emoji: "🏔️", year: 1450, type: "landmark", desc: "Inca citadel in Peru" },
+        { name: "Taj Mahal", emoji: "🕌", year: 1653, type: "landmark", desc: "Marble mausoleum in India" },
+        { name: "Statue of Liberty", emoji: "🗽", year: 1886, type: "landmark", desc: "Iconic statue in New York" },
+        { name: "Eiffel Tower", emoji: "🗼", year: 1889, type: "landmark", desc: "Iron tower in Paris" },
+        { name: "Empire State Building", emoji: "🏙️", year: 1931, type: "landmark", desc: "Skyscraper in New York" },
+        { name: "Golden Gate Bridge", emoji: "🌉", year: 1937, type: "landmark", desc: "Bridge in San Francisco" },
+        { name: "Sydney Opera House", emoji: "🎭", year: 1973, type: "landmark", desc: "Performing arts center in Australia" },
+        { name: "Burj Khalifa", emoji: "🏗️", year: 2010, type: "landmark", desc: "Tallest building in the world" },
+        { name: "Great Wall of China", emoji: "🧱", year: -700, type: "landmark", desc: "Fortification across China" },
+        { name: "Petra", emoji: "🏜️", year: -312, type: "landmark", desc: "City carved in rock, Jordan" },
+        { name: "Chichen Itza", emoji: "🏛️", year: 600, type: "landmark", desc: "Mayan pyramid in Mexico" },
+        { name: "Christ the Redeemer", emoji: "✝️", year: 1931, type: "landmark", desc: "Statue in Rio de Janeiro" },
+
+        // === HISTORICAL EVENTS ===
+        { name: "Invention of Writing", emoji: "📜", year: -3200, type: "history", desc: "Cuneiform in Mesopotamia" },
+        { name: "Founding of Rome", emoji: "🐺", year: -753, type: "history", desc: "Traditional founding by Romulus" },
+        { name: "Fall of Rome", emoji: "⚔️", year: 476, type: "history", desc: "Western Roman Empire collapsed" },
+        { name: "Magna Carta Signed", emoji: "📜", year: 1215, type: "history", desc: "Foundation of constitutional law" },
+        { name: "Renaissance Begins", emoji: "🎨", year: 1400, type: "history", desc: "Cultural rebirth in Italy" },
+        { name: "Gutenberg Printing Press", emoji: "📰", year: 1440, type: "history", desc: "Revolutionized information spread" },
+        { name: "Columbus Reaches America", emoji: "⛵", year: 1492, type: "history", desc: "European discovery of the New World" },
+        { name: "Industrial Revolution", emoji: "🏭", year: 1760, type: "history", desc: "Transition to machine manufacturing" },
+        { name: "French Revolution", emoji: "🔥", year: 1789, type: "history", desc: "Storming of the Bastille" },
+        { name: "Suez Canal Opens", emoji: "⛴️", year: 1869, type: "history", desc: "Connecting Mediterranean and Red Sea" },
+        { name: "First Olympic Games (Modern)", emoji: "🏅", year: 1896, type: "history", desc: "Revived in Athens" },
+        { name: "Titanic Sinks", emoji: "🚢", year: 1912, type: "history", desc: "Unsinkable ship hits an iceberg" },
+        { name: "World War I Begins", emoji: "💣", year: 1914, type: "history", desc: "The Great War erupts" },
+        { name: "Panama Canal Opens", emoji: "🚢", year: 1914, type: "history", desc: "Connecting Atlantic and Pacific" },
+        { name: "Women's Suffrage in US", emoji: "✊", year: 1920, type: "history", desc: "19th Amendment grants voting rights" },
+        { name: "Discovery of Penicillin", emoji: "💊", year: 1928, type: "history", desc: "Alexander Fleming's breakthrough" },
+        { name: "World War II Ends", emoji: "🕊️", year: 1945, type: "history", desc: "Allied victory, end of global conflict" },
+        { name: "Mount Everest First Summit", emoji: "⛰️", year: 1953, type: "history", desc: "Hillary and Tenzing reach the top" },
+        { name: "DNA Structure Discovered", emoji: "🧬", year: 1953, type: "history", desc: "Watson and Crick's double helix" },
+        { name: "First Moon Landing", emoji: "🌙", year: 1969, type: "history", desc: "Neil Armstrong walks on the Moon" },
+        { name: "Fall of the Berlin Wall", emoji: "🧱", year: 1989, type: "history", desc: "Symbolic end of the Cold War" },
+        { name: "Nelson Mandela Freed", emoji: "✊", year: 1990, type: "history", desc: "Released after 27 years in prison" },
+        { name: "Internet Goes Public", emoji: "🌐", year: 1991, type: "history", desc: "World Wide Web becomes accessible" },
+        { name: "First iPhone Released", emoji: "📱", year: 2007, type: "history", desc: "Apple revolutionized smartphones" },
+        { name: "COVID-19 Pandemic", emoji: "😷", year: 2020, type: "history", desc: "Global pandemic changes the world" },
+    ];
+
+    let deck, players, currentPlayerIndex, numPlayers, totalRounds, selectedPlayers = 1;
+
+    // Build player select buttons
+    (function initPlayerSelect() {
+        const container = document.getElementById('player-buttons');
+        for (let i = 1; i <= 6; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'player-btn' + (i === 1 ? ' selected' : '');
+            btn.textContent = i;
+            btn.onclick = () => {
+                selectedPlayers = i;
+                document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            };
+            container.appendChild(btn);
+        }
+    })();
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function formatYear(y) {
+        if (y < 0) return `${Math.abs(y)} BCE`;
+        return `${y}`;
+    }
+
+    function showStart() {
+        hideAll();
+        document.getElementById('start-screen').style.display = 'flex';
+    }
+
+    function startGame() {
+        numPlayers = selectedPlayers;
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('end-screen').style.display = 'none';
+        document.getElementById('game-area').style.display = 'flex';
+        document.getElementById('score-bar').style.display = 'flex';
+
+        // Balance the deck: enough cards for all players
+        const cardsPerType = Math.ceil((numPlayers * 12) / 3);
+        const flags = shuffle(ALL_CARDS.filter(c => c.type === 'flag'));
+        const landmarks = shuffle(ALL_CARDS.filter(c => c.type === 'landmark'));
+        const history = shuffle(ALL_CARDS.filter(c => c.type === 'history'));
+        deck = shuffle([
+            ...flags.slice(0, cardsPerType),
+            ...landmarks.slice(0, cardsPerType),
+            ...history.slice(0, cardsPerType)
+        ]);
+        totalRounds = deck.length;
+
+        players = [];
+        for (let i = 0; i < numPlayers; i++) {
+            // Each player gets their own timeline with one starter card
+            const starterCard = deck.shift();
+            players.push({
+                name: numPlayers === 1 ? 'You' : PLAYER_NAMES[i],
+                score: 1,
+                emoji: PLAYER_EMOJIS[i],
+                colorClass: `player-colors-${i}`,
+                timeline: [starterCard]
+            });
+        }
+        totalRounds = deck.length + numPlayers; // total cards in play
+        // Shuffle player order each game
+        for (let i = players.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [players[i], players[j]] = [players[j], players[i]];
+        }
+        currentPlayerIndex = 0;
+
+        renderScoreChart(players, currentPlayerIndex, 15, 'timeline');
+        updateUI();
+        renderTimeline();
+    }
+
+    const PLAYER_BG_COLORS = ['#ff6b6b','#51cf66','#339af0','#fcc419','#cc5de8','#ff922b'];
+
+    function renderScoreChart(playerList, activeIndex, maxScore, mode) {
+        const chart = document.getElementById('score-chart');
+        if (!playerList || playerList.length <= 1) { chart.style.display = 'none'; return; }
+        chart.style.display = 'flex';
+
+        const max = Math.max(maxScore, 1);
+        const maxBarH = 220; // px
+
+        chart.innerHTML = '';
+        playerList.forEach((p, i) => {
+            const barH = Math.max(8, (p.score / max) * maxBarH);
+            const isActive = i === activeIndex;
+            const col = document.createElement('div');
+            col.className = 'score-chart-col';
+
+            col.innerHTML = `
+                <div class="score-chart-score">${p.score}</div>
+                <div class="score-chart-bar ${isActive ? 'active-player' : ''}" style="height:${barH}px;background:${PLAYER_BG_COLORS[i]};"></div>
+                <div class="score-chart-emoji">${p.emoji}</div>
+                <div class="score-chart-name">${p.name}</div>
+            `;
+            chart.appendChild(col);
+        });
+    }
+
+    function hideScoreChart() {
+        document.getElementById('score-chart').style.display = 'none';
+    }
+
+    function currentPlayer() { return players[currentPlayerIndex]; }
+
+    function getCardsLeft() {
+        return deck.length;
+    }
+
+    function updateUI() {
+        const p = currentPlayer();
+        document.getElementById('score').textContent = `${p.score} cards`;
+        document.getElementById('round').textContent = deck.length;
+        document.getElementById('total-rounds').textContent = 'left';
+
+        const playerLabel = numPlayers > 1 ? `${p.emoji} ${p.name}'s turn! ` : '';
+        document.getElementById('instruction').textContent = `${playerLabel}Place it on your timeline!`;
+
+        const card = deck[0];
+        if (!card) return;
+
+        if (card.type === 'flag') {
+            // Flags: show ONLY the flag emoji, no name
+            document.getElementById('current-card').innerHTML = `
+                <div class="category">Flag</div>
+                <div class="flag-display">${card.emoji}</div>
+                <div class="hint">When was this country founded?</div>
+            `;
+        } else {
+            // Landmarks & History: show name + description
+            const label = card.type === 'landmark' ? 'Landmark' : 'History';
+            document.getElementById('current-card').innerHTML = `
+                <div class="category">${label}</div>
+                <div class="flag-display">${card.emoji}</div>
+                <div class="hint" style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:6px;">${card.name}</div>
+                <div class="description">${card.desc}</div>
+            `;
+        }
+    }
+
+    function renderTimeline() {
+        const el = document.getElementById('timeline');
+        el.innerHTML = '';
+        const tl = currentPlayer().timeline;
+        tl.sort((a, b) => a.year - b.year);
+
+        for (let i = 0; i <= tl.length; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'timeline-slot drop-zone';
+            drop.innerHTML = `<div class="drop-label">👇</div><div class="drop-text">here</div>`;
+            drop.dataset.index = i;
+            drop.addEventListener('click', () => placeCard(i));
+            el.appendChild(drop);
+
+            if (i < tl.length) {
+                const card = tl[i];
+                const placed = document.createElement('div');
+                placed.className = 'timeline-slot';
+                placed.innerHTML = `
+                    <div class="placed-card">
+                        <div class="card-emoji">${card.emoji}</div>
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-year">${formatYear(card.year)}</div>
+                    </div>
+                `;
+                el.appendChild(placed);
+            }
+        }
+    }
+
+    let stealCard = null;       // card available for stealing
+    let stealQueue = [];        // players who can attempt to steal
+    let stealActive = false;    // are we in steal phase?
+
+    function placeCard(index) {
+        if (deck.length === 0) return;
+
+        if (stealActive) {
+            // Steal attempt
+            handleStealAttempt(index);
+            return;
+        }
+
+        const card = deck.shift();
+        const p = currentPlayer();
+        const correct = isCorrectPlacement(card, index, p.timeline);
+
+        if (correct) {
+            p.timeline.push(card);
+            p.score = p.timeline.length;
+            showFeedback(true, card);
+            advanceTurn();
+            afterPlace();
+        } else {
+            // Check if other players can steal (multiplayer only)
+            if (numPlayers > 1) {
+                const stealers = players.filter((pl, i) => i !== currentPlayerIndex);
+                if (stealers.length > 0) {
+                    stealCard = card;
+                    stealQueue = stealers.map(pl => players.indexOf(pl));
+                    advanceTurn();
+                    startStealPhase();
+                    return;
+                }
+            }
+
+            showFeedback(false, card);
+            advanceTurn();
+            afterPlace();
+        }
+    }
+
+    function afterPlace() {
+        setTimeout(() => {
+            if (isGameOver()) {
+                endGame();
+            } else {
+                const maxTL = Math.max(...players.map(pl => pl.score));
+                renderScoreChart(players, currentPlayerIndex, Math.max(maxTL + 3, 5), 'timeline');
+                updateUI();
+                renderTimeline();
+            }
+        }, 1400);
+    }
+
+    function hideStealOverlay() {
+        document.getElementById('steal-overlay').style.display = 'none';
+        document.body.classList.remove('steal-active');
+    }
+
+    function startStealPhase() {
+        if (stealQueue.length === 0 || isGameOver()) {
+            // Nobody stole it — now reveal the answer
+            hideStealOverlay();
+            if (stealCard) showFeedback(false, stealCard);
+            stealActive = false;
+            stealCard = null;
+            setTimeout(() => {
+                const maxTL = Math.max(...players.map(pl => pl.score));
+                renderScoreChart(players, currentPlayerIndex, Math.max(maxTL + 3, 5), 'timeline');
+                updateUI();
+                renderTimeline();
+                if (isGameOver()) endGame();
+            }, 1400);
+            return;
+        }
+
+        stealActive = true;
+        document.body.classList.add('steal-active');
+        const stealerIndex = stealQueue[0];
+        currentPlayerIndex = stealerIndex;
+        const p = players[stealerIndex];
+
+        // Show steal overlay
+        const overlay = document.getElementById('steal-overlay');
+        overlay.style.display = 'flex';
+        document.getElementById('steal-info').innerHTML = `${p.emoji} <b>${p.name}</b> — place it or lose a card!`;
+        document.getElementById('steal-pass-btn').onclick = skipSteal;
+
+        // Show the card + the stealer's timeline
+        const card = stealCard;
+        document.getElementById('score-bar').style.display = 'flex';
+        document.getElementById('score').textContent = `${p.score} cards`;
+
+        document.getElementById('instruction').textContent = '';
+
+        if (card.type === 'flag') {
+            document.getElementById('current-card').innerHTML = `
+                <div class="flag-display">${card.emoji}</div>
+            `;
+        } else {
+            document.getElementById('current-card').innerHTML = `
+                <div class="flag-display">${card.emoji}</div>
+                <div class="hint" style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:6px;">${card.name}</div>
+                <div class="description">${card.desc}</div>
+            `;
+        }
+
+        const maxTL = Math.max(...players.map(pl => pl.score));
+        renderScoreChart(players, currentPlayerIndex, Math.max(maxTL + 3, 5), 'timeline');
+        renderTimeline();
+    }
+
+    function handleStealAttempt(index) {
+        const p = currentPlayer();
+        const correct = isCorrectPlacement(stealCard, index, p.timeline);
+
+        if (correct) {
+            p.timeline.push(stealCard);
+            p.score = p.timeline.length;
+            hideStealOverlay();
+            showFeedback(true, stealCard);
+            stealActive = false;
+            stealCard = null;
+            stealQueue = [];
+            advanceTurn();
+            afterPlace();
+        } else {
+            // Wrong steal = lose a card from your timeline
+            if (p.timeline.length > 1) {
+                p.timeline.pop();
+                p.score = p.timeline.length;
+            }
+            showFeedbackNoReveal();
+            stealQueue.shift();
+            setTimeout(() => startStealPhase(), 1200);
+        }
+    }
+
+    function skipSteal() {
+        stealQueue.shift();
+        startStealPhase();
+    }
+
+    function advanceTurn() {
+        if (numPlayers <= 1) return;
+        currentPlayerIndex = (currentPlayerIndex + 1) % numPlayers;
+    }
+
+    function isGameOver() {
+        return deck.length === 0;
+    }
+
+    function isCorrectPlacement(card, index, tl) {
+        const sorted = [...tl].sort((a, b) => a.year - b.year);
+        const before = index > 0 ? sorted[index - 1] : null;
+        const after = index < sorted.length ? sorted[index] : null;
+        return (!before || before.year <= card.year) && (!after || card.year <= after.year);
+    }
+
+    function showFeedback(correct, card) {
+        const fb = document.createElement('div');
+        fb.className = `feedback ${correct ? 'correct' : 'wrong'}`;
+        fb.innerHTML = `
+            <div class="fb-flag">${card.emoji}</div>
+            <div class="fb-name">${correct ? '✅' : '❌'} ${card.name}</div>
+            <div class="fb-year">${formatYear(card.year)}</div>
+        `;
+        document.body.appendChild(fb);
+        setTimeout(() => fb.remove(), 1400);
+    }
+
+    function showFeedbackNoReveal() {
+        const fb = document.createElement('div');
+        fb.className = 'feedback wrong';
+        fb.innerHTML = `<div style="font-size:3rem;">❌</div><div style="font-size:1.4rem;margin-top:4px;">Wrong! Others can steal...</div>`;
+        document.body.appendChild(fb);
+        setTimeout(() => fb.remove(), 1200);
+    }
+
+    function spawnConfetti() {
+        const flags = ALL_CARDS.filter(c => c.type === 'flag').map(c => c.emoji);
+        for (let i = 0; i < 35; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti';
+            c.textContent = flags[Math.floor(Math.random() * flags.length)];
+            c.style.left = Math.random() * 100 + 'vw';
+            c.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+            c.style.animationDelay = (Math.random() * 1) + 's';
+            document.body.appendChild(c);
+            setTimeout(() => c.remove(), 4000);
+        }
+    }
+
+    function endGame() {
+        hideAll();
+        document.getElementById('end-screen').style.display = 'flex';
+
+        spawnConfetti();
+
+        if (numPlayers === 1) {
+            const p = players[0];
+            document.getElementById('end-title').textContent = 'Nice job!';
+            document.getElementById('winner-banner').innerHTML = '';
+
+            let html = `<div class="scoreboard-card player-colors-0">
+                <div class="sb-name">Timeline</div>
+                <div class="sb-score">${p.score} cards</div>
+            </div>`;
+            document.getElementById('scoreboard').innerHTML = html;
+
+            let msg = '';
+            if (p.score >= 15) msg += "Incredible timeline!";
+            else if (p.score >= 10) msg += "Great knowledge!";
+            else if (p.score >= 5) msg += "Good effort!";
+            else msg += "Try again?";
+            document.getElementById('end-message').textContent = msg;
+        } else {
+            const sorted = [...players].sort((a, b) => b.score - a.score);
+            const winner = sorted[0];
+            document.getElementById('end-title').textContent = 'Game Over!';
+            document.getElementById('winner-banner').innerHTML = `<div class="winner-banner ${winner.colorClass}">${winner.emoji} ${winner.name} wins with ${winner.score} cards!</div>`;
+
+            let html = '';
+            sorted.forEach(p => {
+                html += `<div class="scoreboard-card ${p.colorClass}">
+                    <div class="sb-name">${p.emoji} ${p.name}</div>
+                    <div class="sb-score">${p.score} cards</div>
+                </div>`;
+            });
+            document.getElementById('scoreboard').innerHTML = html;
+            document.getElementById('end-message').textContent = 'Longest timeline wins! Play again?';
+        }
+    }
+    // ===========================
+    // MODE SWITCHING
+    // ===========================
+    let currentMode = 'timeline';
+
+    function hideAll() {
+        ['start-screen','game-area','end-screen','score-bar','player-tabs',
+         'quiz-start','quiz-area','quiz-end','score-chart','steal-overlay','quiz-steal-bar'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+        document.body.classList.remove('steal-active');
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.mode-tab').forEach((tab, i) => {
+            tab.classList.toggle('active', (i === 0 && mode === 'timeline') || (i === 1 && mode === 'quiz'));
+        });
+        document.body.classList.toggle('quiz-mode', mode === 'quiz');
+        hideAll();
+        if (mode === 'timeline') {
+            document.getElementById('start-screen').style.display = 'flex';
+        } else {
+            document.getElementById('quiz-start').style.display = 'flex';
+        }
+    }
+
+    // ===========================
+    // FLAG QUIZ MODE
+    // ===========================
+    let quizDeck = [];
+    let quizPlayers = [];
+    let quizNumPlayers = 1;
+    let quizSelectedPlayers = 1;
+    let quizCurrentPlayerIndex = 0;
+    let quizCurrentCard = null;
+    let quizLocked = false;
+    let quizRound = 0;
+    let quizTotalRounds = 20;
+    let quizStealActive = false;
+    let quizStealQueue = [];
+
+    const FLAG_CARDS = ALL_CARDS.filter(c => c.type === 'flag');
+    const ALL_COUNTRY_NAMES = FLAG_CARDS.map(c => c.name).sort();
+
+    // Build quiz player select buttons
+    (function initQuizPlayerSelect() {
+        const container = document.getElementById('quiz-player-buttons');
+        for (let i = 1; i <= 6; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'player-btn' + (i === 1 ? ' selected' : '');
+            btn.textContent = i;
+            btn.onclick = () => {
+                quizSelectedPlayers = i;
+                container.querySelectorAll('.player-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            };
+            container.appendChild(btn);
+        }
+    })();
+
+    function startQuiz() {
+        quizNumPlayers = quizSelectedPlayers;
+        hideAll();
+        document.getElementById('quiz-area').style.display = 'block';
+
+        quizDeck = shuffle([...FLAG_CARDS]);
+        quizTotalRounds = Math.min(20, quizDeck.length);
+        quizRound = 0;
+
+        quizPlayers = [];
+        for (let i = 0; i < quizNumPlayers; i++) {
+            quizPlayers.push({
+                name: quizNumPlayers === 1 ? 'You' : PLAYER_NAMES[i],
+                score: 0,
+                streak: 0,
+                bestStreak: 0,
+                emoji: PLAYER_EMOJIS[i],
+                colorClass: `player-colors-${i}`
+            });
+        }
+
+        // Shuffle player order
+        for (let i = quizPlayers.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [quizPlayers[i], quizPlayers[j]] = [quizPlayers[j], quizPlayers[i]];
+        }
+        quizCurrentPlayerIndex = 0;
+
+        initAutocomplete();
+        renderScoreChart(quizPlayers, quizCurrentPlayerIndex, quizTotalRounds, 'quiz');
+        nextQuizCard();
+    }
+
+    // Autocomplete setup
+    let acActiveIndex = -1;
+
+    function initAutocomplete() {
+        const input = document.getElementById('quiz-input');
+        const list = document.getElementById('autocomplete-list');
+
+        input.addEventListener('input', () => {
+            if (quizLocked) return;
+            const val = input.value.trim().toLowerCase();
+            list.innerHTML = '';
+            acActiveIndex = -1;
+            if (!val) { list.style.display = 'none'; return; }
+
+            const matches = ALL_COUNTRY_NAMES.filter(n => n.toLowerCase().includes(val));
+            if (matches.length === 0) { list.style.display = 'none'; return; }
+
+            list.style.display = 'block';
+            matches.forEach((name, i) => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                // Highlight matching part
+                const idx = name.toLowerCase().indexOf(val);
+                item.innerHTML = name.substring(0, idx) +
+                    '<span class="match">' + name.substring(idx, idx + val.length) + '</span>' +
+                    name.substring(idx + val.length);
+                item.addEventListener('click', () => submitQuizAnswer(name));
+                list.appendChild(item);
+            });
+        });
+
+        input.addEventListener('keydown', (e) => {
+            const items = list.querySelectorAll('.autocomplete-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                acActiveIndex = Math.min(acActiveIndex + 1, items.length - 1);
+                updateAcActive(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                acActiveIndex = Math.max(acActiveIndex - 1, 0);
+                updateAcActive(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (acActiveIndex >= 0 && items[acActiveIndex]) {
+                    const name = items[acActiveIndex].textContent;
+                    submitQuizAnswer(name);
+                } else if (items.length === 1) {
+                    submitQuizAnswer(items[0].textContent);
+                }
+            }
+        });
+
+        // Close list when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.quiz-input-wrap')) {
+                list.style.display = 'none';
+            }
+        });
+    }
+
+    function updateAcActive(items) {
+        items.forEach((item, i) => item.classList.toggle('active', i === acActiveIndex));
+        if (items[acActiveIndex]) items[acActiveIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    function nextQuizCard() {
+        if (quizRound >= quizTotalRounds || quizDeck.length === 0) {
+            endQuiz();
+            return;
+        }
+
+        quizCurrentCard = quizDeck.shift();
+        quizLocked = false;
+        quizRound++;
+
+        const p = quizPlayers[quizCurrentPlayerIndex];
+        const playerLabel = quizNumPlayers > 1 ? `${p.emoji} ${p.name}'s turn!` : '';
+        document.getElementById('quiz-instruction').textContent = playerLabel;
+
+        document.getElementById('quiz-card').innerHTML = `
+            <div class="quiz-flag">${quizCurrentCard.emoji}</div>
+        `;
+
+        const input = document.getElementById('quiz-input');
+        input.value = '';
+        input.style.borderColor = 'rgba(255,255,255,0.2)';
+        input.focus();
+        document.getElementById('autocomplete-list').style.display = 'none';
+        document.getElementById('quiz-round').textContent = quizRound;
+        document.getElementById('quiz-total').textContent = quizTotalRounds;
+
+        updateQuizStreak();
+        renderScoreChart(quizPlayers, quizCurrentPlayerIndex, quizTotalRounds, 'quiz');
+    }
+
+    function submitQuizAnswer(answer) {
+        if (quizLocked) return;
+
+        quizLocked = true;
+        const input = document.getElementById('quiz-input');
+        input.value = answer;
+        document.getElementById('autocomplete-list').style.display = 'none';
+
+        const p = quizPlayers[quizCurrentPlayerIndex];
+        const correct = answer === quizCurrentCard.name;
+
+        if (correct) {
+            p.score++;
+            p.streak++;
+            if (p.streak > p.bestStreak) p.bestStreak = p.streak;
+            input.style.borderColor = '#51cf66';
+            showFeedback(true, quizCurrentCard);
+
+            if (quizStealActive) {
+                quizStealActive = false;
+                quizStealQueue = [];
+                document.getElementById('quiz-steal-bar').style.display = 'none';
+            }
+
+            if (quizNumPlayers > 1) {
+                quizCurrentPlayerIndex = (quizCurrentPlayerIndex + 1) % quizNumPlayers;
+            }
+            renderScoreChart(quizPlayers, quizCurrentPlayerIndex, quizTotalRounds, 'quiz');
+            updateQuizStreak();
+            setTimeout(() => nextQuizCard(), 1400);
+        } else {
+            p.streak = 0;
+            input.style.borderColor = '#ff6b6b';
+
+            if (quizStealActive) {
+                // Failed steal — lose a point
+                if (p.score > 0) p.score--;
+                showFeedbackNoReveal();
+                quizStealQueue.shift();
+                renderScoreChart(quizPlayers, quizCurrentPlayerIndex, quizTotalRounds, 'quiz');
+                setTimeout(() => startQuizSteal(), 1200);
+            } else if (quizNumPlayers > 1) {
+                // Start steal phase
+                quizStealQueue = quizPlayers
+                    .map((pl, i) => i)
+                    .filter(i => i !== quizCurrentPlayerIndex);
+                startQuizSteal();
+            } else {
+                showFeedback(false, quizCurrentCard);
+                renderScoreChart(quizPlayers, quizCurrentPlayerIndex, quizTotalRounds, 'quiz');
+                updateQuizStreak();
+                setTimeout(() => nextQuizCard(), 1400);
+            }
+        }
+    }
+
+    function startQuizSteal() {
+        if (quizStealQueue.length === 0) {
+            // Nobody got it — reveal answer
+            quizStealActive = false;
+            document.getElementById('quiz-steal-bar').style.display = 'none';
+            showFeedback(false, quizCurrentCard);
+            if (quizNumPlayers > 1) {
+                quizCurrentPlayerIndex = (quizCurrentPlayerIndex + 1) % quizNumPlayers;
+            }
+            renderScoreChart(quizPlayers, quizCurrentPlayerIndex, quizTotalRounds, 'quiz');
+            updateQuizStreak();
+            setTimeout(() => nextQuizCard(), 1400);
+            return;
+        }
+
+        quizStealActive = true;
+        quizCurrentPlayerIndex = quizStealQueue[0];
+        const p = quizPlayers[quizCurrentPlayerIndex];
+        quizLocked = false;
+
+        // Show steal bar
+        const bar = document.getElementById('quiz-steal-bar');
+        bar.style.display = 'flex';
+        document.getElementById('quiz-steal-info').innerHTML = `${p.emoji} <b>${p.name}</b> — steal or lose a point!`;
+        document.getElementById('quiz-steal-pass').onclick = () => {
+            quizStealQueue.shift();
+            startQuizSteal();
+        };
+
+        document.getElementById('quiz-instruction').textContent = `${p.emoji} ${p.name}'s steal!`;
+        const input = document.getElementById('quiz-input');
+        input.value = '';
+        input.style.borderColor = 'rgba(255,255,255,0.2)';
+        input.focus();
+        document.getElementById('autocomplete-list').style.display = 'none';
+
+        renderScoreChart(quizPlayers, quizCurrentPlayerIndex, quizTotalRounds, 'quiz');
+    }
+
+    function skipQuizSteal() {
+        quizStealQueue.shift();
+        startQuizSteal();
+    }
+
+    function updateQuizStreak() {
+        const p = quizPlayers[quizCurrentPlayerIndex];
+        const streakText = document.getElementById('quiz-streak-text');
+        if (p.streak >= 10) streakText.textContent = '🔥🔥🔥 UNSTOPPABLE!';
+        else if (p.streak >= 5) streakText.textContent = '🔥🔥 ON FIRE!';
+        else if (p.streak >= 3) streakText.textContent = '🔥 HOT STREAK!';
+        else streakText.textContent = '';
+    }
+
+    function endQuiz() {
+        hideAll();
+        document.getElementById('quiz-end').style.display = 'flex';
+        spawnConfetti();
+
+        if (quizNumPlayers === 1) {
+            const p = quizPlayers[0];
+            document.getElementById('quiz-end-title').textContent = 'Quiz Complete!';
+            document.getElementById('quiz-winner-banner').innerHTML = '';
+            document.getElementById('quiz-scoreboard').innerHTML = `
+                <div class="scoreboard-card player-colors-0">
+                    <div class="sb-name">Score</div>
+                    <div class="sb-score">${p.score} / ${quizTotalRounds}</div>
+                    <div class="sb-lives">Best streak: ${p.bestStreak}</div>
+                </div>`;
+            const pct = Math.round((p.score / quizTotalRounds) * 100);
+            let msg = '';
+            if (pct === 100) msg = "Perfect! You know every flag!";
+            else if (pct >= 80) msg = "Amazing flag knowledge!";
+            else if (pct >= 50) msg = "Not bad! Keep practicing!";
+            else msg = "Flags are tricky! Try again?";
+            document.getElementById('quiz-end-message').textContent = msg;
+        } else {
+            const sorted = [...quizPlayers].sort((a, b) => b.score - a.score);
+            const winner = sorted[0];
+            document.getElementById('quiz-end-title').textContent = 'Quiz Complete!';
+            document.getElementById('quiz-winner-banner').innerHTML = `<div class="winner-banner ${winner.colorClass}">${winner.emoji} ${winner.name} wins!</div>`;
+
+            let html = '';
+            sorted.forEach(p => {
+                html += `<div class="scoreboard-card ${p.colorClass}">
+                    <div class="sb-name">${p.emoji} ${p.name}</div>
+                    <div class="sb-score">${p.score}</div>
+                    <div class="sb-lives">Best streak: ${p.bestStreak}</div>
+                </div>`;
+            });
+            document.getElementById('quiz-scoreboard').innerHTML = html;
+            document.getElementById('quiz-end-message').textContent = 'Great game! Ready for another round?';
+        }
+    }
+
+    </script>
+</body>
+</html>
