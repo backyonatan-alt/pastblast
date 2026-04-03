@@ -7,14 +7,43 @@ const game = require('./gameState');
 
 const app = express();
 const server = http.createServer(app);
+
+const ALLOWED_ORIGINS = process.env.PUBLIC_URL
+  ? [process.env.PUBLIC_URL, 'http://localhost:3000']
+  : ['http://localhost:3000', /\.railway\.app$/];
+
 const io = new Server(server, {
-  cors: { origin: '*' },
-  pingInterval: 5000,    // ping every 5s (default 25s)
-  pingTimeout: 10000,    // timeout after 10s (default 20s)
+  cors: { origin: ALLOWED_ORIGINS },
+  pingInterval: 5000,
+  pingTimeout: 10000,
+  maxHttpBufferSize: 10240, // 10KB max per message
+});
+
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; connect-src 'self' wss: ws:; font-src 'self' fonts.gstatic.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com; img-src 'self' api.qrserver.com data:");
+  next();
 });
 
 // Serve static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
+
+// Simple rate limiter for HTTP endpoints
+const httpRateLimit = {};
+app.use('/check-room', (req, res, next) => {
+  const ip = req.ip;
+  const now = Date.now();
+  if (!httpRateLimit[ip]) httpRateLimit[ip] = [];
+  httpRateLimit[ip] = httpRateLimit[ip].filter(t => now - t < 60000);
+  if (httpRateLimit[ip].length >= 30) {
+    return res.status(429).json({ error: 'Too many requests' });
+  }
+  httpRateLimit[ip].push(now);
+  next();
+});
 
 // API
 const { ALL_CARDS } = require('./questions');
@@ -237,11 +266,27 @@ function nextRoundOrEnd(room) {
 }
 
 // Socket.IO connection handling
+// Per-socket rate limiter
+io.use((socket, next) => {
+  socket._eventCount = 0;
+  socket._eventReset = setInterval(() => { socket._eventCount = 0; }, 1000);
+  socket.on('disconnect', () => clearInterval(socket._eventReset));
+  next();
+});
+
 io.on('connection', (socket) => {
   console.log(`Connected: ${socket.id}`);
 
+  // Rate limit: max 20 events per second per socket
+  socket.use((packet, next) => {
+    socket._eventCount++;
+    if (socket._eventCount > 20) return next(new Error('Rate limited'));
+    next();
+  });
+
   // HOST creates a room
   socket.on('create_room', (callback) => {
+    if (typeof callback !== 'function') return;
     const room = game.createRoom(socket.id);
     socket.join(room.code);
     console.log(`Room created: ${room.code} by ${socket.id}`);
@@ -250,7 +295,10 @@ io.on('connection', (socket) => {
   });
 
   // PLAYER joins a room
-  socket.on('join_room', ({ code, name }, callback) => {
+  socket.on('join_room', (data, callback) => {
+    if (!data || typeof data.code !== 'string' || typeof data.name !== 'string') return callback({ error: 'Invalid input' });
+    if (typeof callback !== 'function') return;
+    const { code, name } = data;
     const room = game.getRoom(code);
     if (!room) return callback({ error: 'Room not found' });
     if (room.phase !== 'lobby') {
@@ -284,6 +332,7 @@ io.on('connection', (socket) => {
     }
 
     const player = game.addPlayer(room, socket.id, name);
+    if (player === 'NAME_TAKEN') return callback({ error: 'Name already taken' });
     if (!player) return callback({ error: 'Room is full' });
 
     socket.join(code);
@@ -298,7 +347,9 @@ io.on('connection', (socket) => {
   });
 
   // HOST starts the game
-  socket.on('start_game', ({ mode }) => {
+  socket.on('start_game', (data) => {
+    if (!data || !['timeline', 'quiz'].includes(data.mode)) return;
+    const { mode } = data;
     const room = game.getRoomBySocket(socket.id);
     if (!room || room.hostSocketId !== socket.id) return;
     if (room.players.length === 0) return;
@@ -314,7 +365,9 @@ io.on('connection', (socket) => {
   });
 
   // PLAYER places a card (timeline mode)
-  socket.on('place_card', ({ slotIndex }) => {
+  socket.on('place_card', (data) => {
+    if (!data || typeof data.slotIndex !== 'number' || !Number.isInteger(data.slotIndex)) return;
+    const { slotIndex } = data;
     const room = game.getRoomBySocket(socket.id);
     if (!room) return;
     const activePlayer = room.players[room.currentPlayerIndex];
@@ -361,7 +414,9 @@ io.on('connection', (socket) => {
   });
 
   // PLAYER submits quiz answer
-  socket.on('submit_answer', ({ answer }) => {
+  socket.on('submit_answer', (data) => {
+    if (!data || typeof data.answer !== 'string') return;
+    const { answer } = data;
     const room = game.getRoomBySocket(socket.id);
     if (!room) return;
     const activePlayer = room.players[room.currentPlayerIndex];
@@ -438,9 +493,10 @@ io.on('connection', (socket) => {
     const room = game.getRoomBySocket(socket.id);
     if (!room) return;
     if (room.hostSocketId === socket.id) {
-      // Host left — end the room
+      // Host left — end the room and clean up
       clearTimer(room);
       io.to(room.code).emit('host_left');
+      game.deleteRoom(room.code);
     } else {
       game.removePlayer(room, socket.id);
       io.to(room.hostSocketId).emit('player_joined', {

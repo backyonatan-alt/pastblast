@@ -61,13 +61,22 @@ function getRoomBySocket(socketId) {
   return null;
 }
 
+function sanitize(str) {
+  return str.replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function addPlayer(room, socketId, name) {
   if (room.players.length >= C.MAX_PLAYERS) return null;
   if (room.phase !== 'lobby') return null;
+  if (!name || typeof name !== 'string') return null;
 
-  // Prevent duplicate names — update socket ID if same name reconnects
-  const existing = room.players.find(p => p.name === name.substring(0, 12));
+  const cleanName = sanitize(name.trim().substring(0, 12));
+  if (cleanName.length === 0) return null;
+
+  // Prevent duplicate names — only allow reuse if disconnected
+  const existing = room.players.find(p => p.name === cleanName);
   if (existing) {
+    if (existing.connected) return 'NAME_TAKEN';
     existing.id = socketId;
     existing.connected = true;
     return existing;
@@ -78,7 +87,7 @@ function addPlayer(room, socketId, name) {
 
   const player = {
     id: socketId,
-    name: name.substring(0, 12),
+    name: cleanName,
     score: 0,
     timeline: [],
     streak: 0,
@@ -280,6 +289,12 @@ function getPlayerTimeline(room, playerIndex) {
   return [...tl].sort((a, b) => a.year - b.year);
 }
 
+function deleteRoom(code) {
+  const room = rooms.get(code);
+  if (room && room.timer) clearInterval(room.timer);
+  rooms.delete(code);
+}
+
 function cleanupStaleRooms() {
   const now = Date.now();
   for (const [code, room] of rooms) {
@@ -311,5 +326,6 @@ module.exports = {
   advanceTurn,
   getScores,
   getPlayerTimeline,
+  deleteRoom,
   formatYear: (y) => y < 0 ? `${Math.abs(y)} BCE` : `${y}`,
 };
