@@ -39,6 +39,15 @@ function startGame() {
 
 function playAgain() {
     socket.emit('play_again');
+    // Fallback: if server doesn't respond in 2s, force back to lobby
+    setTimeout(() => {
+        if (document.getElementById('end-screen').style.display !== 'none') {
+            document.getElementById('game-screen').style.display = 'none';
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('lobby').style.display = 'flex';
+            document.getElementById('score-chart').innerHTML = '';
+        }
+    }, 2000);
 }
 
 // --- LOBBY EVENTS ---

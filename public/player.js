@@ -141,11 +141,52 @@ socket.on('steal_result', ({ correct, stealerName, scores }) => {
 socket.on('game_over', ({ scores, winner }) => {
     showScreen('end-screen');
     const myScore = scores.find(s => s.name === playerName);
-    const myRank = scores.indexOf(myScore) + 1;
+    const myRank = myScore ? scores.indexOf(myScore) + 1 : scores.length;
     const medals = ['🥇', '🥈', '🥉'];
-    document.getElementById('end-rank').textContent = medals[myRank - 1] || `#${myRank}`;
-    document.getElementById('end-score').textContent = myScore ? `${myScore.score} points` : '';
+    const isWinner = winner && winner.name === playerName;
+
+    let html = '';
+    if (isWinner) {
+        html += `<div class="end-rank">🏆</div>`;
+        html += `<div style="font-size:1.6rem;font-weight:700;color:#ffd43b;margin-bottom:8px;">YOU WON!</div>`;
+    } else {
+        html += `<div class="end-rank">${medals[myRank - 1] || '#' + myRank}</div>`;
+    }
+    html += `<div style="font-size:1.2rem;margin-bottom:4px;">${playerName}</div>`;
+    html += `<div class="end-score">${myScore ? myScore.score : 0} points</div>`;
+
+    // Leaderboard
+    html += `<div style="margin-top:20px;width:100%;max-width:280px;">`;
+    scores.forEach((s, i) => {
+        const me = s.name === playerName;
+        html += `<div style="display:flex;justify-content:space-between;padding:6px 12px;border-radius:10px;margin:4px 0;background:${me ? 'rgba(255,212,59,0.15)' : 'rgba(255,255,255,0.05)'};font-weight:${me ? '700' : '400'};">
+            <span>${medals[i] || '#' + (i + 1)} ${s.name}</span>
+            <span style="color:#ffd43b;">${s.score}</span>
+        </div>`;
+    });
+    html += `</div>`;
+
+    document.getElementById('end-screen').innerHTML = `
+        <h1 class="p-logo">GAME OVER</h1>
+        ${html}
+    `;
+
+    spawnConfetti();
 });
+
+function spawnConfetti() {
+    const emojis = ['🎉', '🎊', '⭐', '🏆', '✨', '🎈', '🇺🇸', '🇫🇷', '🇧🇷', '🇩🇪', '🇯🇵'];
+    for (let i = 0; i < 25; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+        c.style.animationDelay = (Math.random() * 1) + 's';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4000);
+    }
+}
 
 socket.on('back_to_lobby', () => {
     showScreen('waiting');
@@ -153,6 +194,23 @@ socket.on('back_to_lobby', () => {
 
 socket.on('host_left', () => {
     showScreen('host-left');
+});
+
+// Detect disconnect faster
+socket.on('disconnect', () => {
+    // If we lose connection, show a reconnecting state
+    document.getElementById('wait-msg').textContent = 'Reconnecting…';
+});
+
+socket.on('connect', () => {
+    // On reconnect, rejoin the room
+    if (roomCode && playerName) {
+        socket.emit('join_room', { code: roomCode, name: playerName }, (response) => {
+            if (response.error && response.error !== 'Game already started') {
+                showScreen('host-left');
+            }
+        });
+    }
 });
 
 // --- RENDER HELPERS ---

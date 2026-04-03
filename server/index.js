@@ -9,6 +9,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' },
+  pingInterval: 5000,    // ping every 5s (default 25s)
+  pingTimeout: 10000,    // timeout after 10s (default 20s)
 });
 
 // Serve static files
@@ -127,18 +129,7 @@ function handleTimeout(room) {
     if (room.players.length > 1) {
       game.startSteal(room);
       // Don't reveal answer yet
-      io.to(room.code).emit('round_result', {
-        correct: false,
-        playerName: activePlayer.name,
-        reveal: false,
-        scores: game.getScores(room),
-      });
-      io.to(room.hostSocketId).emit('round_result', {
-        correct: false,
-        playerName: activePlayer.name,
-        reveal: false,
-        scores: game.getScores(room),
-      });
+      broadcastWrongNoReveal(room, activePlayer.name);
       setTimeout(() => sendStealRound(room), 1000);
     } else {
       broadcastResult(room, false, card, activePlayer.name);
@@ -156,8 +147,26 @@ function broadcastResult(room, correct, card, playerName) {
     reveal: true,
     scores: game.getScores(room),
   };
-  io.to(room.code).emit('round_result', data);
+  // Send to host
   io.to(room.hostSocketId).emit('round_result', data);
+  // Send directly to EACH player (not just room broadcast — ensures delivery)
+  room.players.forEach(p => {
+    if (p.connected) io.to(p.id).emit('round_result', data);
+  });
+}
+
+// Non-revealing result (wrong, steal incoming) — same direct delivery
+function broadcastWrongNoReveal(room, playerName) {
+  const data = {
+    correct: false,
+    playerName,
+    reveal: false,
+    scores: game.getScores(room),
+  };
+  io.to(room.hostSocketId).emit('round_result', data);
+  room.players.forEach(p => {
+    if (p.connected) io.to(p.id).emit('round_result', data);
+  });
 }
 
 function sendStealRound(room) {
@@ -323,8 +332,7 @@ io.on('connection', (socket) => {
       } else {
         if (room.players.length > 1) {
           game.startSteal(room);
-          io.to(room.code).emit('round_result', { correct: false, playerName: activePlayer.name, reveal: false, scores: game.getScores(room) });
-          io.to(room.hostSocketId).emit('round_result', { correct: false, playerName: activePlayer.name, reveal: false, scores: game.getScores(room) });
+          broadcastWrongNoReveal(room, activePlayer.name);
           setTimeout(() => sendStealRound(room), 1500);
         } else {
           broadcastResult(room, false, room.currentCard, activePlayer.name);
@@ -369,8 +377,7 @@ io.on('connection', (socket) => {
       } else {
         if (room.players.length > 1) {
           game.startSteal(room);
-          io.to(room.code).emit('round_result', { correct: false, playerName: activePlayer.name, reveal: false, scores: game.getScores(room) });
-          io.to(room.hostSocketId).emit('round_result', { correct: false, playerName: activePlayer.name, reveal: false, scores: game.getScores(room) });
+          broadcastWrongNoReveal(room, activePlayer.name);
           setTimeout(() => sendStealRound(room), 1500);
         } else {
           broadcastResult(room, false, room.currentCard, activePlayer.name);
