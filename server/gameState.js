@@ -327,5 +327,6 @@ module.exports = {
   getScores,
   getPlayerTimeline,
   deleteRoom,
+  getRoomCount: () => rooms.size,
   formatYear: (y) => y < 0 ? `${Math.abs(y)} BCE` : `${y}`,
 };

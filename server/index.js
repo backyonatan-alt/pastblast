@@ -54,6 +54,15 @@ app.get('/check-room/:code', (req, res) => {
   res.json({ exists: !!room });
 });
 
+// Analytics — structured JSON logs (pipe to PostHog/Mixpanel later)
+function track(event, props = {}) {
+  console.log(JSON.stringify({
+    event,
+    timestamp: new Date().toISOString(),
+    ...props,
+  }));
+}
+
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
@@ -63,6 +72,23 @@ app.get('/host', (req, res) => {
 });
 app.get('/play', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'player.html'));
+});
+
+// Live stats endpoint
+let totalGamesStarted = 0;
+let totalGamesCompleted = 0;
+let totalPlayersJoined = 0;
+app.get('/stats', (req, res) => {
+  const { ALL_CARDS } = require('./questions');
+  const activeRooms = game.getRoomCount ? game.getRoomCount() : '?';
+  res.json({
+    activeRooms,
+    totalGamesStarted,
+    totalGamesCompleted,
+    totalPlayersJoined,
+    totalCards: ALL_CARDS.length,
+    uptime: Math.floor(process.uptime()) + 's',
+  });
 });
 
 // Timer management
@@ -257,6 +283,16 @@ function nextRoundOrEnd(room) {
     const scores = game.getScores(room);
     const sorted = [...scores].sort((a, b) => b.score - a.score);
     const data = { scores: sorted, winner: sorted[0], mode: room.mode };
+    totalGamesCompleted++;
+    track('game_completed', {
+      room: room.code,
+      mode: room.mode,
+      players: room.players.length,
+      rounds: room.round,
+      winner: sorted[0] ? sorted[0].name : null,
+      topScore: sorted[0] ? sorted[0].score : 0,
+      scores: sorted.map(s => ({ name: s.name, score: s.score })),
+    });
     io.to(room.code).emit('game_over', data);
     io.to(room.hostSocketId).emit('game_over', data);
     clearTimer(room);
@@ -289,7 +325,7 @@ io.on('connection', (socket) => {
     if (typeof callback !== 'function') return;
     const room = game.createRoom(socket.id);
     socket.join(room.code);
-    console.log(`Room created: ${room.code} by ${socket.id}`);
+    track('room_created', { code: room.code });
     // Send server URL if configured, otherwise client uses window.location.origin
     callback({ code: room.code, serverUrl: process.env.PUBLIC_URL || null });
   });
@@ -336,7 +372,8 @@ io.on('connection', (socket) => {
     if (!player) return callback({ error: 'Room is full' });
 
     socket.join(code);
-    console.log(`${name} joined room ${code}`);
+    totalPlayersJoined++;
+    track('player_joined', { room: code, name: player.name, playerCount: room.players.length });
 
     // Notify host and all players
     io.to(room.hostSocketId).emit('player_joined', {
@@ -355,6 +392,8 @@ io.on('connection', (socket) => {
     if (room.players.length === 0) return;
 
     game.startGame(room, mode);
+    totalGamesStarted++;
+    track('game_started', { room: room.code, mode, players: room.players.length, rounds: room.totalRounds });
     const startData = { mode, totalRounds: room.totalRounds, scores: game.getScores(room) };
     io.to(room.code).emit('game_started', startData);
     io.to(room.hostSocketId).emit('game_started', startData);
