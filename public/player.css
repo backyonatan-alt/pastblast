@@ -1,3 +1,14 @@
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
 .p-screen {
     display: flex;
     flex-direction: column;
@@ -7,6 +18,7 @@
     padding: 20px 16px;
     padding-top: 28px;
     text-align: center;
+    touch-action: manipulation;
 }
 
 .p-logo {
@@ -169,7 +181,7 @@
 }
 
 .p-input::placeholder { color: rgba(255,255,255,0.3); }
-.p-input:focus { outline: none; border-color: #ffd43b; }
+.p-input:focus { outline: none; border-color: #ffd43b; box-shadow: 0 0 0 3px rgba(255,212,59,0.3); }
 
 .p-autocomplete {
     position: absolute;
@@ -236,6 +248,9 @@
     max-width: 200px;
 }
 .btn-pass:hover { background: rgba(255,107,107,0.15); }
+.btn-pass:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+.tl-drop:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 
 /* Result */
 .result-icon { font-size: 4.5rem; margin-bottom: 8px; }

@@ -27,6 +27,7 @@ body {
 
 .btn:hover { transform: translateY(-2px); }
 .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #e8590c; }
+.btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 
 .btn:disabled {
     opacity: 0.25;
@@ -65,7 +66,7 @@ body {
 .score-chart-bar {
     width: 38px;
     border-radius: 8px 8px 4px 4px;
-    transition: height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     min-height: 6px;
 }
 
@@ -183,4 +184,17 @@ body {
 .steal-bar .steal-pass:hover {
     background: rgba(0,0,0,0.45);
     border-color: #fff;
+}
+.steal-bar .steal-pass:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .feedback { animation: none; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    .confetti { animation: none; display: none; }
+    .score-chart-bar { transition: none; }
+    .timer-bar-fill { transition: none; }
+    .btn { transition: none; }
 }

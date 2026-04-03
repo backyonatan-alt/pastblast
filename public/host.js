@@ -18,11 +18,11 @@ socket.emit('create_room', (response) => {
 
 function generateQR(url) {
     const qrBox = document.getElementById('qr-code');
-    // Use a simple QR code via an image API
     const img = document.createElement('img');
     img.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}&bgcolor=1b1464&color=ffffff`;
-    img.style.width = '180px';
-    img.style.height = '180px';
+    img.width = 180;
+    img.height = 180;
+    img.alt = 'QR code to join the game';
     img.style.borderRadius = '12px';
     qrBox.appendChild(img);
 }

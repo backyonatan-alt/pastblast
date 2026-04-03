@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1b1464">
     <title>PastBlast</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="shared.css">
@@ -68,7 +69,7 @@
         }
 
         .join-section input::placeholder { color: rgba(255,255,255,0.3); }
-        .join-section input:focus { outline: none; border-color: #ffd43b; }
+        .join-section input:focus { outline: none; border-color: #ffd43b; box-shadow: 0 0 0 3px rgba(255,212,59,0.3); }
 
         .join-section input.code-input {
             text-transform: uppercase;
@@ -104,15 +105,15 @@
 </head>
 <body>
     <div class="home-screen">
-        <h1>PASTBLAST</h1>
+        <h1 style="text-wrap:balance">PASTBLAST</h1>
         <p class="tagline">History, flags & landmarks party game</p>
 
         <div class="home-actions">
             <div class="join-section">
-                <label>Game Code</label>
-                <input type="text" id="code-input" class="code-input" placeholder="ABCD" maxlength="4" autocomplete="off">
-                <label>Your Name</label>
-                <input type="text" id="name-input" placeholder="Enter your name" maxlength="12" autocomplete="off">
+                <label for="code-input">Game Code</label>
+                <input type="text" id="code-input" name="gameCode" class="code-input" placeholder="ABCD" maxlength="4" autocomplete="off" spellcheck="false">
+                <label for="name-input">Your Name</label>
+                <input type="text" id="name-input" name="playerName" placeholder="Enter your name…" maxlength="12" autocomplete="off">
                 <button class="btn" id="join-btn" onclick="joinGame()">JOIN GAME</button>
                 <div class="error-msg" id="error-msg"></div>
             </div>
