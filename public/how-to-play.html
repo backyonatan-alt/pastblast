@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1b1464">
+    <title>PastBlast — How to Play</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <style>
+        .page {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #ffd43b;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        h1 {
+            font-size: min(2.8rem, 10vw);
+            color: #ffd43b;
+            text-shadow: 3px 3px 0 #e8590c;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.5);
+            font-size: 1.1rem;
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            color: #ffd43b;
+            margin: 32px 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid rgba(255,212,59,0.2);
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: #fff;
+            margin: 20px 0 8px;
+        }
+
+        p, li {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        ul, ol {
+            padding-left: 24px;
+            margin: 10px 0;
+        }
+
+        li { margin-bottom: 8px; }
+
+        .emoji-step {
+            font-size: 1.5rem;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .game-mode-card {
+            background: rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin: 16px 0;
+        }
+
+        .game-mode-card h3 {
+            margin-top: 0;
+            font-size: 1.3rem;
+        }
+
+        .mode-emoji {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .tip-box {
+            background: rgba(255,212,59,0.08);
+            border-left: 4px solid #ffd43b;
+            border-radius: 0 12px 12px 0;
+            padding: 14px 18px;
+            margin: 16px 0;
+        }
+
+        .tip-box strong { color: #ffd43b; }
+
+        .settings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+        }
+
+        .settings-table th {
+            text-align: left;
+            color: #ffd43b;
+            padding: 8px 12px;
+            border-bottom: 2px solid rgba(255,212,59,0.2);
+            font-size: 0.95rem;
+        }
+
+        .settings-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.75);
+            font-size: 0.95rem;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 20px;
+        }
+
+        .cta-section p {
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+        }
+
+        .cta-section .btn {
+            display: inline-block;
+            width: auto;
+            padding: 14px 36px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <a href="/" class="back-link">← Back to PastBlast</a>
+
+        <h1>How to Play</h1>
+        <p class="subtitle">Everything you need to know to get started</p>
+
+        <!-- OVERVIEW -->
+        <h2>What is PastBlast?</h2>
+        <p>PastBlast is a multiplayer party game about history, landmarks, and world flags. One person hosts the game on a big screen, and everyone else plays on their phones. Think Kahoot, but for geography and history nerds!</p>
+
+        <!-- SETUP -->
+        <h2>Setting Up a Game</h2>
+        <ol>
+            <li><span class="emoji-step">💻</span> <strong>The host</strong> opens PastBlast on a laptop or TV and taps <strong>"Host a New Game"</strong></li>
+            <li><span class="emoji-step">📱</span> <strong>Players</strong> open PastBlast on their phones and enter the <strong>4-letter room code</strong> shown on the host screen (or scan the QR code)</li>
+            <li><span class="emoji-step">✏️</span> Each player enters their <strong>name</strong> and taps <strong>"Join Game"</strong></li>
+            <li><span class="emoji-step">⚙️</span> The host picks the <strong>game mode</strong>, <strong>difficulty</strong>, and <strong>game length</strong></li>
+            <li><span class="emoji-step">🚀</span> The host taps <strong>"Start Game"</strong> and you're off!</li>
+        </ol>
+
+        <!-- GAME MODES -->
+        <h2>Game Modes</h2>
+
+        <div class="game-mode-card">
+            <div class="mode-emoji">🏛️</div>
+            <h3>Timeline</h3>
+            <p>A card appears with a historical event or famous landmark. You need to place it in the <strong>correct position</strong> on your timeline — is it earlier or later than the cards already there?</p>
+            <ul>
+                <li>Each player builds their <strong>own timeline</strong></li>
+                <li>Correct placement = the card stays on your timeline (+1 point)</li>
+                <li>Wrong placement = the card is discarded</li>
+                <li>The player with the <strong>most cards</strong> on their timeline wins!</li>
+            </ul>
+            <div class="tip-box">
+                <strong>Tip:</strong> Look at the "Earlier" and "Later" labels on your phone to understand the direction. Tap a "Place here" button — don't try to drag!
+            </div>
+        </div>
+
+        <div class="game-mode-card">
+            <div class="mode-emoji">🏁</div>
+            <h3>Flag Quiz</h3>
+            <p>A flag appears on screen. You need to <strong>identify the country</strong> by typing its name. Start typing and pick from the autocomplete suggestions.</p>
+            <ul>
+                <li>Correct answer = +1 point</li>
+                <li>You have <strong>30 seconds</strong> per flag</li>
+                <li>The player with the <strong>most correct answers</strong> wins!</li>
+            </ul>
+            <div class="tip-box">
+                <strong>Tip:</strong> You don't need to spell the full name — just start typing and the suggestions will appear. For example, type "uni" to find United States or United Kingdom.
+            </div>
+        </div>
+
+        <!-- STEALING -->
+        <h2>Stealing</h2>
+        <p>When a player gets an answer <strong>wrong</strong>, other players get a chance to <strong>steal</strong>!</p>
+        <ol>
+            <li>The wrong answer is <strong>not revealed</strong> yet</li>
+            <li>Each other player gets a turn to answer (with a 15-second timer)</li>
+            <li>If you steal correctly: <strong>+1 point</strong> for you!</li>
+            <li>If you steal wrong: <strong>-1 point</strong> penalty</li>
+            <li>You can always tap <strong>"Pass"</strong> to skip without risk</li>
+            <li>The answer is revealed after everyone has had their chance</li>
+        </ol>
+        <div class="tip-box">
+            <strong>Tip:</strong> Stealing is risky! Only go for it if you're confident. Passing is always safe.
+        </div>
+
+        <!-- SETTINGS -->
+        <h2>Game Settings</h2>
+
+        <h3>Difficulty</h3>
+        <table class="settings-table">
+            <tr><th>Level</th><th>What you'll get</th></tr>
+            <tr><td>Easy</td><td>Well-known events and landmarks (mostly post-1900)</td></tr>
+            <tr><td>Medium</td><td>Mix of well-known and moderately known (post-1500)</td></tr>
+            <tr><td>Hard</td><td>Everything — including ancient history and obscure events</td></tr>
+        </table>
+
+        <h3>Game Length</h3>
+        <table class="settings-table">
+            <tr><th>Length</th><th>Rounds</th><th>Best for</th></tr>
+            <tr><td>Short</td><td>10 rounds</td><td>Quick games, large groups</td></tr>
+            <tr><td>Medium</td><td>20 rounds</td><td>Standard game</td></tr>
+            <tr><td>Long</td><td>30 rounds</td><td>Deep games, small groups</td></tr>
+        </table>
+
+        <!-- LOCAL PLAY -->
+        <h2>Playing Without Phones</h2>
+        <p>Don't have phones? No problem! Click <strong>"Play Locally"</strong> on the host screen to play on a single device. Pick the number of players (1-6), and take turns on the same screen.</p>
+
+        <!-- TIPS -->
+        <h2>Pro Tips</h2>
+        <ul>
+            <li><strong>Project it!</strong> The host screen is designed for big screens and projectors — perfect for classrooms or parties</li>
+            <li><strong>QR code</strong> makes joining fast — no need to type the URL</li>
+            <li><strong>Mix it up</strong> — play a round of Timeline then switch to Flag Quiz</li>
+            <li><strong>Use stealing strategically</strong> — if you know the answer, steal it! If not, pass and save your points</li>
+            <li><strong>Hard mode</strong> is really hard — try Easy first if you're new to history</li>
+        </ul>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <p>Ready to play?</p>
+            <a href="/" class="btn">Start a Game</a>
+        </div>
+    </div>
+
+    <script src="analytics.js"></script>
+</body>
+</html>
