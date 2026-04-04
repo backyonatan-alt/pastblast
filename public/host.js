@@ -189,7 +189,7 @@ socket.on('round_result', ({ correct, card, playerName, reveal, scores }) => {
 socket.on('steal_start', ({ stealerName, stealerEmoji, card, scores }) => {
     document.getElementById('steal-bar').style.display = 'flex';
     document.getElementById('steal-info').innerHTML = `${stealerEmoji} <b>${esc(stealerName)}</b> ${t('can_steal')}`;
-    document.getElementById('turn-label').innerHTML = `${stealerEmoji} ${esc(stealerName)}'s steal`;
+    document.getElementById('turn-label').innerHTML = isRTL() ? `${t('steal')} ${esc(stealerName)} ${stealerEmoji}` : `${stealerEmoji} ${esc(stealerName)} — ${t('steal')}`;
     timerMax = 15;
     if (scores) renderScores(scores, stealerName);
 });

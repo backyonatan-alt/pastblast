@@ -159,21 +159,20 @@
             const name = document.getElementById('name-input').value.trim();
             const err = document.getElementById('error-msg');
 
-            if (!code || code.length !== 4) { err.textContent = 'Enter a 4-letter code'; return; }
-            if (!name) { err.textContent = 'Enter your name'; return; }
+            if (!code || code.length !== 4) { err.textContent = t('enter_4_letter'); return; }
+            if (!name) { err.textContent = t('enter_name_err'); return; }
             err.textContent = '';
 
-            // Just validate code exists via API, then redirect — player.html does the actual join
             fetch(`/check-room/${code}`)
                 .then(r => r.json())
                 .then(data => {
                     if (data.exists) {
                         window.location.href = `/play?code=${code}&name=${encodeURIComponent(name)}`;
                     } else {
-                        err.textContent = 'Room not found';
+                        err.textContent = t('room_not_found');
                     }
                 })
-                .catch(() => { err.textContent = 'Connection error'; });
+                .catch(() => { err.textContent = t('connection_error'); });
         }
 
         function hostGame() {

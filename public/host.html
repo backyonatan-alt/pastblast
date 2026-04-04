@@ -44,8 +44,8 @@
             </div>
         </div>
         <button class="btn start-btn" id="start-btn" disabled onclick="startGame()" data-i18n="start_game">START GAME</button>
-        <div class="or-divider">— or —</div>
-        <a href="/local.html" class="btn btn-local">PLAY LOCALLY (no phones)</a>
+        <div class="or-divider" data-i18n="or">— or —</div>
+        <a href="/local.html" class="btn btn-local" data-i18n="play_locally">PLAY LOCALLY (no phones)</a>
     </div>
 
     <!-- GAME -->
@@ -62,7 +62,7 @@
         </div>
 
         <div class="steal-bar" id="steal-bar">
-            <div class="steal-title">STEAL!</div>
+            <div class="steal-title" data-i18n="steal">STEAL!</div>
             <div class="steal-info" id="steal-info"></div>
         </div>
 
@@ -76,10 +76,10 @@
 
     <!-- GAME OVER -->
     <div id="end-screen" class="screen" style="display:none;">
-        <h1 class="logo">GAME OVER!</h1>
+        <h1 class="logo" data-i18n="game_over">GAME OVER!</h1>
         <div id="winner-banner" class="winner-banner"></div>
         <div class="scoreboard" id="scoreboard"></div>
-        <button class="btn play-again-btn" onclick="playAgain()">PLAY AGAIN</button>
+        <button class="btn play-again-btn" onclick="playAgain()" data-i18n="play_again">PLAY AGAIN</button>
     </div>
 
     <script src="i18n.js"></script>

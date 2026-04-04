@@ -196,12 +196,12 @@ socket.on('game_over', ({ scores, winner }) => {
     let html = '';
     if (isWinner) {
         html += `<div class="end-rank">🏆</div>`;
-        html += `<div style="font-size:1.6rem;font-weight:700;color:#ffd43b;margin-bottom:8px;">YOU WON!</div>`;
+        html += `<div style="font-size:1.6rem;font-weight:700;color:#ffd43b;margin-bottom:8px;">${t('you_won')}</div>`;
     } else {
         html += `<div class="end-rank">${medals[myRank - 1] || '#' + myRank}</div>`;
     }
     html += `<div style="font-size:1.2rem;margin-bottom:4px;">${esc(playerName)}</div>`;
-    html += `<div class="end-score">${myScore ? myScore.score : 0} points</div>`;
+    html += `<div class="end-score">${myScore ? myScore.score : 0} ${t('points')}</div>`;
 
     // Leaderboard
     html += `<div style="margin-top:20px;width:100%;max-width:280px;">`;
@@ -409,40 +409,51 @@ function setupAutocomplete(inputId, listId, isSteal) {
         list.innerHTML = '';
         if (!val) { list.style.display = 'none'; return; }
 
-        const matches = allCountryNames.filter(n => n.toLowerCase().includes(val));
+        // Search both English and Hebrew names
+        let matches;
+        if (countryData.length > 0) {
+            matches = countryData.filter(c =>
+                c.name.toLowerCase().includes(val) ||
+                (c.name_he && c.name_he.includes(val))
+            ).map(c => c.name);
+        } else {
+            matches = allCountryNames.filter(n => n.toLowerCase().includes(val));
+        }
         if (matches.length === 0) { list.style.display = 'none'; return; }
 
-        // Sort: prefix matches first, then by length (shorter = better), then contains
+        // Sort: prefix matches first, then by length
         matches.sort((a, b) => {
             const aStarts = a.toLowerCase().startsWith(val) ? 0 : 1;
             const bStarts = b.toLowerCase().startsWith(val) ? 0 : 1;
             if (aStarts !== bStarts) return aStarts - bStarts;
-            if (aStarts === 0) return a.length - b.length; // shorter prefix match first
+            if (aStarts === 0) return a.length - b.length;
             return a.localeCompare(b);
         });
 
         list.style.display = 'block';
         matches.slice(0, 8).forEach(name => {
+            const displayName = getCountryDisplayName(name);
             const item = document.createElement('div');
             item.className = 'ac-item';
-            const idx = name.toLowerCase().indexOf(val);
-            item.innerHTML = name.substring(0, idx) +
-                '<span class="match">' + name.substring(idx, idx + val.length) + '</span>' +
-                name.substring(idx + val.length);
+            // Show display name (Hebrew if RTL, English otherwise)
+            const searchName = displayName.toLowerCase();
+            const idx = searchName.indexOf(val);
+            if (idx >= 0) {
+                item.innerHTML = esc(displayName.substring(0, idx)) +
+                    '<span class="match">' + esc(displayName.substring(idx, idx + val.length)) + '</span>' +
+                    esc(displayName.substring(idx + val.length));
+            } else {
+                item.textContent = displayName;
+            }
             item.addEventListener('click', () => {
                 if (submitLock) return;
                 submitLock = true;
-                newInput.value = name;
+                newInput.value = displayName;
                 list.style.display = 'none';
-                if (isSteal) {
-                    socket.emit('submit_answer', { answer: name });
-                    showScreen('wait-screen');
-                    document.getElementById('wait-msg').textContent = 'Stealing…';
-                } else {
-                    socket.emit('submit_answer', { answer: name });
-                    showScreen('wait-screen');
-                    document.getElementById('wait-msg').textContent = 'Submitted!';
-                }
+                // Always submit English name to server
+                socket.emit('submit_answer', { answer: name });
+                showScreen('wait-screen');
+                document.getElementById('wait-msg').textContent = isSteal ? t('stealing') : t('submitted');
             });
             list.appendChild(item);
         });
