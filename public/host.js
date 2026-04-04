@@ -110,37 +110,42 @@ socket.on('game_started', ({ mode, scores }) => {
 // --- NEW ROUND ---
 socket.on('new_round', ({ card, round, activePlayerName, activePlayerEmoji, scores, mode, deckLeft }) => {
     document.getElementById('steal-bar').style.display = 'none';
-    document.getElementById('turn-label').innerHTML = `${activePlayerEmoji} ${esc(activePlayerName)}'s turn`;
-    document.getElementById('round-label').textContent = `${deckLeft} cards left`;
+    document.getElementById('turn-label').innerHTML = isRTL() ? `${t('turn_suffix')} ${esc(activePlayerName)} ${activePlayerEmoji}` : `${activePlayerEmoji} ${esc(activePlayerName)}${t('turn_suffix')}`;
+    document.getElementById('round-label').textContent = `${deckLeft} ${t('cards_left')}`;
 
     renderCard(card, mode);
     renderScores(scores, activePlayerName);
     timerMax = 30;
 });
 
+function cardName(card) {
+    return (isRTL() && card.name_he) ? card.name_he : card.name;
+}
+function cardDesc(card) {
+    return (isRTL() && card.desc_he) ? card.desc_he : (card.desc || '');
+}
+
 function renderCard(card, mode) {
     const area = document.getElementById('card-area');
     if (card.type === 'flag' && mode === 'timeline') {
-        // Flag in timeline mode: show only emoji + hint
         area.innerHTML = `
             <div class="host-card">
                 <div class="card-emoji">${card.emoji}</div>
-                <div class="card-desc">When was this country founded?</div>
+                <div class="card-desc">${t('when_founded')}</div>
             </div>`;
     } else if (card.type === 'flag') {
-        // Flag in quiz mode: just the flag
         area.innerHTML = `
             <div class="host-card">
                 <div class="card-emoji">${card.emoji}</div>
             </div>`;
     } else {
-        const label = card.type === 'landmark' ? 'Landmark' : 'History';
+        const label = card.type === 'landmark' ? t('landmark') : t('history');
         area.innerHTML = `
             <div class="host-card">
                 <div class="card-category">${label}</div>
                 <div class="card-emoji">${card.emoji}</div>
-                <div class="card-title">${card.name}</div>
-                <div class="card-desc">${card.desc || ''}</div>
+                <div class="card-title">${cardName(card)}</div>
+                <div class="card-desc">${cardDesc(card)}</div>
             </div>`;
     }
 }
@@ -168,14 +173,14 @@ socket.on('round_result', ({ correct, card, playerName, reveal, scores }) => {
         const showYear = currentMode === 'timeline';
         document.getElementById('card-area').innerHTML = `
             <div class="host-card" style="border-color:${resultColor};">
-                <div style="font-size:1.2rem;color:${resultColor};font-weight:700;margin-bottom:8px;">${resultIcon} ${correct ? esc(playerName) + ' got it right!' : 'The answer was:'}</div>
+                <div style="font-size:1.2rem;color:${resultColor};font-weight:700;margin-bottom:8px;">${resultIcon} ${correct ? esc(playerName) + ' ' + t('got_it_right') : t('the_answer_was')}</div>
                 <div class="card-emoji">${card.emoji}</div>
-                <div class="card-title">${esc(card.name)}</div>
+                <div class="card-title">${esc(cardName(card))}</div>
                 ${showYear ? `<div style="font-size:2.5rem;font-weight:900;color:#ffd43b;margin-top:8px;">${yearText}</div>` : ''}
             </div>`;
         document.getElementById('turn-label').innerHTML = '';
     } else if (!correct && playerName) {
-        document.getElementById('turn-label').innerHTML = `${esc(playerName)} got it wrong…`;
+        document.getElementById('turn-label').innerHTML = `${esc(playerName)} ${t('got_it_wrong')}`;
     }
     if (scores) renderScores(scores);
 });
@@ -183,7 +188,7 @@ socket.on('round_result', ({ correct, card, playerName, reveal, scores }) => {
 // --- STEAL ---
 socket.on('steal_start', ({ stealerName, stealerEmoji, card, scores }) => {
     document.getElementById('steal-bar').style.display = 'flex';
-    document.getElementById('steal-info').innerHTML = `${stealerEmoji} <b>${esc(stealerName)}</b> can steal!`;
+    document.getElementById('steal-info').innerHTML = `${stealerEmoji} <b>${esc(stealerName)}</b> ${t('can_steal')}`;
     document.getElementById('turn-label').innerHTML = `${stealerEmoji} ${esc(stealerName)}'s steal`;
     timerMax = 15;
     if (scores) renderScores(scores, stealerName);
@@ -191,7 +196,7 @@ socket.on('steal_start', ({ stealerName, stealerEmoji, card, scores }) => {
 
 socket.on('steal_result', ({ correct, stealerName, scores }) => {
     if (!correct) {
-        document.getElementById('turn-label').innerHTML = `${esc(stealerName)} missed!`;
+        document.getElementById('turn-label').innerHTML = `${esc(stealerName)} ${t('missed')}`;
     }
     if (scores) renderScores(scores);
 });
@@ -202,7 +207,7 @@ socket.on('game_over', ({ scores, winner, mode }) => {
     document.getElementById('game-screen').style.display = 'none';
     document.getElementById('end-screen').style.display = 'flex';
 
-    document.getElementById('winner-banner').innerHTML = `${winner.emoji} ${esc(winner.name)} wins with ${winner.score}!`;
+    document.getElementById('winner-banner').innerHTML = `${winner.emoji} ${esc(winner.name)} ${t('wins_with')} ${winner.score}!`;
 
     const sb = document.getElementById('scoreboard');
     sb.innerHTML = '';
@@ -258,7 +263,7 @@ function showFeedback(correct, card) {
     const showYear = currentMode === 'timeline';
     fb.innerHTML = `
         <div class="fb-flag">${card.emoji}</div>
-        <div class="fb-name">${correct ? '✅' : '❌'} ${card.name}</div>
+        <div class="fb-name">${correct ? '✅' : '❌'} ${cardName(card)}</div>
         ${showYear ? `<div class="fb-year">${yearText}</div>` : ''}
     `;
     document.body.appendChild(fb);

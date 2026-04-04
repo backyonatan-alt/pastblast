@@ -1,0 +1,81 @@
+/* RTL overrides for Hebrew */
+[dir="rtl"] {
+    text-align: right;
+}
+
+[dir="rtl"] .score-chart {
+    direction: ltr; /* Keep chart left-to-right */
+}
+
+[dir="rtl"] .p-timeline {
+    direction: ltr; /* Timeline stays top-down regardless */
+}
+
+[dir="rtl"] .tl-card {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .tl-card .tl-info {
+    text-align: right;
+}
+
+[dir="rtl"] .p-autocomplete {
+    text-align: right;
+}
+
+[dir="rtl"] .ac-item {
+    text-align: right;
+}
+
+[dir="rtl"] .game-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .game-header-right {
+    text-align: left;
+}
+
+[dir="rtl"] .steal-bar {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .mode-buttons {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .player-chip {
+    direction: rtl;
+}
+
+[dir="rtl"] .scoreboard {
+    direction: rtl;
+}
+
+[dir="rtl"] .sb-card {
+    direction: rtl;
+}
+
+/* Language switcher */
+.lang-switcher {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.lang-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Fredoka', sans-serif;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.lang-btn:hover { border-color: rgba(255,255,255,0.3); color: #fff; }
+.lang-btn.active { border-color: #ffd43b; color: #ffd43b; }
+.lang-btn:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }

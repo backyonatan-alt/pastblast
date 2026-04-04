@@ -16,11 +16,31 @@ let allCountryNames = [];
 let resultLock = false; // prevent wait screen from overriding result
 let submitLock = false; // prevent double-submit on rapid tap
 
-// Load country names for autocomplete
-fetch('/countries')
-    .then(r => r.json())
-    .then(names => { allCountryNames = names; })
-    .catch(() => {});
+// Load country names for autocomplete (with Hebrew support)
+let countryData = []; // [{name, name_he}]
+function loadCountries() {
+    const lang = typeof getLang === 'function' ? getLang() : 'en';
+    fetch(`/countries?lang=he`)
+        .then(r => r.json())
+        .then(data => {
+            if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
+                countryData = data;
+                allCountryNames = data.map(c => c.name).sort();
+            } else {
+                allCountryNames = data;
+            }
+        })
+        .catch(() => {});
+}
+loadCountries();
+
+function getCountryDisplayName(englishName) {
+    if (typeof isRTL === 'function' && isRTL()) {
+        const entry = countryData.find(c => c.name === englishName);
+        return entry && entry.name_he ? entry.name_he : englishName;
+    }
+    return englishName;
+}
 
 let hasJoined = false;
 
@@ -124,7 +144,7 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
     if (reveal && card) {
         document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
         const yearPart = currentMode === 'timeline' ? `<br>${formatYear(card.year)}` : '';
-        document.getElementById('result-text').innerHTML = `${card.emoji} ${card.name}${yearPart}`;
+        document.getElementById('result-text').innerHTML = `${card.emoji} ${cardName(card)}${yearPart}`;
     } else if (pName) {
         document.getElementById('result-icon').textContent = '❌';
         document.getElementById('result-text').textContent = `${pName} got it wrong...`;
@@ -243,19 +263,26 @@ socket.on('connect', () => {
 });
 
 // --- RENDER HELPERS ---
+function cardName(card) {
+    return (typeof isRTL === 'function' && isRTL() && card.name_he) ? card.name_he : card.name;
+}
+function cardDesc(card) {
+    return (typeof isRTL === 'function' && isRTL() && card.desc_he) ? card.desc_he : (card.desc || '');
+}
+
 function renderPlayerCard(containerId, card) {
     const el = document.getElementById(containerId);
     if (card.type === 'flag' && currentMode === 'timeline') {
-        el.innerHTML = `<div class="card-emoji">${card.emoji}</div><div class="card-desc">When was this country founded?</div>`;
+        el.innerHTML = `<div class="card-emoji">${card.emoji}</div><div class="card-desc">${t('when_founded')}</div>`;
     } else if (card.type === 'flag') {
         el.innerHTML = `<div class="card-emoji">${card.emoji}</div>`;
     } else {
-        const label = card.type === 'landmark' ? 'Landmark' : 'History';
+        const label = card.type === 'landmark' ? t('landmark') : t('history');
         el.innerHTML = `
             <div class="card-category">${label}</div>
             <div class="card-emoji">${card.emoji}</div>
-            <div class="card-title">${card.name}</div>
-            <div class="card-desc">${card.desc || ''}</div>`;
+            <div class="card-title">${cardName(card)}</div>
+            <div class="card-desc">${cardDesc(card)}</div>`;
     }
 }
 
@@ -265,14 +292,14 @@ function renderPlayerTimeline(timeline) {
     const sorted = [...timeline].sort((a, b) => a.year - b.year);
 
     // Direction label at top
-    el.innerHTML = '<div class="tl-direction-label">↑ Earlier</div>';
+    el.innerHTML = `<div class="tl-direction-label">${t('earlier')}</div>`;
 
     for (let i = 0; i <= sorted.length; i++) {
         const drop = document.createElement('div');
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.textContent = 'Place here';
+        dropBtn.textContent = t('place_here');
         dropBtn.addEventListener('click', () => {
             if (submitLock) return;
             submitLock = true;
@@ -291,7 +318,7 @@ function renderPlayerTimeline(timeline) {
                 <div class="tl-card">
                     <div class="tl-emoji">${card.emoji}</div>
                     <div class="tl-info">
-                        <div class="tl-name">${card.name}</div>
+                        <div class="tl-name">${cardName(card)}</div>
                         <div class="tl-year">${formatYear(card.year)}</div>
                     </div>
                 </div>`;
@@ -302,14 +329,14 @@ function renderPlayerTimeline(timeline) {
     // Direction label at bottom
     const laterLabel = document.createElement('div');
     laterLabel.className = 'tl-direction-label';
-    laterLabel.textContent = '↓ Later';
+    laterLabel.textContent = t('later');
     el.appendChild(laterLabel);
 }
 
 function renderStealTimeline(timeline, card) {
     const el = document.getElementById('steal-timeline');
     if (!el) return;
-    el.innerHTML = '<div class="tl-direction-label">↑ Earlier</div>';
+    el.innerHTML = `<div class="tl-direction-label">${t('earlier')}</div>`;
     el.className = 'p-timeline';
     const sorted = [...timeline].sort((a, b) => a.year - b.year);
 
@@ -318,7 +345,7 @@ function renderStealTimeline(timeline, card) {
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.textContent = 'Place here';
+        dropBtn.textContent = t('place_here');
         dropBtn.addEventListener('click', () => {
             if (submitLock) return;
             submitLock = true;
@@ -337,7 +364,7 @@ function renderStealTimeline(timeline, card) {
                 <div class="tl-card">
                     <div class="tl-emoji">${c.emoji}</div>
                     <div class="tl-info">
-                        <div class="tl-name">${c.name}</div>
+                        <div class="tl-name">${cardName(c)}</div>
                         <div class="tl-year">${formatYear(c.year)}</div>
                     </div>
                 </div>`;

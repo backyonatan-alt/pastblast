@@ -8,20 +8,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="player.css">
+    <link rel="stylesheet" href="rtl.css">
 </head>
 <body>
     <!-- WAITING IN LOBBY -->
     <div id="waiting" class="p-screen">
         <h1 class="p-logo">PASTBLAST</h1>
         <div class="player-name" id="my-name"></div>
-        <div class="waiting-msg">Waiting for host to start...</div>
+        <div class="waiting-msg" data-i18n="waiting_host">Waiting for host to start…</div>
     </div>
 
     <!-- YOUR TURN — TIMELINE -->
     <div id="turn-timeline" class="p-screen" style="display:none;">
         <div class="p-timer-bar"><div class="p-timer-fill" id="tl-timer-fill"></div></div>
         <div class="p-card" id="tl-card"></div>
-        <div class="p-instruction" aria-live="polite">Tap a button to place the card</div>
+        <div class="p-instruction" aria-live="polite" data-i18n="tap_to_place">Tap a button to place the card</div>
         <div class="p-timeline" id="tl-timeline"></div>
     </div>
 
@@ -46,11 +47,11 @@
     <!-- STEAL TURN -->
     <div id="steal-screen" class="p-screen" style="display:none;">
         <div class="p-timer-bar"><div class="p-timer-fill" id="steal-timer-fill"></div></div>
-        <div class="steal-banner">STEAL!</div>
-        <div class="steal-warning">Wrong = lose a point!</div>
+        <div class="steal-banner" data-i18n="steal">STEAL!</div>
+        <div class="steal-warning" data-i18n="wrong_lose_point">Wrong = lose a point!</div>
         <div class="p-card" id="steal-card"></div>
         <div id="steal-input-area"></div>
-        <button class="btn btn-pass" onclick="passSteal()">PASS</button>
+        <button class="btn btn-pass" onclick="passSteal()" data-i18n="pass">PASS</button>
     </div>
 
     <!-- STEAL WAIT -->
@@ -79,6 +80,7 @@
         <a href="/" class="btn" style="max-width:200px;margin-top:20px;display:inline-block;">Back Home</a>
     </div>
 
+    <script src="i18n.js"></script>
     <script src="analytics.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="player.js"></script>

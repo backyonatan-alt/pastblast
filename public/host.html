@@ -8,41 +8,42 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="host.css">
+    <link rel="stylesheet" href="rtl.css">
 </head>
 <body>
     <!-- LOBBY -->
     <div id="lobby" class="screen">
         <h1 class="logo">PASTBLAST</h1>
-        <p class="sub">Join at <span id="join-url"></span></p>
+        <p class="sub"><span data-i18n="join_at">Join at</span> <span id="join-url"></span></p>
         <div class="code-display" id="room-code">...</div>
         <div id="qr-code" class="qr-box"></div>
         <div class="players-list" id="players-list">
-            <p class="waiting-text">Waiting for players...</p>
+            <p class="waiting-text" data-i18n="waiting_players">Waiting for players…</p>
         </div>
         <div class="mode-select" role="group" aria-label="Game Mode">
-            <span>Game Mode</span>
+            <span data-i18n="game_mode">Game Mode</span>
             <div class="mode-buttons">
-                <button class="mode-btn active" id="mode-timeline" onclick="selectMode('timeline')">Timeline</button>
-                <button class="mode-btn" id="mode-quiz" onclick="selectMode('quiz')">Flag Quiz</button>
+                <button class="mode-btn active" id="mode-timeline" onclick="selectMode('timeline')" data-i18n="timeline">Timeline</button>
+                <button class="mode-btn" id="mode-quiz" onclick="selectMode('quiz')" data-i18n="flag_quiz">Flag Quiz</button>
             </div>
         </div>
         <div class="mode-select" role="group" aria-label="Difficulty">
-            <span>Difficulty</span>
+            <span data-i18n="difficulty">Difficulty</span>
             <div class="mode-buttons">
-                <button class="mode-btn" id="diff-1" onclick="selectDifficulty(1)">Easy</button>
-                <button class="mode-btn active" id="diff-2" onclick="selectDifficulty(2)">Medium</button>
-                <button class="mode-btn" id="diff-3" onclick="selectDifficulty(3)">Hard</button>
+                <button class="mode-btn" id="diff-1" onclick="selectDifficulty(1)" data-i18n="easy">Easy</button>
+                <button class="mode-btn active" id="diff-2" onclick="selectDifficulty(2)" data-i18n="medium">Medium</button>
+                <button class="mode-btn" id="diff-3" onclick="selectDifficulty(3)" data-i18n="hard">Hard</button>
             </div>
         </div>
         <div class="mode-select" role="group" aria-label="Game Length">
-            <span>Game Length</span>
+            <span data-i18n="game_length">Game Length</span>
             <div class="mode-buttons">
-                <button class="mode-btn" id="len-short" onclick="selectLength('short')">Short</button>
-                <button class="mode-btn active" id="len-medium" onclick="selectLength('medium')">Medium</button>
-                <button class="mode-btn" id="len-long" onclick="selectLength('long')">Long</button>
+                <button class="mode-btn" id="len-short" onclick="selectLength('short')" data-i18n="short">Short</button>
+                <button class="mode-btn active" id="len-medium" onclick="selectLength('medium')" data-i18n="medium">Medium</button>
+                <button class="mode-btn" id="len-long" onclick="selectLength('long')" data-i18n="long">Long</button>
             </div>
         </div>
-        <button class="btn start-btn" id="start-btn" disabled onclick="startGame()">START GAME</button>
+        <button class="btn start-btn" id="start-btn" disabled onclick="startGame()" data-i18n="start_game">START GAME</button>
         <div class="or-divider">— or —</div>
         <a href="/local.html" class="btn btn-local">PLAY LOCALLY (no phones)</a>
     </div>
@@ -81,6 +82,7 @@
         <button class="btn play-again-btn" onclick="playAgain()">PLAY AGAIN</button>
     </div>
 
+    <script src="i18n.js"></script>
     <script src="analytics.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="host.js"></script>

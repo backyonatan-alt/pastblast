@@ -7,6 +7,7 @@
     <title>PastBlast</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="rtl.css">
     <style>
         .home-screen {
             display: flex;
@@ -105,28 +106,46 @@
 </head>
 <body>
     <div class="home-screen">
-        <h1 style="text-wrap:balance">PASTBLAST</h1>
-        <p class="tagline">History, flags & landmarks party game</p>
+        <div class="lang-switcher">
+            <button class="lang-btn" onclick="switchLang('en')" id="lang-en">English</button>
+            <button class="lang-btn" onclick="switchLang('he')" id="lang-he">עברית</button>
+        </div>
+        <h1 style="text-wrap:balance" data-i18n="app_name">PASTBLAST</h1>
+        <p class="tagline" data-i18n="tagline">History, flags & landmarks party game</p>
 
         <div class="home-actions">
             <div class="join-section">
-                <label for="code-input">Game Code</label>
+                <label for="code-input" data-i18n="game_code">Game Code</label>
                 <input type="text" id="code-input" name="gameCode" class="code-input" placeholder="ABCD" maxlength="4" autocomplete="off" spellcheck="false">
-                <label for="name-input">Your Name</label>
-                <input type="text" id="name-input" name="playerName" placeholder="Enter your name…" maxlength="12" autocomplete="off">
-                <button class="btn" id="join-btn" onclick="joinGame()">JOIN GAME</button>
+                <label for="name-input" data-i18n="your_name">Your Name</label>
+                <input type="text" id="name-input" name="playerName" data-i18n="enter_name" placeholder="Enter your name…" maxlength="12" autocomplete="off">
+                <button class="btn" id="join-btn" onclick="joinGame()" data-i18n="join_game">JOIN GAME</button>
                 <div class="error-msg" id="error-msg" aria-live="polite" role="alert"></div>
             </div>
 
-            <div class="or-divider">— or —</div>
+            <div class="or-divider" data-i18n="or">— or —</div>
 
-            <button class="btn btn-host" onclick="hostGame()">HOST A NEW GAME</button>
+            <button class="btn btn-host" onclick="hostGame()" data-i18n="host_new">HOST A NEW GAME</button>
 
-            <a href="/how-to-play.html" style="display:block;text-align:center;margin-top:20px;color:rgba(255,255,255,0.5);font-size:0.95rem;text-decoration:none;">How to play?</a>
+            <a href="/how-to-play.html" style="display:block;text-align:center;margin-top:20px;color:rgba(255,255,255,0.5);font-size:0.95rem;text-decoration:none;" data-i18n="how_to_play">How to play?</a>
         </div>
     </div>
 
+    <script src="i18n.js"></script>
     <script src="analytics.js"></script>
+    <script>
+        function switchLang(lang) {
+            setLanguage(lang).then(() => {
+                document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+                document.getElementById('lang-he').classList.toggle('active', lang === 'he');
+            });
+        }
+        // Set active button on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const lang = localStorage.getItem('pb_lang') || 'en';
+            document.getElementById('lang-' + lang).classList.add('active');
+        });
+    </script>
     <script>
         // Pre-fill code from URL
         const params = new URLSearchParams(window.location.search);

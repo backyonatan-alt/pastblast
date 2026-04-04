@@ -48,7 +48,17 @@ app.use('/check-room', (req, res, next) => {
 // API
 const { ALL_CARDS } = require('./questions');
 const countryNames = ALL_CARDS.filter(c => c.type === 'flag').map(c => c.name).sort();
-app.get('/countries', (req, res) => res.json(countryNames));
+app.get('/countries', (req, res) => {
+  const lang = req.query.lang;
+  if (lang === 'he') {
+    const heNames = ALL_CARDS.filter(c => c.type === 'flag').map(c => ({
+      name: c.name,
+      name_he: c.name_he || c.name,
+    })).sort((a, b) => a.name.localeCompare(b.name));
+    return res.json(heNames);
+  }
+  res.json(countryNames);
+});
 app.get('/check-room/:code', (req, res) => {
   const room = game.getRoom(req.params.code.toUpperCase());
   res.json({ exists: !!room });
