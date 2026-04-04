@@ -258,7 +258,7 @@ function showFeedback(correct, card) {
         <div class="fb-year">${yearText}</div>
     `;
     document.body.appendChild(fb);
-    setTimeout(() => fb.remove(), 1500);
+    setTimeout(() => fb.remove(), 3200);
 }
 
 function spawnConfetti() {
