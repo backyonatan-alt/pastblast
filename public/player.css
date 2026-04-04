@@ -97,25 +97,11 @@
     max-width: 320px;
     padding: 0 0 20px;
     gap: 0;
-    position: relative;
     overflow-y: auto;
     max-height: 55vh;
 }
 
-.p-timeline::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: rgba(255,255,255,0.1);
-    transform: translateX(-50%);
-}
-
 .tl-slot {
-    z-index: 1;
-    position: relative;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -123,36 +109,35 @@
 
 .tl-drop {
     width: 85%;
-    padding: 14px 12px;
-    border: 2px solid #ffd43b;
-    border-radius: 14px;
-    background: rgba(255,212,59,0.08);
+    padding: 12px 16px;
+    border: none;
+    border-radius: 12px;
+    background: #2a2470;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: #ffd43b;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    margin: 5px 0;
+    margin: 4px 0;
     font-weight: 700;
-    min-height: 48px;
+    min-height: 46px;
     transition: background-color 0.15s, transform 0.1s;
 }
 
 .tl-drop:active {
-    background: rgba(255,212,59,0.3);
+    background: #3d35a0;
     transform: scale(1.03);
-    border-color: #fff;
 }
 
 .tl-direction-label {
-    font-size: 0.7rem;
-    color: rgba(255,255,255,0.35);
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.4);
     text-transform: uppercase;
-    letter-spacing: 2px;
-    padding: 4px 0;
+    letter-spacing: 3px;
+    padding: 6px 0 2px;
+    font-weight: 700;
 }
 
 .tl-card {

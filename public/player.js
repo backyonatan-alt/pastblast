@@ -264,26 +264,14 @@ function renderPlayerTimeline(timeline) {
     const sorted = [...timeline].sort((a, b) => a.year - b.year);
 
     // Direction label at top
-    el.innerHTML = '<div class="tl-direction-label">Earlier</div>';
+    el.innerHTML = '<div class="tl-direction-label">↑ Earlier</div>';
 
     for (let i = 0; i <= sorted.length; i++) {
-        // Build button label with context
-        let label;
-        if (sorted.length === 0) {
-            label = 'Tap to place here';
-        } else if (i === 0) {
-            label = `Before ${formatYear(sorted[0].year)}`;
-        } else if (i === sorted.length) {
-            label = `After ${formatYear(sorted[sorted.length - 1].year)}`;
-        } else {
-            label = `Between ${formatYear(sorted[i - 1].year)} and ${formatYear(sorted[i].year)}`;
-        }
-
         const drop = document.createElement('div');
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.textContent = label;
+        dropBtn.textContent = 'Place here';
         dropBtn.addEventListener('click', () => {
             if (submitLock) return;
             submitLock = true;
@@ -313,29 +301,23 @@ function renderPlayerTimeline(timeline) {
     // Direction label at bottom
     const laterLabel = document.createElement('div');
     laterLabel.className = 'tl-direction-label';
-    laterLabel.textContent = 'Later';
+    laterLabel.textContent = '↓ Later';
     el.appendChild(laterLabel);
 }
 
 function renderStealTimeline(timeline, card) {
     const el = document.getElementById('steal-timeline');
     if (!el) return;
-    el.innerHTML = '<div class="tl-direction-label">Earlier</div>';
+    el.innerHTML = '<div class="tl-direction-label">↑ Earlier</div>';
     el.className = 'p-timeline';
     const sorted = [...timeline].sort((a, b) => a.year - b.year);
 
     for (let i = 0; i <= sorted.length; i++) {
-        let label;
-        if (sorted.length === 0) { label = 'Tap to place here'; }
-        else if (i === 0) { label = `Before ${formatYear(sorted[0].year)}`; }
-        else if (i === sorted.length) { label = `After ${formatYear(sorted[sorted.length - 1].year)}`; }
-        else { label = `Between ${formatYear(sorted[i - 1].year)} and ${formatYear(sorted[i].year)}`; }
-
         const drop = document.createElement('div');
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.textContent = label;
+        dropBtn.textContent = 'Place here';
         dropBtn.addEventListener('click', () => {
             if (submitLock) return;
             submitLock = true;
