@@ -159,8 +159,19 @@ socket.on('timer_tick', ({ secondsLeft }) => {
 socket.on('round_result', ({ correct, card, playerName, reveal, scores }) => {
     if (reveal && card) {
         showFeedback(correct, card);
+        // Show the answer on the host card area so everyone can see
+        const yearText = card.year < 0 ? `${Math.abs(card.year)} BCE` : `${card.year}`;
+        const resultColor = correct ? '#51cf66' : '#ff6b6b';
+        const resultIcon = correct ? '✅' : '❌';
+        document.getElementById('card-area').innerHTML = `
+            <div class="host-card" style="border-color:${resultColor};">
+                <div style="font-size:1.2rem;color:${resultColor};font-weight:700;margin-bottom:8px;">${resultIcon} ${correct ? esc(playerName) + ' got it right!' : 'The answer was:'}</div>
+                <div class="card-emoji">${card.emoji}</div>
+                <div class="card-title">${esc(card.name)}</div>
+                <div style="font-size:2.5rem;font-weight:900;color:#ffd43b;margin-top:8px;">${yearText}</div>
+            </div>`;
+        document.getElementById('turn-label').innerHTML = '';
     } else if (!correct && playerName) {
-        // Wrong but no reveal (steal incoming)
         document.getElementById('turn-label').innerHTML = `${esc(playerName)} got it wrong…`;
     }
     if (scores) renderScores(scores);
