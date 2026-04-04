@@ -117,21 +117,24 @@ function reconnectPlayer(room, name, newSocketId) {
   return null;
 }
 
-function startGame(room, mode) {
+function startGame(room, mode, difficulty, length) {
   room.mode = mode;
   room.phase = 'playing';
   room.round = 0;
 
+  // Determine round count from length
+  const roundCounts = { short: 10, medium: 20, long: 30 };
+  const targetRounds = roundCounts[length] || 20;
+
+  // Difficulty filter: easy=1 only, medium=1+2, hard=1+2+3
+  const maxDiff = difficulty || 2;
+  const diffFilter = (c) => !c.difficulty || c.difficulty <= maxDiff;
+
   if (mode === 'timeline') {
-    const flags = shuffle(ALL_CARDS.filter(c => c.type === 'flag'));
-    const landmarks = shuffle(ALL_CARDS.filter(c => c.type === 'landmark'));
-    const history = shuffle(ALL_CARDS.filter(c => c.type === 'history'));
-    const n = C.TIMELINE_CARDS_PER_TYPE;
-    room.deck = shuffle([
-      ...flags.slice(0, n),
-      ...landmarks.slice(0, n),
-      ...history.slice(0, n),
-    ]);
+    // Timeline mode: landmarks + history only (no flags)
+    const landmarks = shuffle(ALL_CARDS.filter(c => c.type === 'landmark' && diffFilter(c)));
+    const history = shuffle(ALL_CARDS.filter(c => c.type === 'history' && diffFilter(c)));
+    room.deck = shuffle([...landmarks, ...history]).slice(0, targetRounds + room.players.length);
 
     // Give each player a starter card
     room.players.forEach(p => {
@@ -140,8 +143,8 @@ function startGame(room, mode) {
     });
     room.totalRounds = room.deck.length;
   } else {
-    room.deck = shuffle([...ALL_CARDS.filter(c => c.type === 'flag')]);
-    room.deck = room.deck.slice(0, C.QUIZ_ROUNDS);
+    room.deck = shuffle(ALL_CARDS.filter(c => c.type === 'flag'));
+    room.deck = room.deck.slice(0, targetRounds);
     room.totalRounds = room.deck.length;
     room.players.forEach(p => {
       p.score = 0;

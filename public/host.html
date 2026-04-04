@@ -26,6 +26,22 @@
                 <button class="mode-btn" id="mode-quiz" onclick="selectMode('quiz')">Flag Quiz</button>
             </div>
         </div>
+        <div class="mode-select" role="group" aria-label="Difficulty">
+            <span>Difficulty</span>
+            <div class="mode-buttons">
+                <button class="mode-btn" id="diff-1" onclick="selectDifficulty(1)">Easy</button>
+                <button class="mode-btn active" id="diff-2" onclick="selectDifficulty(2)">Medium</button>
+                <button class="mode-btn" id="diff-3" onclick="selectDifficulty(3)">Hard</button>
+            </div>
+        </div>
+        <div class="mode-select" role="group" aria-label="Game Length">
+            <span>Game Length</span>
+            <div class="mode-buttons">
+                <button class="mode-btn" id="len-short" onclick="selectLength('short')">Short</button>
+                <button class="mode-btn active" id="len-medium" onclick="selectLength('medium')">Medium</button>
+                <button class="mode-btn" id="len-long" onclick="selectLength('long')">Long</button>
+            </div>
+        </div>
         <button class="btn start-btn" id="start-btn" disabled onclick="startGame()">START GAME</button>
         <div class="or-divider">— or —</div>
         <a href="/local.html" class="btn btn-local">PLAY LOCALLY (no phones)</a>

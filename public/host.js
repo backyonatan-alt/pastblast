@@ -1,6 +1,8 @@
 const socket = io();
 let roomCode = '';
 let selectedMode = 'timeline';
+let selectedDifficulty = 2;
+let selectedLength = 'medium';
 let timerMax = 30;
 
 function esc(str) {
@@ -49,9 +51,19 @@ function selectMode(mode) {
     document.getElementById('mode-quiz').classList.toggle('active', mode === 'quiz');
 }
 
+function selectDifficulty(level) {
+    selectedDifficulty = level;
+    [1, 2, 3].forEach(l => document.getElementById('diff-' + l).classList.toggle('active', l === level));
+}
+
+function selectLength(len) {
+    selectedLength = len;
+    ['short', 'medium', 'long'].forEach(l => document.getElementById('len-' + l).classList.toggle('active', l === len));
+}
+
 function startGame() {
-    socket.emit('start_game', { mode: selectedMode });
-    trackEvent('game_started_by_host', { game_mode: selectedMode, room_code: roomCode });
+    socket.emit('start_game', { mode: selectedMode, difficulty: selectedDifficulty, length: selectedLength });
+    trackEvent('game_started_by_host', { game_mode: selectedMode, difficulty: selectedDifficulty, length: selectedLength, room_code: roomCode });
 }
 
 function playAgain() {

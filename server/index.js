@@ -177,7 +177,7 @@ function handleTimeout(room) {
       // Nobody stole, reveal and advance
       broadcastResult(room, false, card, activePlayer.name);
       game.advanceTurn(room);
-      setTimeout(() => nextRoundOrEnd(room), 2000);
+      setTimeout(() => nextRoundOrEnd(room), 3500);
     }
   } else {
     // Normal timeout = wrong, start steal if multiplayer
@@ -189,7 +189,7 @@ function handleTimeout(room) {
     } else {
       broadcastResult(room, false, card, activePlayer.name);
       game.advanceTurn(room);
-      setTimeout(() => nextRoundOrEnd(room), 2000);
+      setTimeout(() => nextRoundOrEnd(room), 3500);
     }
   }
 }
@@ -230,7 +230,7 @@ function sendStealRound(room) {
     // No more stealers
     broadcastResult(room, false, room.currentCard, '');
     game.advanceTurn(room);
-    setTimeout(() => nextRoundOrEnd(room), 2000);
+    setTimeout(() => nextRoundOrEnd(room), 3500);
     return;
   }
 
@@ -387,11 +387,13 @@ io.on('connection', (socket) => {
   socket.on('start_game', (data) => {
     if (!data || !['timeline', 'quiz'].includes(data.mode)) return;
     const { mode } = data;
+    const difficulty = [1, 2, 3].includes(data.difficulty) ? data.difficulty : 2;
+    const length = ['short', 'medium', 'long'].includes(data.length) ? data.length : 'medium';
     const room = game.getRoomBySocket(socket.id);
     if (!room || room.hostSocketId !== socket.id) return;
     if (room.players.length === 0) return;
 
-    game.startGame(room, mode);
+    game.startGame(room, mode, difficulty, length);
     totalGamesStarted++;
     track('game_started', { room: room.code, mode, players: room.players.length, rounds: room.totalRounds });
     const startData = { mode, totalRounds: room.totalRounds, scores: game.getScores(room) };
@@ -419,7 +421,7 @@ io.on('connection', (socket) => {
       if (correct) {
         broadcastResult(room, true, room.currentCard, activePlayer.name);
         game.advanceTurn(room);
-        setTimeout(() => nextRoundOrEnd(room), 2000);
+        setTimeout(() => nextRoundOrEnd(room), 3500);
       } else {
         // Wrong steal — notify without revealing
         io.to(room.code).emit('steal_result', { correct: false, stealerName: activePlayer.name, scores: game.getScores(room) });
@@ -429,7 +431,7 @@ io.on('connection', (socket) => {
         } else {
           broadcastResult(room, false, room.currentCard, '');
           game.advanceTurn(room);
-          setTimeout(() => nextRoundOrEnd(room), 2000);
+          setTimeout(() => nextRoundOrEnd(room), 3500);
         }
       }
     } else {
@@ -437,7 +439,7 @@ io.on('connection', (socket) => {
       if (correct) {
         broadcastResult(room, true, room.currentCard, activePlayer.name);
         game.advanceTurn(room);
-        setTimeout(() => nextRoundOrEnd(room), 2000);
+        setTimeout(() => nextRoundOrEnd(room), 3500);
       } else {
         if (room.players.length > 1) {
           game.startSteal(room);
@@ -446,7 +448,7 @@ io.on('connection', (socket) => {
         } else {
           broadcastResult(room, false, room.currentCard, activePlayer.name);
           game.advanceTurn(room);
-          setTimeout(() => nextRoundOrEnd(room), 2000);
+          setTimeout(() => nextRoundOrEnd(room), 3500);
         }
       }
     }
@@ -467,7 +469,7 @@ io.on('connection', (socket) => {
       if (correct) {
         broadcastResult(room, true, room.currentCard, activePlayer.name);
         game.advanceTurn(room);
-        setTimeout(() => nextRoundOrEnd(room), 2000);
+        setTimeout(() => nextRoundOrEnd(room), 3500);
       } else {
         io.to(room.code).emit('steal_result', { correct: false, stealerName: activePlayer.name, scores: game.getScores(room) });
         io.to(room.hostSocketId).emit('steal_result', { correct: false, stealerName: activePlayer.name, scores: game.getScores(room) });
@@ -476,7 +478,7 @@ io.on('connection', (socket) => {
         } else {
           broadcastResult(room, false, room.currentCard, '');
           game.advanceTurn(room);
-          setTimeout(() => nextRoundOrEnd(room), 2000);
+          setTimeout(() => nextRoundOrEnd(room), 3500);
         }
       }
     } else {
@@ -484,7 +486,7 @@ io.on('connection', (socket) => {
       if (correct) {
         broadcastResult(room, true, room.currentCard, activePlayer.name);
         game.advanceTurn(room);
-        setTimeout(() => nextRoundOrEnd(room), 2000);
+        setTimeout(() => nextRoundOrEnd(room), 3500);
       } else {
         if (room.players.length > 1) {
           game.startSteal(room);
@@ -493,7 +495,7 @@ io.on('connection', (socket) => {
         } else {
           broadcastResult(room, false, room.currentCard, activePlayer.name);
           game.advanceTurn(room);
-          setTimeout(() => nextRoundOrEnd(room), 2000);
+          setTimeout(() => nextRoundOrEnd(room), 3500);
         }
       }
     }
@@ -513,7 +515,7 @@ io.on('connection', (socket) => {
     } else {
       broadcastResult(room, false, room.currentCard, '');
       game.advanceTurn(room);
-      setTimeout(() => nextRoundOrEnd(room), 2000);
+      setTimeout(() => nextRoundOrEnd(room), 3500);
     }
   });
 

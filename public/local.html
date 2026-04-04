@@ -1073,16 +1073,11 @@
         document.getElementById('game-area').style.display = 'flex';
         document.getElementById('score-bar').style.display = 'flex';
 
-        // Balance the deck: enough cards for all players
-        const cardsPerType = Math.ceil((numPlayers * 12) / 3);
-        const flags = shuffle(ALL_CARDS.filter(c => c.type === 'flag'));
+        // Timeline mode: landmarks + history only (no flags)
         const landmarks = shuffle(ALL_CARDS.filter(c => c.type === 'landmark'));
         const history = shuffle(ALL_CARDS.filter(c => c.type === 'history'));
-        deck = shuffle([
-            ...flags.slice(0, cardsPerType),
-            ...landmarks.slice(0, cardsPerType),
-            ...history.slice(0, cardsPerType)
-        ]);
+        const totalCards = Math.max(numPlayers * 12, 20);
+        deck = shuffle([...landmarks, ...history]).slice(0, totalCards);
         totalRounds = deck.length;
 
         players = [];

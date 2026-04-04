@@ -67,6 +67,8 @@ socket.on('game_started', ({ mode }) => {
     currentMode = mode;
     showScreen('wait-screen');
     document.getElementById('wait-msg').textContent = 'Game starting...';
+    // Warn before leaving mid-game
+    window.addEventListener('beforeunload', (e) => { e.preventDefault(); });
 });
 
 // --- YOUR TURN ---
@@ -86,7 +88,7 @@ socket.on('your_turn', ({ card, timeline, mode, timeLimit }) => {
         }
     }
     if (resultLock) {
-        setTimeout(doTurn, 2500);
+        setTimeout(doTurn, 4000);
     } else {
         doTurn();
     }
@@ -100,7 +102,7 @@ socket.on('wait', ({ activePlayerName, scores }) => {
         renderWaitScores(scores);
     }
     if (resultLock) {
-        setTimeout(doWait, 2500);
+        setTimeout(doWait, 4000);
     } else {
         doWait();
     }
@@ -127,7 +129,7 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
         document.getElementById('result-text').textContent = `${pName} got it wrong...`;
     }
     // Hold result screen for 2.5s before allowing other screens
-    setTimeout(() => { resultLock = false; }, 2500);
+    setTimeout(() => { resultLock = false; }, 4000);
 });
 
 // --- STEAL TURN (you can steal) ---
@@ -163,6 +165,7 @@ socket.on('steal_result', ({ correct, stealerName, scores }) => {
 
 // --- GAME OVER ---
 socket.on('game_over', ({ scores, winner }) => {
+    window.onbeforeunload = null; // Allow leaving after game ends
     showScreen('end-screen');
     const myScore = scores.find(s => s.name === playerName);
     const myRank = myScore ? scores.indexOf(myScore) + 1 : scores.length;
@@ -213,6 +216,7 @@ function spawnConfetti() {
 }
 
 socket.on('back_to_lobby', () => {
+    window.onbeforeunload = null;
     showScreen('waiting');
 });
 
@@ -259,13 +263,27 @@ function renderPlayerTimeline(timeline) {
     el.innerHTML = '';
     const sorted = [...timeline].sort((a, b) => a.year - b.year);
 
+    // Direction label at top
+    el.innerHTML = '<div class="tl-direction-label">Earlier</div>';
+
     for (let i = 0; i <= sorted.length; i++) {
-        // Drop zone
+        // Build button label with context
+        let label;
+        if (sorted.length === 0) {
+            label = 'Tap to place here';
+        } else if (i === 0) {
+            label = `Before ${formatYear(sorted[0].year)}`;
+        } else if (i === sorted.length) {
+            label = `After ${formatYear(sorted[sorted.length - 1].year)}`;
+        } else {
+            label = `Between ${formatYear(sorted[i - 1].year)} and ${formatYear(sorted[i].year)}`;
+        }
+
         const drop = document.createElement('div');
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.innerHTML = i === 0 ? '+ before' : i === sorted.length ? '+ after' : '+ here';
+        dropBtn.textContent = label;
         dropBtn.addEventListener('click', () => {
             if (submitLock) return;
             submitLock = true;
@@ -291,21 +309,33 @@ function renderPlayerTimeline(timeline) {
             el.appendChild(cardEl);
         }
     }
+
+    // Direction label at bottom
+    const laterLabel = document.createElement('div');
+    laterLabel.className = 'tl-direction-label';
+    laterLabel.textContent = 'Later';
+    el.appendChild(laterLabel);
 }
 
 function renderStealTimeline(timeline, card) {
     const el = document.getElementById('steal-timeline');
     if (!el) return;
-    el.innerHTML = '';
+    el.innerHTML = '<div class="tl-direction-label">Earlier</div>';
     el.className = 'p-timeline';
     const sorted = [...timeline].sort((a, b) => a.year - b.year);
 
     for (let i = 0; i <= sorted.length; i++) {
+        let label;
+        if (sorted.length === 0) { label = 'Tap to place here'; }
+        else if (i === 0) { label = `Before ${formatYear(sorted[0].year)}`; }
+        else if (i === sorted.length) { label = `After ${formatYear(sorted[sorted.length - 1].year)}`; }
+        else { label = `Between ${formatYear(sorted[i - 1].year)} and ${formatYear(sorted[i].year)}`; }
+
         const drop = document.createElement('div');
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.innerHTML = i === 0 ? '+ before' : i === sorted.length ? '+ after' : '+ here';
+        dropBtn.textContent = label;
         dropBtn.addEventListener('click', () => {
             if (submitLock) return;
             submitLock = true;

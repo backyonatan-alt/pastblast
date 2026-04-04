@@ -122,30 +122,37 @@
 }
 
 .tl-drop {
-    width: 70%;
-    padding: 8px 0;
-    border: none;
-    border-radius: 20px;
-    background: rgba(255,212,59,0.12);
+    width: 85%;
+    padding: 14px 12px;
+    border: 2px solid #ffd43b;
+    border-radius: 14px;
+    background: rgba(255,212,59,0.08);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: #ffd43b;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    margin: 6px 0;
+    margin: 5px 0;
     font-weight: 700;
-    min-height: 36px;
+    min-height: 48px;
     transition: background-color 0.15s, transform 0.1s;
-    letter-spacing: 1px;
-    text-transform: uppercase;
 }
 
 .tl-drop:active {
-    background: rgba(255,212,59,0.35);
-    transform: scale(1.05);
+    background: rgba(255,212,59,0.3);
+    transform: scale(1.03);
+    border-color: #fff;
+}
+
+.tl-direction-label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 4px 0;
 }
 
 .tl-card {

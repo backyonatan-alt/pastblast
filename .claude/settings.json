@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "The user is about to run: $ARGUMENTS. If this is a 'git push' command, BLOCK it and respond with: 'STOP — Running pre-deploy quality gate first. I will: 1) Run security checks (XSS, input validation, CORS, rate limiting) 2) Run UX/accessibility checks (focus states, contrast, labels, touch targets, reduced-motion) 3) Check analytics (tracking events on all pages, no PII leaks) 4) Check code quality (no console.logs with sensitive data, no hardcoded URLs, error handling) 5) Generate an updated Full Regression Test Plan .docx to ~/Downloads/ with all current tests covering any new or changed features. After all checks pass and the doc is generated, I will give a GO/NO-GO verdict and only then push.' If it is NOT a git push command, ALLOW it silently.",
+            "if": "Bash(git push:*)"
+          }
+        ]
+      }
+    ]
+  }
+}
