@@ -123,7 +123,8 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
     showScreen('result-screen');
     if (reveal && card) {
         document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
-        document.getElementById('result-text').innerHTML = `${card.emoji} ${card.name}<br>${formatYear(card.year)}`;
+        const yearPart = currentMode === 'timeline' ? `<br>${formatYear(card.year)}` : '';
+        document.getElementById('result-text').innerHTML = `${card.emoji} ${card.name}${yearPart}`;
     } else if (pName) {
         document.getElementById('result-icon').textContent = '❌';
         document.getElementById('result-text').textContent = `${pName} got it wrong...`;

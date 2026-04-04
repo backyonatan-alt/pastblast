@@ -4,6 +4,7 @@ let selectedMode = 'timeline';
 let selectedDifficulty = 2;
 let selectedLength = 'medium';
 let timerMax = 30;
+let currentMode = 'timeline';
 
 function esc(str) {
     const d = document.createElement('div');
@@ -99,6 +100,7 @@ socket.on('player_joined', ({ players }) => {
 
 // --- GAME START ---
 socket.on('game_started', ({ mode, scores }) => {
+    currentMode = mode;
     document.getElementById('lobby').style.display = 'none';
     document.getElementById('game-screen').style.display = 'flex';
     document.getElementById('end-screen').style.display = 'none';
@@ -163,12 +165,13 @@ socket.on('round_result', ({ correct, card, playerName, reveal, scores }) => {
         const yearText = card.year < 0 ? `${Math.abs(card.year)} BCE` : `${card.year}`;
         const resultColor = correct ? '#51cf66' : '#ff6b6b';
         const resultIcon = correct ? '✅' : '❌';
+        const showYear = currentMode === 'timeline';
         document.getElementById('card-area').innerHTML = `
             <div class="host-card" style="border-color:${resultColor};">
                 <div style="font-size:1.2rem;color:${resultColor};font-weight:700;margin-bottom:8px;">${resultIcon} ${correct ? esc(playerName) + ' got it right!' : 'The answer was:'}</div>
                 <div class="card-emoji">${card.emoji}</div>
                 <div class="card-title">${esc(card.name)}</div>
-                <div style="font-size:2.5rem;font-weight:900;color:#ffd43b;margin-top:8px;">${yearText}</div>
+                ${showYear ? `<div style="font-size:2.5rem;font-weight:900;color:#ffd43b;margin-top:8px;">${yearText}</div>` : ''}
             </div>`;
         document.getElementById('turn-label').innerHTML = '';
     } else if (!correct && playerName) {
@@ -252,10 +255,11 @@ function showFeedback(correct, card) {
     const fb = document.createElement('div');
     fb.className = `feedback ${correct ? 'correct' : 'wrong'}`;
     const yearText = card.year < 0 ? `${Math.abs(card.year)} BCE` : `${card.year}`;
+    const showYear = currentMode === 'timeline';
     fb.innerHTML = `
         <div class="fb-flag">${card.emoji}</div>
         <div class="fb-name">${correct ? '✅' : '❌'} ${card.name}</div>
-        <div class="fb-year">${yearText}</div>
+        ${showYear ? `<div class="fb-year">${yearText}</div>` : ''}
     `;
     document.body.appendChild(fb);
     setTimeout(() => fb.remove(), 3200);
