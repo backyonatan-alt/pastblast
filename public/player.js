@@ -82,7 +82,7 @@ function showScreen(id) {
     el.style.display = 'flex';
 
     if (id === 'map-screen' && mapInstance) {
-        setTimeout(() => mapInstance.invalidateSize(), 200);
+        setTimeout(() => { mapInstance.invalidateSize(); alignCrosshair(); }, 200);
     }
 }
 
@@ -277,6 +277,24 @@ let mapInstance = null;
 let mapLocked = false;
 let mapHistory = []; // accumulate round data for post-game summary
 
+// Position crosshair + dot at exact pixel center of Leaflet map container
+function alignCrosshair() {
+    const container = document.getElementById('map-container');
+    const crosshair = document.getElementById('map-crosshair');
+    const dot = document.getElementById('map-dot');
+    if (!container || !crosshair || !dot) return;
+    const rect = container.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    // Pin tip at center: SVG is 32x42, tip is at bottom-center
+    crosshair.style.left = (cx - 16) + 'px';
+    crosshair.style.top = (cy - 42) + 'px';
+    // Dot exactly at center
+    dot.style.left = (cx - 5) + 'px';
+    dot.style.top = (cy - 5) + 'px';
+}
+window.addEventListener('resize', alignCrosshair);
+
 socket.on('map_round', ({ wiki, emoji, type, round, totalRounds, timeLimit }) => {
     showScreen('map-screen');
     mapLocked = false;
@@ -334,7 +352,8 @@ socket.on('map_round', ({ wiki, emoji, type, round, totalRounds, timeLimit }) =>
         mapInstance.scrollWheelZoom.enable();
     }
 
-    setTimeout(() => mapInstance.invalidateSize(), 100);
+    setTimeout(() => { mapInstance.invalidateSize(); alignCrosshair(); }, 100);
+    setTimeout(alignCrosshair, 300); // extra alignment after layout settles
 
     // Show onboarding hint for first-time players
     showOnboardingIfNeeded();

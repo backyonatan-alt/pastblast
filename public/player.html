@@ -77,13 +77,13 @@
             </div>
         </div>
         <div id="map-container" style="flex:1 1 auto;min-height:200px;z-index:1;"></div>
-        <div id="map-crosshair" style="position:fixed;top:55%;left:50%;transform:translate(-50%,-100%);z-index:1500;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));">
+        <div id="map-crosshair" style="position:fixed;z-index:1500;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));">
             <svg width="32" height="42" viewBox="0 0 32 42">
                 <path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26s16-14 16-26C32 7.2 24.8 0 16 0z" fill="#ff6b6b" stroke="#fff" stroke-width="2"/>
                 <circle cx="16" cy="16" r="6" fill="#fff"/>
             </svg>
         </div>
-        <div id="map-dot" style="position:fixed;top:55%;left:50%;transform:translate(-50%,-50%);width:6px;height:6px;background:#ff6b6b;border:2px solid #fff;border-radius:50%;z-index:1500;pointer-events:none;box-shadow:0 0 8px rgba(255,107,107,0.6);"></div>
+        <div id="map-dot" style="position:fixed;width:6px;height:6px;background:#ff6b6b;border:2px solid #fff;border-radius:50%;z-index:1500;pointer-events:none;box-shadow:0 0 8px rgba(255,107,107,0.6);"></div>
         <!-- Lock-in waiting overlay -->
         <div id="map-lock-overlay" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:1600;flex-direction:column;align-items:center;gap:6px;pointer-events:none;">
             <div style="background:rgba(18,14,63,0.9);padding:10px 20px;border-radius:14px;border:2px solid rgba(255,212,59,0.3);text-align:center;">
