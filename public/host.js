@@ -48,9 +48,8 @@ function generateQR(url) {
 
 function selectMode(mode) {
     selectedMode = mode;
-    document.getElementById('mode-timeline').classList.toggle('active', mode === 'timeline');
-    document.getElementById('mode-quiz').classList.toggle('active', mode === 'quiz');
-    document.getElementById('mode-map').classList.toggle('active', mode === 'map');
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('mode-' + (mode === 'quiz' ? 'quiz' : mode)).classList.add('active');
 }
 
 function selectDifficulty(level) {
@@ -233,26 +232,73 @@ socket.on('map_player_locked', ({ name, emoji, lockedCount, totalPlayers }) => {
     document.getElementById('round-label').textContent = `${lockedCount}/${totalPlayers} locked in`;
 });
 
+let hostResultMap = null;
+
 socket.on('map_result', ({ card, results, scores }) => {
     const cName = (typeof isRTL === 'function' && isRTL() && card.name_he) ? card.name_he : card.name;
 
-    // Show results on host: name + all player distances
-    let html = `<div class="host-card" style="padding:16px 24px;">
-        <div style="font-size:2rem;">${card.emoji}</div>
-        <div class="card-title" style="color:#ffd43b;">${esc(cName)}</div>
-        <div style="margin-top:12px;">`;
+    // Build: map on left, scoreboard on right
+    document.getElementById('card-area').innerHTML = `
+        <div style="display:flex;gap:16px;width:100%;align-items:stretch;flex-wrap:wrap;">
+            <div style="flex:1;min-width:300px;">
+                <div style="text-align:center;margin-bottom:8px;">
+                    <span style="font-size:1.5rem;">${card.emoji}</span>
+                    <span style="font-size:1.3rem;font-weight:700;color:#ffd43b;margin-left:8px;">${esc(cName)}</span>
+                </div>
+                <div id="host-result-map" style="height:350px;border-radius:14px;overflow:hidden;"></div>
+            </div>
+            <div style="flex:0 0 280px;" id="map-scoreboard"></div>
+        </div>`;
 
+    // Build scoreboard
     results.sort((a, b) => b.roundScore - a.roundScore);
+    let sbHtml = '';
     results.forEach(r => {
-        const emoji = r.roundScore >= 1000 ? '🎯' : r.roundScore >= 500 ? '🔥' : r.roundScore >= 200 ? '👍' : '😅';
-        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+        const re = r.roundScore >= 1000 ? '🎯' : r.roundScore >= 500 ? '🔥' : r.roundScore >= 200 ? '👍' : '😅';
+        sbHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin:4px 0;background:rgba(255,255,255,0.04);border-radius:10px;">
             <span>${r.emoji} ${esc(r.name)}</span>
-            <span>${emoji} +${r.roundScore} <span style="color:rgba(255,255,255,0.4);font-size:0.8rem;">(${r.dist}km)</span></span>
+            <span>${re} <b>+${r.roundScore}</b> <span style="color:rgba(255,255,255,0.4);font-size:0.8rem;">${r.dist}km</span></span>
         </div>`;
     });
+    document.getElementById('map-scoreboard').innerHTML = sbHtml;
 
-    html += `</div></div>`;
-    document.getElementById('card-area').innerHTML = html;
+    // Create map with all pins
+    if (hostResultMap) { hostResultMap.remove(); hostResultMap = null; }
+    hostResultMap = L.map('host-result-map', {
+        center: [card.lat, card.lng],
+        zoom: 3,
+        zoomControl: false,
+        attributionControl: false,
+    });
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {}).addTo(hostResultMap);
+
+    // Correct location pin (green checkmark)
+    const correctIcon = L.divIcon({ html: '<div style="font-size:2rem;text-align:center;">✅</div>', iconSize: [30, 30], iconAnchor: [15, 30], className: '' });
+    L.marker([card.lat, card.lng], { icon: correctIcon }).addTo(hostResultMap);
+
+    // All player pins + lines
+    const bounds = [[card.lat, card.lng]];
+    results.forEach(r => {
+        if (r.guessLat == null) return;
+        // Player pin with their color
+        const playerIcon = L.divIcon({
+            html: `<div style="font-size:1.4rem;text-align:center;background:${r.color};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);">${r.emoji}</div>`,
+            iconSize: [28, 28], iconAnchor: [14, 14], className: ''
+        });
+        L.marker([r.guessLat, r.guessLng], { icon: playerIcon }).addTo(hostResultMap);
+
+        // Dashed line from guess to correct
+        L.polyline([[r.guessLat, r.guessLng], [card.lat, card.lng]], {
+            color: r.color, weight: 2, dashArray: '8,6', opacity: 0.7
+        }).addTo(hostResultMap);
+
+        bounds.push([r.guessLat, r.guessLng]);
+    });
+
+    // Fit map to show all pins
+    if (bounds.length > 1) {
+        hostResultMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 8 });
+    }
 
     if (scores) renderScores(scores);
 });
