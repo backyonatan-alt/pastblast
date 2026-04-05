@@ -271,49 +271,7 @@
 
 .tl-drop:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 
-/* Timeline card animations */
-.tl-anim-card {
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.tl-anim-slide {
-    animation: tlSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes tlSlideIn {
-    0% { transform: scale(0.8); opacity: 0.5; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-.tl-card-new {
-    border-color: #ffd43b;
-    box-shadow: 0 0 12px rgba(255, 212, 59, 0.4);
-}
-
-.tl-card-correct {
-    border-color: #51cf66 !important;
-    box-shadow: 0 0 16px rgba(81, 207, 102, 0.5) !important;
-    animation: tlPulseGreen 0.6s ease;
-}
-
-@keyframes tlPulseGreen {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.06); }
-    100% { transform: scale(1); }
-}
-
-.tl-card-wrong {
-    border-color: #ff6b6b !important;
-    animation: tlShake 0.4s ease;
-}
-
-@keyframes tlShake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-8px); }
-    40% { transform: translateX(8px); }
-    60% { transform: translateX(-6px); }
-    80% { transform: translateX(6px); }
-}
+/* Timeline card fly animation — handled via inline JS styles */
 
 /* Map timer number */
 .map-timer-number {

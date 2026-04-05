@@ -188,94 +188,107 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
 
 // --- TIMELINE CARD ANIMATION ---
 function showTimelineAnimation(correct, card) {
-    // Show the timeline screen temporarily for the animation
     showScreen('turn-timeline');
+
+    const bigCard = document.getElementById('tl-card');
+    const bigRect = bigCard.getBoundingClientRect();
     const el = document.getElementById('tl-timeline');
 
-    // Remove all drop zones
+    // Remove drop zones, keep existing placed cards
     el.querySelectorAll('.tl-drop').forEach(d => d.closest('.tl-slot').remove());
+    // Remove direction labels temporarily
+    el.querySelectorAll('.tl-direction-label').forEach(d => d.remove());
+
+    // Add the card to the timeline DOM in its correct chronological position
+    // so we can get its exact pixel position
+    const newSlot = document.createElement('div');
+    newSlot.className = 'tl-slot';
+    newSlot.dataset.target = 'true';
+    newSlot.style.opacity = '0'; // invisible until flyer arrives
+    newSlot.innerHTML = `
+        <div class="tl-card">
+            <div class="tl-emoji">${card.emoji}</div>
+            <div class="tl-info">
+                <div class="tl-name">${cardName(card)}</div>
+                <div class="tl-year">${formatYear(card.year)}</div>
+            </div>
+        </div>`;
+
+    // Find where to insert based on year
+    const slots = [...el.querySelectorAll('.tl-slot')];
+    let inserted = false;
+    for (const slot of slots) {
+        const yearEl = slot.querySelector('.tl-year');
+        if (yearEl) {
+            const text = yearEl.textContent;
+            const yearNum = text.includes('BCE') ? -parseInt(text) : parseInt(text);
+            if (card.year <= yearNum) {
+                el.insertBefore(newSlot, slot);
+                inserted = true;
+                break;
+            }
+        }
+    }
+    if (!inserted) el.appendChild(newSlot);
+
+    // Force layout so we can read the target position
+    const targetRect = newSlot.getBoundingClientRect();
+
+    // Create flyer from big card position
+    const flyer = document.createElement('div');
+    flyer.style.cssText = `position:fixed;z-index:9999;left:${bigRect.left}px;top:${bigRect.top}px;width:${bigRect.width}px;transition:all 0.7s cubic-bezier(0.25,1,0.5,1);pointer-events:none;`;
+    flyer.innerHTML = `
+        <div class="tl-card" style="border-color:#ffd43b;box-shadow:0 0 16px rgba(255,212,59,0.5);">
+            <div class="tl-emoji">${card.emoji}</div>
+            <div class="tl-info">
+                <div class="tl-name">${cardName(card)}</div>
+                <div class="tl-year" style="opacity:0;">${formatYear(card.year)}</div>
+            </div>
+        </div>`;
+    document.body.appendChild(flyer);
+    bigCard.style.opacity = '0';
+
+    // Fly to target
+    requestAnimationFrame(() => {
+        flyer.style.left = targetRect.left + 'px';
+        flyer.style.top = targetRect.top + 'px';
+        flyer.style.width = targetRect.width + 'px';
+    });
 
     if (correct) {
-        // Create the new card element at the top, then animate it to correct position
-        const newCardEl = document.createElement('div');
-        newCardEl.className = 'tl-slot tl-anim-card';
-        newCardEl.innerHTML = `
-            <div class="tl-card tl-card-new">
-                <div class="tl-emoji">${card.emoji}</div>
-                <div class="tl-info">
-                    <div class="tl-name">${cardName(card)}</div>
-                    <div class="tl-year" style="opacity:0;">${formatYear(card.year)}</div>
-                </div>
-            </div>`;
-
-        // Insert at the top initially
-        const firstSlot = el.querySelector('.tl-slot');
-        if (firstSlot) {
-            el.insertBefore(newCardEl, firstSlot);
-        } else {
-            el.appendChild(newCardEl);
-        }
-
-        // Find the correct position based on year
-        const existingCards = [...el.querySelectorAll('.tl-slot:not(.tl-anim-card)')];
-        let targetIndex = existingCards.length; // default: end
-        for (let i = 0; i < existingCards.length; i++) {
-            const yearEl = existingCards[i].querySelector('.tl-year');
-            if (yearEl) {
-                const yearText = yearEl.textContent;
-                const yearNum = yearText.includes('BCE') ? -parseInt(yearText) : parseInt(yearText);
-                if (card.year <= yearNum) { targetIndex = i; break; }
-            }
-        }
-
-        // Animate: after a beat, move to correct position
         setTimeout(() => {
-            newCardEl.remove();
-            const target = existingCards[targetIndex];
-            if (target) {
-                el.insertBefore(newCardEl, target);
-            } else {
-                // Insert before the "Later" label at the end
-                const laterLabel = el.querySelector('.tl-direction-label:last-child');
-                if (laterLabel) {
-                    el.insertBefore(newCardEl, laterLabel);
-                } else {
-                    el.appendChild(newCardEl);
-                }
+            const fc = flyer.querySelector('.tl-card');
+            if (fc) {
+                fc.style.transition = 'all 0.3s';
+                fc.style.borderColor = '#51cf66';
+                fc.style.boxShadow = '0 0 20px rgba(81,207,102,0.6)';
             }
-            newCardEl.classList.add('tl-anim-slide');
-
-            // Pulse green + reveal year
-            setTimeout(() => {
-                const tlCard = newCardEl.querySelector('.tl-card');
-                if (tlCard) {
-                    tlCard.classList.add('tl-card-correct');
-                }
-                const yearEl = newCardEl.querySelector('.tl-year');
-                if (yearEl) yearEl.style.opacity = '1';
-            }, 600);
-        }, 400);
-
-    } else {
-        // Wrong: show the card with a shake, then fade out
-        // Show the card from the p-card area
-        const shakeEl = document.createElement('div');
-        shakeEl.className = 'tl-slot';
-        shakeEl.innerHTML = `
-            <div class="tl-card tl-card-wrong">
-                <div class="tl-emoji">${card.emoji}</div>
-                <div class="tl-info">
-                    <div class="tl-name">${cardName(card)}</div>
-                    <div class="tl-year">${formatYear(card.year)}</div>
-                </div>
-            </div>`;
-        el.insertBefore(shakeEl, el.querySelector('.tl-slot'));
-
-        setTimeout(() => {
-            shakeEl.style.transition = 'opacity 0.4s';
-            shakeEl.style.opacity = '0';
-            setTimeout(() => shakeEl.remove(), 400);
+            const yearEl = flyer.querySelector('.tl-year');
+            if (yearEl) { yearEl.style.transition = 'opacity 0.4s'; yearEl.style.opacity = '1'; }
         }, 800);
+        setTimeout(() => {
+            newSlot.style.opacity = '1';
+            flyer.remove();
+        }, 1800);
+    } else {
+        setTimeout(() => {
+            const fc = flyer.querySelector('.tl-card');
+            if (fc) {
+                fc.style.transition = 'all 0.3s';
+                fc.style.borderColor = '#ff6b6b';
+                fc.style.boxShadow = '0 0 20px rgba(255,107,107,0.6)';
+            }
+            const yearEl = flyer.querySelector('.tl-year');
+            if (yearEl) { yearEl.style.transition = 'opacity 0.4s'; yearEl.style.opacity = '1'; }
+        }, 700);
+        setTimeout(() => {
+            flyer.style.transition = 'opacity 0.5s';
+            flyer.style.opacity = '0';
+        }, 1200);
+        setTimeout(() => {
+            flyer.remove();
+            newSlot.remove(); // wrong card doesn't stay
+        }, 1700);
     }
 }
 

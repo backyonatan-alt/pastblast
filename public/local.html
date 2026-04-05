@@ -272,22 +272,29 @@
         .placed-card .card-name { font-size: 0.85rem; font-weight: 700; margin: 4px 0; }
         .placed-card .card-year { font-size: 1.15rem; color: #ffd43b; font-weight: 700; }
 
-        /* Feedback overlay */
-        .feedback {
+        /* Feedback overlay — wrapper for bulletproof centering */
+        .feedback-wrapper {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0);
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9000;
+            pointer-events: none;
+        }
+
+        .feedback {
             font-size: 2rem;
             font-weight: 900;
             padding: 24px 40px;
             border-radius: 20px;
-            z-index: 100;
             animation: popIn 1s ease forwards;
             pointer-events: none;
             border: 4px solid #fff;
             text-align: center;
             min-width: 260px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+            transform: scale(0);
         }
 
         .feedback .fb-flag { font-size: 3.5rem; }
@@ -298,11 +305,11 @@
         .feedback.wrong { background: #ff6b6b; color: #fff; }
 
         @keyframes popIn {
-            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 0; }
-            30% { transform: translate(-50%, -50%) scale(1.2) rotate(3deg); opacity: 1; }
-            50% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            30% { transform: scale(1.2) rotate(3deg); opacity: 1; }
+            50% { transform: scale(1) rotate(0deg); }
             80% { opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
+            100% { transform: scale(0.95); opacity: 0; }
         }
 
         @keyframes cardBounce {
@@ -594,30 +601,7 @@
         }
 
         /* Quiz mode colors — warm coral/orange */
-        body.quiz-mode { background: #2d1230; }
-        body.quiz-mode header { background: #1f0b22; border-bottom-color: #ff6b9d; }
-        body.quiz-mode header h1 { color: #ff6b9d; text-shadow: 3px 3px 0 #a83279; }
-        body.quiz-mode .mode-tab.active { color: #ff6b9d; border-bottom-color: #ff6b9d; }
-        body.quiz-mode .quiz-card { background: #3d1742; border-color: #ff6b9d; box-shadow: 0 6px 0 #a83279, 0 12px 30px rgba(0,0,0,0.3); }
-        body.quiz-mode .quiz-card .category { background: #ff6b9d; color: #2d1230; }
-        body.quiz-mode .quiz-input { background: #2d1230; border-color: rgba(255,255,255,0.2); }
-        body.quiz-mode .quiz-input:focus { border-color: #ff6b9d; }
-        body.quiz-mode .autocomplete-list { background: #2d1230; border-color: #ff6b9d; }
-        body.quiz-mode .autocomplete-item:hover,
-        body.quiz-mode .autocomplete-item.active { background: rgba(255,107,157,0.2); color: #ff6b9d; }
-        body.quiz-mode .autocomplete-item .match { color: #ff6b9d; }
-        body.quiz-mode .btn { background: #ff6b9d; color: #2d1230; box-shadow: 0 5px 0 #a83279; }
-        body.quiz-mode .screen h2 { color: #ff6b9d; text-shadow: 3px 3px 0 #a83279; }
-        body.quiz-mode .player-btn.selected { border-color: #ff6b9d; background: #ff6b9d; color: #2d1230; }
-        body.quiz-mode .player-btn:hover { border-color: #ff6b9d; }
-        body.quiz-mode .player-select label { color: #ff6b9d; }
-        body.quiz-mode .quiz-stats span { color: #ff6b9d; }
-        body.quiz-mode .instruction { color: #ff6b9d; }
-        body.quiz-mode .score-chart { background: rgba(0,0,0,0.35); }
-        body.quiz-mode .quiz-streak { color: #ff6b9d; }
-        body.quiz-mode .score-bar span { color: #ff6b9d; }
-        body.quiz-mode .winner-banner { border-color: #ff6b9d; }
-        body.quiz-mode .final-score { color: #ff6b9d; text-shadow: 3px 3px 0 #a83279; }
+        /* Quiz mode uses same color scheme as main game */
         body.quiz-mode .scoreboard-card { border-color: rgba(255,107,157,0.2); }
 
         .quiz-stats {
@@ -693,6 +677,7 @@
         <div class="mode-tabs">
             <button class="mode-tab active" onclick="switchMode('timeline')">Timeline Game</button>
             <button class="mode-tab" onclick="switchMode('quiz')">Flag Quiz</button>
+            <button class="mode-tab" onclick="switchMode('map')">Map Game</button>
         </div>
         <div id="player-tabs" style="display:none;"></div><!-- kept for hideAll -->
         <div class="score-bar" id="score-bar" style="display:none;">
@@ -778,6 +763,61 @@
         <button class="btn" onclick="switchMode('quiz')">Play Again</button>
     </div>
 
+    <!-- MAP GAME MODE -->
+    <div id="map-start" class="screen" style="display:none;">
+        <h2>Map Game</h2>
+        <p>A photo of a famous place appears — find it on the map! Closer = more points. Speed matters!</p>
+        <div class="player-select">
+            <label>How many players?</label>
+            <div class="player-buttons" id="map-player-buttons"></div>
+        </div>
+        <button class="btn" onclick="startMapGame()">START MAP GAME</button>
+    </div>
+
+    <div id="map-game-area" style="display:none;position:fixed;inset:0;z-index:100;flex-direction:column;">
+        <div style="background:rgba(18,14,63,0.95);padding:10px 16px;text-align:center;z-index:1000;flex:0 0 auto;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <div id="map-local-player" style="font-size:0.9rem;font-weight:700;color:#ffd43b;"></div>
+                <div id="map-local-round" style="font-size:0.7rem;color:rgba(255,255,255,0.4);"></div>
+            </div>
+            <img id="map-local-photo" style="width:100%;max-width:500px;height:200px;object-fit:contain;border-radius:10px;margin:4px auto;display:block;background:rgba(0,0,0,0.3);" src="" alt="">
+            <div id="map-local-prompt" style="font-size:0.9rem;color:rgba(255,255,255,0.45);margin-top:4px;">Where is this place?</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                <div style="flex:1;height:5px;background:rgba(255,255,255,0.1);border-radius:3px;"><div id="map-local-timer-fill" style="height:100%;width:100%;background:#ffd43b;border-radius:3px;transition:width 1s linear;"></div></div>
+                <div id="map-local-timer-num" style="font-size:1rem;color:#ffd43b;font-weight:700;min-width:24px;text-align:center;">30</div>
+            </div>
+        </div>
+        <div id="map-local-container" style="flex:1 1 auto;min-height:200px;z-index:1;"></div>
+        <div id="map-local-crosshair" style="position:fixed;z-index:1500;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));">
+            <svg width="32" height="42" viewBox="0 0 32 42">
+                <path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26s16-14 16-26C32 7.2 24.8 0 16 0z" fill="#ff6b6b" stroke="#fff" stroke-width="2"/>
+                <circle cx="16" cy="16" r="6" fill="#fff"/>
+            </svg>
+        </div>
+        <div id="map-local-dot" style="position:fixed;width:6px;height:6px;background:#ff6b6b;border:2px solid #fff;border-radius:50%;z-index:1500;pointer-events:none;box-shadow:0 0 8px rgba(255,107,107,0.6);"></div>
+        <div style="background:rgba(18,14,63,0.95);padding:10px 16px;padding-bottom:max(10px,env(safe-area-inset-bottom));text-align:center;z-index:1000;flex:0 0 auto;">
+            <button id="map-local-lock-btn" onclick="mapLocalLockIn()" style="background:#ffd43b;color:#1b1464;border:none;border-radius:14px;padding:14px 0;font-size:1.2rem;font-weight:900;font-family:'Fredoka',sans-serif;cursor:pointer;width:100%;max-width:500px;box-shadow:0 4px 0 #e8590c;letter-spacing:2px;">LOCK IN</button>
+        </div>
+    </div>
+
+    <div id="map-local-result" style="display:none;position:fixed;inset:0;z-index:200;background:#1b1464;flex-direction:column;align-items:center;justify-content:center;padding:20px;">
+        <div style="background:#1f1a5c;border-radius:20px;padding:20px 24px;max-width:400px;width:100%;border:3px solid rgba(255,255,255,0.1);text-align:center;">
+            <div id="map-local-result-map" style="height:220px;border-radius:14px;overflow:hidden;margin-bottom:12px;"></div>
+            <div id="map-local-result-content"></div>
+        </div>
+    </div>
+
+    <div id="map-end" class="screen" style="display:none;">
+        <h2 id="map-end-title">Game Over!</h2>
+        <div id="map-winner-banner"></div>
+        <div class="scoreboard" id="map-scoreboard"></div>
+        <div id="map-summary-map" style="width:100%;max-width:500px;height:250px;border-radius:14px;overflow:hidden;margin:16px auto;"></div>
+        <p id="map-end-message"></p>
+        <button class="btn" onclick="switchMode('map')">Play Again</button>
+    </div>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
     const PLAYER_NAMES = ['Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Orange'];
     const PLAYER_EMOJIS = ['🔴', '🟢', '🔵', '🟡', '🟣', '🟠'];
@@ -1211,7 +1251,6 @@
         if (deck.length === 0) return;
 
         if (stealActive) {
-            // Steal attempt
             handleStealAttempt(index);
             return;
         }
@@ -1223,25 +1262,115 @@
         if (correct) {
             p.timeline.push(card);
             p.score = p.timeline.length;
-            showFeedback(true, card);
+            animateTimelineCard(card, true, p);
             advanceTurn();
-            afterPlace();
+            setTimeout(() => afterPlace(), 2000);
         } else {
-            // Check if other players can steal (multiplayer only)
+            animateTimelineCard(card, false, p);
             if (numPlayers > 1) {
                 const stealers = players.filter((pl, i) => i !== currentPlayerIndex);
                 if (stealers.length > 0) {
                     stealCard = card;
                     stealQueue = stealers.map(pl => players.indexOf(pl));
                     advanceTurn();
-                    startStealPhase();
+                    setTimeout(() => startStealPhase(), 1200);
                     return;
                 }
             }
-
-            showFeedback(false, card);
             advanceTurn();
-            afterPlace();
+            setTimeout(() => afterPlace(), 1200);
+        }
+    }
+
+    function animateTimelineCard(card, correct, player) {
+        const bigCard = document.getElementById('current-card');
+        const bigRect = bigCard.getBoundingClientRect();
+        const el = document.getElementById('timeline');
+
+        // Re-render timeline with the card already in its correct spot (if correct)
+        // so we can get the exact target position
+        el.innerHTML = '';
+        const tl = [...player.timeline].sort((a, b) => a.year - b.year);
+        // For wrong: temporarily add card to find where it would go, then remove
+        let tempTl = correct ? tl : [...tl, card].sort((a, b) => a.year - b.year);
+
+        tempTl.forEach(c => {
+            const placed = document.createElement('div');
+            placed.className = 'timeline-slot';
+            if (c === card) placed.dataset.target = 'true';
+            placed.innerHTML = `
+                <div class="placed-card">
+                    <div class="card-emoji">${c.emoji}</div>
+                    <div class="card-name">${c.name}</div>
+                    <div class="card-year">${formatYear(c.year)}</div>
+                </div>`;
+            if (c === card) placed.style.opacity = '0'; // hide target initially
+            el.appendChild(placed);
+        });
+
+        // Get the target element's position
+        const targetEl = el.querySelector('[data-target="true"]');
+        const targetRect = targetEl ? targetEl.getBoundingClientRect() : bigRect;
+
+        // Create flyer from big card
+        const flyer = document.createElement('div');
+        flyer.style.cssText = `position:fixed;z-index:9999;left:${bigRect.left}px;top:${bigRect.top}px;width:${bigRect.width}px;transition:all 0.7s cubic-bezier(0.25,1,0.5,1);pointer-events:none;`;
+        flyer.innerHTML = `
+            <div class="placed-card" style="border-color:#ffd43b;box-shadow:0 0 16px rgba(255,212,59,0.5);text-align:center;padding:10px 14px;">
+                <div class="card-emoji">${card.emoji}</div>
+                <div class="card-name">${card.name}</div>
+                <div class="card-year" style="opacity:0;">${formatYear(card.year)}</div>
+            </div>`;
+        document.body.appendChild(flyer);
+        bigCard.style.opacity = '0';
+
+        // Fly to target position
+        requestAnimationFrame(() => {
+            flyer.style.left = targetRect.left + 'px';
+            flyer.style.top = targetRect.top + 'px';
+            flyer.style.width = targetRect.width + 'px';
+        });
+
+        if (correct) {
+            // Land: green glow + reveal year + show the real card
+            setTimeout(() => {
+                const pc = flyer.querySelector('.placed-card');
+                if (pc) {
+                    pc.style.transition = 'all 0.3s';
+                    pc.style.borderColor = '#51cf66';
+                    pc.style.boxShadow = '0 0 20px rgba(81,207,102,0.6)';
+                }
+                const yearEl = flyer.querySelector('.card-year');
+                if (yearEl) { yearEl.style.transition = 'opacity 0.4s'; yearEl.style.opacity = '1'; }
+            }, 800);
+            setTimeout(() => {
+                if (targetEl) targetEl.style.opacity = '1';
+                flyer.remove();
+                bigCard.style.opacity = '1';
+            }, 1800);
+        } else {
+            // Land: red glow, reveal year, fade out
+            setTimeout(() => {
+                const pc = flyer.querySelector('.placed-card');
+                if (pc) {
+                    pc.style.transition = 'all 0.3s';
+                    pc.style.borderColor = '#ff6b6b';
+                    pc.style.boxShadow = '0 0 20px rgba(255,107,107,0.6)';
+                }
+                const yearEl = flyer.querySelector('.card-year');
+                if (yearEl) { yearEl.style.transition = 'opacity 0.4s'; yearEl.style.opacity = '1'; }
+            }, 700);
+            setTimeout(() => {
+                flyer.style.transition = 'opacity 0.5s';
+                flyer.style.opacity = '0';
+                if (targetEl) targetEl.style.transition = 'opacity 0.3s'; // keep hidden
+            }, 1200);
+            setTimeout(() => {
+                flyer.remove();
+                bigCard.style.opacity = '1';
+                // Re-render without the wrong card
+                renderTimeline();
+            }, 1700);
         }
     }
 
@@ -1364,6 +1493,8 @@
     }
 
     function showFeedback(correct, card) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'feedback-wrapper';
         const fb = document.createElement('div');
         fb.className = `feedback ${correct ? 'correct' : 'wrong'}`;
         fb.innerHTML = `
@@ -1371,16 +1502,20 @@
             <div class="fb-name">${correct ? '✅' : '❌'} ${card.name}</div>
             <div class="fb-year">${formatYear(card.year)}</div>
         `;
-        document.body.appendChild(fb);
-        setTimeout(() => fb.remove(), 1400);
+        wrapper.appendChild(fb);
+        document.body.appendChild(wrapper);
+        setTimeout(() => wrapper.remove(), 1400);
     }
 
     function showFeedbackNoReveal() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'feedback-wrapper';
         const fb = document.createElement('div');
         fb.className = 'feedback wrong';
         fb.innerHTML = `<div style="font-size:3rem;">❌</div><div style="font-size:1.4rem;margin-top:4px;">Wrong! Others can steal...</div>`;
-        document.body.appendChild(fb);
-        setTimeout(() => fb.remove(), 1200);
+        wrapper.appendChild(fb);
+        document.body.appendChild(wrapper);
+        setTimeout(() => wrapper.remove(), 1200);
     }
 
     function spawnConfetti() {
@@ -1444,8 +1579,10 @@
 
     function hideAll() {
         ['start-screen','game-area','end-screen','score-bar','player-tabs',
-         'quiz-start','quiz-area','quiz-end','score-chart','steal-overlay','quiz-steal-bar'].forEach(id => {
-            document.getElementById(id).style.display = 'none';
+         'quiz-start','quiz-area','quiz-end','score-chart','steal-overlay','quiz-steal-bar',
+         'map-start','map-game-area','map-local-result','map-end'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
         });
         document.body.classList.remove('steal-active');
     }
@@ -1453,15 +1590,24 @@
     function switchMode(mode) {
         currentMode = mode;
         document.querySelectorAll('.mode-tab').forEach((tab, i) => {
-            tab.classList.toggle('active', (i === 0 && mode === 'timeline') || (i === 1 && mode === 'quiz'));
+            tab.classList.toggle('active', (i === 0 && mode === 'timeline') || (i === 1 && mode === 'quiz') || (i === 2 && mode === 'map'));
         });
-        document.body.classList.toggle('quiz-mode', mode === 'quiz');
+        // Unified color scheme for all modes
         hideAll();
         if (mode === 'timeline') {
             document.getElementById('start-screen').style.display = 'flex';
-        } else {
+        } else if (mode === 'quiz') {
             document.getElementById('quiz-start').style.display = 'flex';
+        } else if (mode === 'map') {
+            document.getElementById('map-start').style.display = 'flex';
         }
+    }
+
+    // Read URL params from host lobby
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramMode = urlParams.get('mode');
+    if (paramMode === 'quiz' || paramMode === 'map' || paramMode === 'timeline') {
+        setTimeout(() => switchMode(paramMode === 'quiz' ? 'quiz' : paramMode), 100);
     }
 
     // ===========================
@@ -1774,6 +1920,311 @@
             document.getElementById('quiz-scoreboard').innerHTML = html;
             document.getElementById('quiz-end-message').textContent = 'Great game! Ready for another round?';
         }
+    }
+
+    // ===========================
+    // MAP GAME MODE (LOCAL)
+    // ===========================
+    let MAP_CARDS = []; // loaded from server API
+    let mapLocalInstance = null;
+    let mapLocalPlayers = [];
+    let mapLocalDeck = [];
+    let mapLocalRound = 0;
+    let mapLocalTotalRounds = 10;
+    let mapLocalCurrentPlayerIndex = 0;
+    let mapLocalCurrentCard = null;
+    let mapLocalLocked = false;
+    let mapLocalTimer = null;
+    let mapLocalTimeLeft = 30;
+    let mapLocalSelectedPlayers = 1;
+    let mapLocalHistory = [];
+    let mapLocalResultMapInstance = null;
+
+    // Haversine distance
+    function haversine(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // Build map player select buttons
+    (function initMapPlayerSelect() {
+        const container = document.getElementById('map-player-buttons');
+        for (let i = 1; i <= 6; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'player-btn' + (i === 1 ? ' selected' : '');
+            btn.textContent = i;
+            btn.onclick = () => {
+                mapLocalSelectedPlayers = i;
+                container.querySelectorAll('.player-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+            };
+            container.appendChild(btn);
+        }
+    })();
+
+    function alignMapLocalCrosshair() {
+        const container = document.getElementById('map-local-container');
+        const crosshair = document.getElementById('map-local-crosshair');
+        const dot = document.getElementById('map-local-dot');
+        if (!container || !crosshair || !dot) return;
+        const rect = container.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        crosshair.style.left = (cx - 16) + 'px';
+        crosshair.style.top = (cy - 42) + 'px';
+        dot.style.left = (cx - 5) + 'px';
+        dot.style.top = (cy - 5) + 'px';
+    }
+
+    async function startMapGame() {
+        const difficulty = parseInt(urlParams.get('difficulty')) || 2;
+        const length = urlParams.get('length') || 'medium';
+        const roundCounts = { short: 5, medium: 10, long: 15 };
+
+        // Fetch map cards from server if not loaded yet
+        if (MAP_CARDS.length === 0) {
+            try {
+                const resp = await fetch(`/api/map-cards?difficulty=${difficulty}`);
+                MAP_CARDS = await resp.json();
+            } catch (e) {
+                alert('Could not load map cards. Make sure the server is running.');
+                return;
+            }
+        }
+
+        hideAll();
+        document.getElementById('map-game-area').style.display = 'flex';
+        document.getElementById('score-chart').style.display = 'flex';
+
+        mapLocalDeck = shuffle([...MAP_CARDS]);
+        mapLocalTotalRounds = Math.min(roundCounts[length] || 10, mapLocalDeck.length);
+        mapLocalRound = 0;
+        mapLocalHistory = [];
+        mapLocalTimeLeft = { 1: 40, 2: 30, 3: 20 }[difficulty] || 30;
+
+        mapLocalPlayers = [];
+        for (let i = 0; i < mapLocalSelectedPlayers; i++) {
+            mapLocalPlayers.push({
+                name: mapLocalSelectedPlayers === 1 ? 'You' : PLAYER_NAMES[i],
+                score: 0, emoji: PLAYER_EMOJIS[i],
+                colorClass: `player-colors-${i}`,
+                color: ['#ff6b6b','#51cf66','#339af0','#fcc419','#cc5de8','#ff922b'][i]
+            });
+        }
+        mapLocalCurrentPlayerIndex = 0;
+
+        if (!mapLocalInstance) {
+            mapLocalInstance = L.map('map-local-container', {
+                center: [25, 10], zoom: 3, minZoom: 2, maxZoom: 18,
+                zoomControl: false, attributionControl: false,
+            });
+            L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {}).addTo(mapLocalInstance);
+        }
+
+        setTimeout(() => { mapLocalInstance.invalidateSize(); alignMapLocalCrosshair(); }, 200);
+        window.addEventListener('resize', alignMapLocalCrosshair);
+
+        nextMapRound();
+    }
+
+    function nextMapRound() {
+        if (mapLocalRound >= mapLocalTotalRounds || mapLocalDeck.length === 0) {
+            endMapGame();
+            return;
+        }
+
+        mapLocalCurrentCard = mapLocalDeck.shift();
+        mapLocalRound++;
+        mapLocalLocked = false;
+
+        const p = mapLocalPlayers[mapLocalCurrentPlayerIndex];
+        document.getElementById('map-local-player').textContent = mapLocalSelectedPlayers > 1 ? `${p.emoji} ${p.name}` : '';
+        document.getElementById('map-local-round').textContent = `Round ${mapLocalRound} / ${mapLocalTotalRounds}`;
+        document.getElementById('map-local-lock-btn').disabled = false;
+        document.getElementById('map-local-lock-btn').textContent = 'LOCK IN';
+        document.getElementById('map-local-crosshair').style.display = 'block';
+        document.getElementById('map-local-dot').style.display = 'block';
+
+        // Reset map
+        mapLocalInstance.setView([25, 10], 3);
+        mapLocalInstance.eachLayer(l => { if (l instanceof L.Marker || l instanceof L.Polyline) mapLocalInstance.removeLayer(l); });
+        mapLocalInstance.dragging.enable();
+        mapLocalInstance.touchZoom.enable();
+        mapLocalInstance.scrollWheelZoom.enable();
+
+        // Load photo
+        const photo = document.getElementById('map-local-photo');
+        photo.src = '';
+        if (mapLocalCurrentCard.wiki) {
+            fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${mapLocalCurrentCard.wiki}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.thumbnail) photo.src = data.thumbnail.source.replace(/\/\d+px-/, '/500px-');
+                }).catch(() => {});
+        }
+
+        // Prompt
+        const type = mapLocalCurrentCard.type;
+        document.getElementById('map-local-prompt').textContent =
+            type === 'landmark' ? 'Where is this landmark?' : type === 'city' ? 'Where is this city?' : 'Where is this place?';
+
+        // Timer
+        const timeLimit = mapLocalTimeLeft;
+        let secondsLeft = timeLimit;
+        const fill = document.getElementById('map-local-timer-fill');
+        const num = document.getElementById('map-local-timer-num');
+        fill.style.width = '100%';
+        fill.style.background = '#ffd43b';
+        num.textContent = secondsLeft;
+
+        clearInterval(mapLocalTimer);
+        mapLocalTimer = setInterval(() => {
+            secondsLeft--;
+            const pct = (secondsLeft / timeLimit) * 100;
+            fill.style.width = pct + '%';
+            fill.style.background = secondsLeft <= 5 ? '#ff6b6b' : '#ffd43b';
+            num.textContent = secondsLeft;
+            if (secondsLeft <= 1 && !mapLocalLocked) mapLocalLockIn();
+            if (secondsLeft <= 0) clearInterval(mapLocalTimer);
+        }, 1000);
+
+        document.getElementById('map-game-area').style.display = 'flex';
+        document.getElementById('map-local-result').style.display = 'none';
+        setTimeout(() => { mapLocalInstance.invalidateSize(); alignMapLocalCrosshair(); }, 100);
+        renderScoreChart(mapLocalPlayers, mapLocalCurrentPlayerIndex, mapLocalTotalRounds, 'map');
+    }
+
+    function mapLocalLockIn() {
+        if (mapLocalLocked || !mapLocalInstance) return;
+        mapLocalLocked = true;
+        clearInterval(mapLocalTimer);
+
+        const center = mapLocalInstance.getCenter();
+        const card = mapLocalCurrentCard;
+        const timeLimit = mapLocalTimeLeft;
+        const num = document.getElementById('map-local-timer-num');
+        const timeUsed = timeLimit - parseInt(num.textContent || '0');
+
+        document.getElementById('map-local-lock-btn').disabled = true;
+        document.getElementById('map-local-lock-btn').textContent = '✓ LOCKED';
+        document.getElementById('map-local-crosshair').style.display = 'none';
+        document.getElementById('map-local-dot').style.display = 'none';
+
+        // Calculate score
+        const dist = haversine(center.lat, center.lng, card.lat, card.lng);
+        const distPoints = Math.max(0, Math.round(1000 * Math.exp(-dist / 1500)));
+        const speedBonus = Math.max(0, Math.round(500 * (1 - timeUsed / timeLimit)));
+        const countryBonus = dist < 300 ? 200 : 0;
+        const roundScore = distPoints + speedBonus + countryBonus;
+
+        const p = mapLocalPlayers[mapLocalCurrentPlayerIndex];
+        p.score += roundScore;
+
+        const me = { guessLat: center.lat, guessLng: center.lng, dist: Math.round(dist), distPoints, speedBonus, countryBonus, roundScore };
+        mapLocalHistory.push({ card, me });
+
+        // Show result after short delay
+        setTimeout(() => showMapLocalResult(card, me), 600);
+    }
+
+    function showMapLocalResult(card, me) {
+        document.getElementById('map-game-area').style.display = 'none';
+        document.getElementById('map-local-result').style.display = 'flex';
+
+        const emoji = me.distPoints >= 900 ? '🎯' : me.distPoints >= 600 ? '🔥' : me.distPoints >= 300 ? '👍' : '😅';
+        const p = mapLocalPlayers[mapLocalCurrentPlayerIndex];
+
+        document.getElementById('map-local-result-content').innerHTML = `
+            <div style="font-size:3rem;">${emoji}</div>
+            <div style="font-size:1.2rem;font-weight:700;color:#ffd43b;">${card.emoji} ${card.name}</div>
+            <div style="font-size:0.95rem;color:rgba(255,255,255,0.6);margin:4px 0;">${me.dist} km</div>
+            <div style="font-size:2.5rem;font-weight:900;color:#ffd43b;text-shadow:2px 2px 0 #e8590c;">+${me.roundScore}</div>
+            <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);line-height:1.8;">
+                Distance: +${me.distPoints}
+                ${me.speedBonus > 0 ? '<br><span style="color:#51cf66">Speed: +' + me.speedBonus + '</span>' : ''}
+                ${me.countryBonus > 0 ? '<br><span style="color:#51cf66">Nearby: +' + me.countryBonus + '</span>' : ''}
+            </div>
+            <div style="margin-top:10px;font-size:0.9rem;color:rgba(255,255,255,0.5);">Total: ${p.score}</div>
+        `;
+
+        // Build result map
+        if (mapLocalResultMapInstance) { mapLocalResultMapInstance.remove(); mapLocalResultMapInstance = null; }
+        setTimeout(() => {
+            mapLocalResultMapInstance = L.map('map-local-result-map', {
+                zoomControl: false, attributionControl: false,
+                dragging: false, touchZoom: false, scrollWheelZoom: false, doubleClickZoom: false,
+            });
+            L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {}).addTo(mapLocalResultMapInstance);
+            const correctIcon = L.divIcon({ html: '<div style="font-size:1.6rem;text-align:center;">✅</div>', iconSize: [26, 26], iconAnchor: [13, 26], className: '' });
+            L.marker([card.lat, card.lng], { icon: correctIcon }).addTo(mapLocalResultMapInstance);
+            const guessIcon = L.divIcon({ html: '<div style="font-size:1.6rem;text-align:center;">📍</div>', iconSize: [26, 26], iconAnchor: [13, 26], className: '' });
+            L.marker([me.guessLat, me.guessLng], { icon: guessIcon }).addTo(mapLocalResultMapInstance);
+            L.polyline([[me.guessLat, me.guessLng], [card.lat, card.lng]], { color: '#ff6b6b', weight: 2, dashArray: '8,6', opacity: 0.8 }).addTo(mapLocalResultMapInstance);
+            mapLocalResultMapInstance.fitBounds([[me.guessLat, me.guessLng], [card.lat, card.lng]], { padding: [30, 30], maxZoom: 8 });
+        }, 150);
+
+        renderScoreChart(mapLocalPlayers, mapLocalCurrentPlayerIndex, mapLocalTotalRounds, 'map');
+
+        // Advance to next player/round after delay
+        setTimeout(() => {
+            mapLocalCurrentPlayerIndex = (mapLocalCurrentPlayerIndex + 1) % mapLocalPlayers.length;
+            nextMapRound();
+        }, 4000);
+    }
+
+    function endMapGame() {
+        clearInterval(mapLocalTimer);
+        hideAll();
+        document.getElementById('map-end').style.display = 'flex';
+        spawnConfetti();
+
+        if (mapLocalPlayers.length === 1) {
+            const p = mapLocalPlayers[0];
+            document.getElementById('map-end-title').textContent = 'Game Over!';
+            document.getElementById('map-winner-banner').innerHTML = '';
+            document.getElementById('map-scoreboard').innerHTML = `
+                <div class="scoreboard-card player-colors-0">
+                    <div class="sb-name">Score</div>
+                    <div class="sb-score">${p.score}</div>
+                </div>`;
+            document.getElementById('map-end-message').textContent = p.score >= mapLocalTotalRounds * 1000 ? 'Geography master!' : 'Good effort! Try again?';
+        } else {
+            const sorted = [...mapLocalPlayers].sort((a, b) => b.score - a.score);
+            const winner = sorted[0];
+            document.getElementById('map-end-title').textContent = 'Game Over!';
+            document.getElementById('map-winner-banner').innerHTML = `<div class="winner-banner ${winner.colorClass}">${winner.emoji} ${winner.name} wins!</div>`;
+            let html = '';
+            sorted.forEach(p => {
+                html += `<div class="scoreboard-card ${p.colorClass}">
+                    <div class="sb-name">${p.emoji} ${p.name}</div>
+                    <div class="sb-score">${p.score}</div>
+                </div>`;
+            });
+            document.getElementById('map-scoreboard').innerHTML = html;
+            document.getElementById('map-end-message').textContent = 'Great game! Ready for another round?';
+        }
+
+        // Summary map
+        setTimeout(() => {
+            const sMap = L.map('map-summary-map', { zoomControl: false, attributionControl: false });
+            L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {}).addTo(sMap);
+            const bounds = [];
+            mapLocalHistory.forEach(h => {
+                const color = h.me.roundScore >= 800 ? '#51cf66' : h.me.roundScore >= 400 ? '#ffd43b' : '#ff6b6b';
+                const icon = L.divIcon({
+                    html: `<div style="width:12px;height:12px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`,
+                    iconSize: [12, 12], iconAnchor: [6, 6], className: ''
+                });
+                L.marker([h.card.lat, h.card.lng], { icon }).addTo(sMap);
+                bounds.push([h.card.lat, h.card.lng]);
+            });
+            if (bounds.length > 0) sMap.fitBounds(bounds, { padding: [20, 20], maxZoom: 6 });
+        }, 200);
     }
 
     </script>

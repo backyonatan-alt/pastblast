@@ -59,6 +59,16 @@ app.get('/countries', (req, res) => {
   }
   res.json(countryNames);
 });
+app.get('/api/map-cards', (req, res) => {
+  const diff = parseInt(req.query.difficulty) || 2;
+  const cards = ALL_CARDS.filter(c =>
+    c.lat && c.lng && (!c.difficulty || c.difficulty <= diff)
+  ).map(c => ({
+    name: c.name, emoji: c.emoji, type: c.type, lat: c.lat, lng: c.lng, wiki: c.wiki,
+    desc: c.desc || '', name_he: c.name_he || c.name
+  }));
+  res.json(cards);
+});
 app.get('/check-room/:code', (req, res) => {
   const room = game.getRoom(req.params.code.toUpperCase());
   res.json({ exists: !!room });
