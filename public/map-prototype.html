@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PastBlast — Map Prototype</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Fredoka', system-ui, sans-serif;
+            background: #1b1464;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Top bar with landmark name */
+        .top-bar {
+            background: #120e3f;
+            padding: 12px 16px;
+            text-align: center;
+            z-index: 1000;
+            flex: 0 0 auto;
+        }
+
+        .landmark-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ffd43b;
+        }
+
+        .landmark-hint {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 2px;
+        }
+
+        .timer-strip {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 8px;
+        }
+
+        .timer-fill {
+            height: 100%;
+            background: #ffd43b;
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        .timer-fill.urgent { background: #ff6b6b; }
+
+        /* Map container */
+        #map {
+            flex: 1;
+            z-index: 1;
+        }
+
+        /* Confirm button */
+        .confirm-bar {
+            background: #120e3f;
+            padding: 12px 16px;
+            text-align: center;
+            z-index: 1000;
+            flex: 0 0 auto;
+            display: none;
+        }
+
+        .confirm-btn {
+            background: #ffd43b;
+            color: #1b1464;
+            border: none;
+            border-radius: 30px;
+            padding: 14px 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+            box-shadow: 0 4px 0 #e8590c;
+        }
+
+        .confirm-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #e8590c;
+        }
+
+        /* Result overlay */
+        .result-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .result-overlay.show { display: flex; }
+
+        .result-emoji { font-size: 4rem; margin-bottom: 10px; }
+        .result-name { font-size: 1.6rem; font-weight: 700; color: #ffd43b; margin-bottom: 4px; }
+        .result-distance { font-size: 1.2rem; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+        .result-score { font-size: 2.5rem; font-weight: 900; color: #ffd43b; margin: 10px 0; }
+        .result-breakdown { font-size: 0.9rem; color: rgba(255,255,255,0.5); line-height: 1.8; }
+
+        .next-btn {
+            background: #ffd43b;
+            color: #1b1464;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 36px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        /* Map style selector */
+        .style-selector {
+            position: fixed;
+            bottom: 80px;
+            right: 10px;
+            z-index: 1500;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .style-btn {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(18,14,63,0.9);
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+            cursor: pointer;
+        }
+
+        .style-btn.active { border-color: #ffd43b; color: #ffd43b; }
+
+        /* Pin drop animation */
+        .pin-marker {
+            transition: transform 0.2s ease;
+        }
+
+        /* Custom crosshair */
+        .crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1500;
+            pointer-events: none;
+            font-size: 1.5rem;
+            opacity: 0.4;
+            display: none;
+        }
+
+        /* Leaflet overrides for dark theme */
+        .leaflet-container {
+            background: #0a0a2e;
+        }
+
+        .leaflet-control-zoom {
+            border: none !important;
+        }
+
+        .leaflet-control-zoom a {
+            background: rgba(18,14,63,0.9) !important;
+            color: #ffd43b !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            font-weight: 700;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            font-size: 18px !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="landmark-name" id="landmark-name">Eiffel Tower</div>
+        <div class="landmark-hint" id="landmark-hint">Where is this landmark?</div>
+        <div class="timer-strip"><div class="timer-fill" id="timer-fill"></div></div>
+    </div>
+
+    <div id="map"></div>
+
+    <div class="crosshair" id="crosshair">📍</div>
+
+    <div class="confirm-bar" id="confirm-bar">
+        <button class="confirm-btn" id="confirm-btn" onclick="confirmGuess()">CONFIRM GUESS</button>
+    </div>
+
+    <!-- Map style selector -->
+    <div class="style-selector" id="style-selector">
+        <button class="style-btn active" onclick="setMapStyle('illustrated')">🎨 Illustrated</button>
+        <button class="style-btn" onclick="setMapStyle('watercolor')">🖌️ Watercolor</button>
+        <button class="style-btn" onclick="setMapStyle('dark')">🌙 Dark</button>
+        <button class="style-btn" onclick="setMapStyle('satellite')">🛰️ Satellite</button>
+        <button class="style-btn" onclick="setMapStyle('standard')">🗺️ Standard</button>
+    </div>
+
+    <div class="result-overlay" id="result-overlay">
+        <div class="result-emoji" id="result-emoji"></div>
+        <div class="result-name" id="result-name"></div>
+        <div class="result-distance" id="result-distance"></div>
+        <div class="result-score" id="result-score"></div>
+        <div class="result-breakdown" id="result-breakdown"></div>
+        <button class="next-btn" onclick="nextRound()">NEXT →</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+    // Sample landmarks with lat/lng
+    const landmarks = [
+        { name: "Eiffel Tower", emoji: "🗼", lat: 48.8584, lng: 2.2945, country: "France", hint: "Famous iron tower" },
+        { name: "Statue of Liberty", emoji: "🗽", lat: 40.6892, lng: -74.0445, country: "USA", hint: "Gift from France" },
+        { name: "Taj Mahal", emoji: "🕌", lat: 27.1751, lng: 78.0421, country: "India", hint: "Marble mausoleum" },
+        { name: "Great Wall of China", emoji: "🧱", lat: 40.4319, lng: 116.5704, country: "China", hint: "Ancient fortification" },
+        { name: "Colosseum", emoji: "🏟️", lat: 41.8902, lng: 12.4922, country: "Italy", hint: "Roman amphitheatre" },
+        { name: "Machu Picchu", emoji: "🏔️", lat: -13.1631, lng: -72.5450, country: "Peru", hint: "Inca citadel" },
+        { name: "Sydney Opera House", emoji: "🎭", lat: -33.8568, lng: 151.2153, country: "Australia", hint: "Performing arts center" },
+        { name: "Christ the Redeemer", emoji: "✝️", lat: -22.9519, lng: -43.2105, country: "Brazil", hint: "Statue in Rio" },
+        { name: "Pyramids of Giza", emoji: "🔺", lat: 29.9792, lng: 31.1342, country: "Egypt", hint: "Ancient tombs" },
+        { name: "Big Ben", emoji: "🕐", lat: 51.5007, lng: -0.1246, country: "UK", hint: "Clock tower in London" },
+    ];
+
+    // Map tile styles
+    const tileStyles = {
+        illustrated: {
+            url: 'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png',
+            attribution: '&copy; Stadia Maps',
+        },
+        watercolor: {
+            url: 'https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg',
+            attribution: '&copy; Stadia Maps',
+        },
+        dark: {
+            url: 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+            attribution: '&copy; Stadia Maps',
+        },
+        satellite: {
+            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            attribution: '&copy; Esri',
+        },
+        standard: {
+            url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            attribution: '&copy; OpenStreetMap',
+        },
+    };
+
+    // State
+    let map, tileLayer, playerMarker, correctMarker, lineLayer;
+    let currentLandmark = null;
+    let guessLat = null, guessLng = null;
+    let timerInterval = null;
+    let secondsLeft = 30;
+    let round = 0;
+    let totalScore = 0;
+    let shuffled = [...landmarks].sort(() => Math.random() - 0.5);
+
+    // Init map
+    map = L.map('map', {
+        center: [20, 0],
+        zoom: 2,
+        minZoom: 2,
+        maxZoom: 18,
+        zoomControl: true,
+        attributionControl: false,
+    });
+
+    tileLayer = L.tileLayer(tileStyles.illustrated.url, {
+        attribution: tileStyles.illustrated.attribution,
+    }).addTo(map);
+
+    // Custom pin icon
+    const pinIcon = L.divIcon({
+        html: '<div style="font-size:2rem;text-align:center;margin-top:-16px;">📍</div>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        className: '',
+    });
+
+    const correctIcon = L.divIcon({
+        html: '<div style="font-size:2rem;text-align:center;margin-top:-16px;">✅</div>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        className: '',
+    });
+
+    // Map click → place pin
+    map.on('click', (e) => {
+        guessLat = e.latlng.lat;
+        guessLng = e.latlng.lng;
+
+        if (playerMarker) {
+            playerMarker.setLatLng(e.latlng);
+        } else {
+            playerMarker = L.marker(e.latlng, { icon: pinIcon }).addTo(map);
+        }
+
+        document.getElementById('confirm-bar').style.display = 'block';
+    });
+
+    function setMapStyle(style) {
+        map.removeLayer(tileLayer);
+        tileLayer = L.tileLayer(tileStyles[style].url, {
+            attribution: tileStyles[style].attribution,
+        }).addTo(map);
+
+        document.querySelectorAll('.style-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function startRound() {
+        if (round >= shuffled.length) {
+            document.getElementById('landmark-name').textContent = `Done! Total: ${totalScore} pts`;
+            document.getElementById('landmark-hint').textContent = '';
+            return;
+        }
+
+        currentLandmark = shuffled[round];
+        document.getElementById('landmark-name').textContent = `${currentLandmark.emoji} ${currentLandmark.name}`;
+        document.getElementById('landmark-hint').textContent = currentLandmark.hint;
+
+        // Reset map
+        if (playerMarker) { map.removeLayer(playerMarker); playerMarker = null; }
+        if (correctMarker) { map.removeLayer(correctMarker); correctMarker = null; }
+        if (lineLayer) { map.removeLayer(lineLayer); lineLayer = null; }
+        map.setView([20, 0], 2);
+        document.getElementById('confirm-bar').style.display = 'none';
+        document.getElementById('result-overlay').classList.remove('show');
+        guessLat = null;
+        guessLng = null;
+
+        // Start timer
+        secondsLeft = 30;
+        document.getElementById('timer-fill').style.width = '100%';
+        document.getElementById('timer-fill').classList.remove('urgent');
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsLeft--;
+            const pct = (secondsLeft / 30) * 100;
+            document.getElementById('timer-fill').style.width = pct + '%';
+            if (secondsLeft <= 5) document.getElementById('timer-fill').classList.add('urgent');
+            if (secondsLeft <= 0) {
+                clearInterval(timerInterval);
+                confirmGuess();
+            }
+        }, 1000);
+    }
+
+    function confirmGuess() {
+        clearInterval(timerInterval);
+
+        if (!guessLat || !guessLng) {
+            // No guess — max distance penalty
+            guessLat = 0;
+            guessLng = 0;
+        }
+
+        const dist = haversine(guessLat, guessLng, currentLandmark.lat, currentLandmark.lng);
+        const timeUsed = 30 - secondsLeft;
+
+        // Scoring
+        const distPoints = Math.max(0, Math.round(1000 * Math.exp(-dist / 2000)));
+        const speedBonus = Math.max(0, Math.round(500 * (1 - timeUsed / 30)));
+        const countryBonus = dist < 500 ? 200 : 0; // Rough proxy for "in country"
+        const roundScore = distPoints + speedBonus + countryBonus;
+        totalScore += roundScore;
+
+        // Show correct location
+        correctMarker = L.marker([currentLandmark.lat, currentLandmark.lng], { icon: correctIcon }).addTo(map);
+
+        // Draw line between guess and correct
+        if (playerMarker) {
+            lineLayer = L.polyline([
+                [guessLat, guessLng],
+                [currentLandmark.lat, currentLandmark.lng]
+            ], { color: '#ff6b6b', weight: 2, dashArray: '8,8' }).addTo(map);
+
+            // Fit bounds to show both
+            map.fitBounds([
+                [guessLat, guessLng],
+                [currentLandmark.lat, currentLandmark.lng]
+            ], { padding: [50, 50] });
+        }
+
+        // Show result
+        let emoji;
+        if (distPoints >= 900) emoji = '🎯';
+        else if (distPoints >= 600) emoji = '🔥';
+        else if (distPoints >= 300) emoji = '👍';
+        else emoji = '😅';
+
+        document.getElementById('result-emoji').textContent = emoji;
+        document.getElementById('result-name').textContent = `${currentLandmark.emoji} ${currentLandmark.name}`;
+        document.getElementById('result-distance').textContent = dist < 1 ? 'Spot on!' : `${Math.round(dist)} km away`;
+        document.getElementById('result-score').textContent = `+${roundScore}`;
+        document.getElementById('result-breakdown').innerHTML = `
+            Distance: +${distPoints}<br>
+            Speed: +${speedBonus}<br>
+            ${countryBonus > 0 ? 'Country bonus: +200<br>' : ''}
+            Total this game: ${totalScore}
+        `;
+        document.getElementById('result-overlay').classList.add('show');
+    }
+
+    function nextRound() {
+        round++;
+        startRound();
+    }
+
+    function haversine(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // Start!
+    startRound();
+    </script>
+</body>
+</html>
