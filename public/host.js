@@ -50,6 +50,7 @@ function selectMode(mode) {
     selectedMode = mode;
     document.getElementById('mode-timeline').classList.toggle('active', mode === 'timeline');
     document.getElementById('mode-quiz').classList.toggle('active', mode === 'quiz');
+    document.getElementById('mode-map').classList.toggle('active', mode === 'map');
 }
 
 function selectDifficulty(level) {
@@ -198,6 +199,61 @@ socket.on('steal_result', ({ correct, stealerName, scores }) => {
     if (!correct) {
         document.getElementById('turn-label').innerHTML = `${esc(stealerName)} ${t('missed')}`;
     }
+    if (scores) renderScores(scores);
+});
+
+// --- MAP GAME ---
+socket.on('map_round', ({ wiki, emoji, round, totalRounds, deckLeft, scores, timeLimit }) => {
+    document.getElementById('steal-bar').style.display = 'none';
+    document.getElementById('turn-label').textContent = `Round ${round} / ${totalRounds}`;
+    document.getElementById('round-label').textContent = '';
+    timerMax = timeLimit;
+
+    // Show photo on host
+    const area = document.getElementById('card-area');
+    area.innerHTML = `
+        <div class="host-card" style="padding:16px 24px;">
+            <img src="" id="host-map-photo" style="width:100%;max-width:400px;height:250px;object-fit:contain;border-radius:12px;background:rgba(0,0,0,0.3);display:block;margin:0 auto;">
+            <div style="font-size:1.1rem;color:rgba(255,255,255,0.5);margin-top:8px;">Where is this place?</div>
+        </div>`;
+
+    if (wiki) {
+        fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${wiki}`)
+            .then(r => r.json())
+            .then(data => {
+                const img = document.getElementById('host-map-photo');
+                if (img && data.thumbnail) img.src = data.thumbnail.source.replace(/\/\d+px-/, '/800px-');
+            }).catch(() => {});
+    }
+
+    if (scores) renderScores(scores);
+});
+
+socket.on('map_player_locked', ({ name, emoji, lockedCount, totalPlayers }) => {
+    document.getElementById('round-label').textContent = `${lockedCount}/${totalPlayers} locked in`;
+});
+
+socket.on('map_result', ({ card, results, scores }) => {
+    const cName = (typeof isRTL === 'function' && isRTL() && card.name_he) ? card.name_he : card.name;
+
+    // Show results on host: name + all player distances
+    let html = `<div class="host-card" style="padding:16px 24px;">
+        <div style="font-size:2rem;">${card.emoji}</div>
+        <div class="card-title" style="color:#ffd43b;">${esc(cName)}</div>
+        <div style="margin-top:12px;">`;
+
+    results.sort((a, b) => b.roundScore - a.roundScore);
+    results.forEach(r => {
+        const emoji = r.roundScore >= 1000 ? '🎯' : r.roundScore >= 500 ? '🔥' : r.roundScore >= 200 ? '👍' : '😅';
+        html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+            <span>${r.emoji} ${esc(r.name)}</span>
+            <span>${emoji} +${r.roundScore} <span style="color:rgba(255,255,255,0.4);font-size:0.8rem;">(${r.dist}km)</span></span>
+        </div>`;
+    });
+
+    html += `</div></div>`;
+    document.getElementById('card-area').innerHTML = html;
+
     if (scores) renderScores(scores);
 });
 

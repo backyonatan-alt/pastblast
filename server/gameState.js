@@ -142,7 +142,21 @@ function startGame(room, mode, difficulty, length) {
       p.timeline = [room.deck.shift()];
     });
     room.totalRounds = room.deck.length;
+  } else if (mode === 'map') {
+    // Map mode: landmarks + cities + nature with coordinates
+    const mapCards = shuffle(ALL_CARDS.filter(c =>
+      (c.type === 'landmark' || c.type === 'city' || c.type === 'nature') &&
+      c.lat && c.lng && diffFilter(c)
+    ));
+    const mapRounds = C.MAP_ROUNDS[length] || 10;
+    room.deck = mapCards.slice(0, mapRounds);
+    room.totalRounds = room.deck.length;
+    room.mapGuesses = {}; // { socketId: { lat, lng, time } }
+    room.players.forEach(p => {
+      p.score = 0;
+    });
   } else {
+    // Flag quiz
     room.deck = shuffle(ALL_CARDS.filter(c => c.type === 'flag'));
     room.deck = room.deck.slice(0, targetRounds);
     room.totalRounds = room.deck.length;
@@ -157,6 +171,72 @@ function startGame(room, mode, difficulty, length) {
   room.players = shuffle(room.players);
   room.currentPlayerIndex = 0;
   room.stealQueue = [];
+}
+
+// Haversine distance in km
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function submitMapGuess(room, socketId, lat, lng) {
+  const timeUsed = C.MAP_TIME - (room.timerSeconds || 0);
+  room.mapGuesses[socketId] = { lat, lng, timeUsed };
+}
+
+function calculateMapScores(room) {
+  const card = room.currentCard;
+  const results = [];
+
+  room.players.forEach(p => {
+    const guess = room.mapGuesses[p.id];
+    let dist, distPoints, speedBonus, countryBonus, roundScore;
+
+    if (guess) {
+      dist = haversine(guess.lat, guess.lng, card.lat, card.lng);
+      distPoints = Math.max(0, Math.round(1000 * Math.exp(-dist / 1500)));
+      speedBonus = Math.max(0, Math.round(500 * (1 - guess.timeUsed / C.MAP_TIME)));
+      countryBonus = dist < 300 ? 200 : 0;
+      roundScore = distPoints + speedBonus + countryBonus;
+    } else {
+      dist = 20000;
+      distPoints = 0;
+      speedBonus = 0;
+      countryBonus = 0;
+      roundScore = 0;
+    }
+
+    p.score += roundScore;
+
+    results.push({
+      name: p.name,
+      emoji: p.emoji,
+      color: p.color,
+      guessLat: guess ? guess.lat : null,
+      guessLng: guess ? guess.lng : null,
+      dist: Math.round(dist),
+      distPoints,
+      speedBonus,
+      countryBonus,
+      roundScore,
+      totalScore: p.score,
+    });
+  });
+
+  // Reset guesses for next round
+  room.mapGuesses = {};
+
+  return results;
+}
+
+function allMapGuessesIn(room) {
+  const connected = room.players.filter(p => p.connected);
+  return connected.every(p => room.mapGuesses[p.id]);
 }
 
 function nextCard(room) {
@@ -331,5 +411,9 @@ module.exports = {
   getPlayerTimeline,
   deleteRoom,
   getRoomCount: () => rooms.size,
+  submitMapGuess,
+  calculateMapScores,
+  allMapGuessesIn,
+  haversine,
   formatYear: (y) => y < 0 ? `${Math.abs(y)} BCE` : `${y}`,
 };

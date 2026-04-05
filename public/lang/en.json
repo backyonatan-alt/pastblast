@@ -73,6 +73,13 @@
   "history": "History",
   "flag": "Flag",
 
+  "map_game": "Map Game",
+  "where_is_this": "Where is this place?",
+  "lock_in": "LOCK IN",
+  "locked": "✓ LOCKED",
+  "km_away": "km away",
+  "spot_on": "Spot on!",
+
   "score": "Score",
   "round": "Round",
 

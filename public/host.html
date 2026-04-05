@@ -25,6 +25,7 @@
             <div class="mode-buttons">
                 <button class="mode-btn active" id="mode-timeline" onclick="selectMode('timeline')" data-i18n="timeline">Timeline</button>
                 <button class="mode-btn" id="mode-quiz" onclick="selectMode('quiz')" data-i18n="flag_quiz">Flag Quiz</button>
+                <button class="mode-btn" id="mode-map" onclick="selectMode('map')" data-i18n="map_game">Map Game</button>
             </div>
         </div>
         <div class="mode-select" role="group" aria-label="Difficulty">
@@ -82,6 +83,7 @@
         <button class="btn play-again-btn" onclick="playAgain()" data-i18n="play_again">PLAY AGAIN</button>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="i18n.js"></script>
     <script src="analytics.js"></script>
     <script src="/socket.io/socket.io.js"></script>

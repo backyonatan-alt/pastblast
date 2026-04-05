@@ -286,6 +286,68 @@ function sendStealRound(room) {
   );
 }
 
+// --- MAP GAME ---
+function sendMapRound(room) {
+  const card = room.currentCard;
+  room.mapGuesses = {};
+
+  // Fetch Wikipedia thumbnail URL
+  const wikiUrl = card.wiki ? `https://en.wikipedia.org/api/rest_v1/page/summary/${card.wiki}` : null;
+
+  // Send to host: photo info + round info (no lat/lng yet!)
+  io.to(room.hostSocketId).emit('map_round', {
+    wiki: card.wiki,
+    emoji: card.emoji,
+    round: room.round,
+    totalRounds: room.totalRounds,
+    deckLeft: room.deck.length,
+    scores: game.getScores(room),
+    timeLimit: C.MAP_TIME,
+  });
+
+  // Send to ALL players simultaneously: wiki for photo (no lat/lng!)
+  room.players.forEach(p => {
+    if (p.connected) {
+      io.to(p.id).emit('map_round', {
+        wiki: card.wiki,
+        emoji: card.emoji,
+        round: room.round,
+        totalRounds: room.totalRounds,
+        timeLimit: C.MAP_TIME,
+      });
+    }
+  });
+
+  // Start timer
+  startTimer(room, C.MAP_TIME,
+    (sec) => {
+      io.to(room.code).emit('timer_tick', { secondsLeft: sec });
+      io.to(room.hostSocketId).emit('timer_tick', { secondsLeft: sec });
+    },
+    () => resolveMapRound(room)
+  );
+}
+
+function resolveMapRound(room) {
+  clearTimer(room);
+  const card = room.currentCard;
+  const results = game.calculateMapScores(room);
+
+  // Send results to everyone with correct location
+  const data = {
+    card: { name: card.name, name_he: card.name_he, emoji: card.emoji, lat: card.lat, lng: card.lng, wiki: card.wiki },
+    results,
+    scores: game.getScores(room),
+  };
+  io.to(room.hostSocketId).emit('map_result', data);
+  room.players.forEach(p => {
+    if (p.connected) io.to(p.id).emit('map_result', data);
+  });
+
+  // Next round after delay
+  setTimeout(() => nextRoundOrEnd(room), 5000);
+}
+
 function nextRoundOrEnd(room) {
   const card = game.nextCard(room);
   if (!card) {
@@ -308,7 +370,11 @@ function nextRoundOrEnd(room) {
     clearTimer(room);
     return;
   }
-  sendRound(room);
+  if (room.mode === 'map') {
+    sendMapRound(room);
+  } else {
+    sendRound(room);
+  }
 }
 
 // Socket.IO connection handling
@@ -395,7 +461,7 @@ io.on('connection', (socket) => {
 
   // HOST starts the game
   socket.on('start_game', (data) => {
-    if (!data || !['timeline', 'quiz'].includes(data.mode)) return;
+    if (!data || !['timeline', 'quiz', 'map'].includes(data.mode)) return;
     const { mode } = data;
     const difficulty = [1, 2, 3].includes(data.difficulty) ? data.difficulty : 2;
     const length = ['short', 'medium', 'long'].includes(data.length) ? data.length : 'medium';
@@ -526,6 +592,30 @@ io.on('connection', (socket) => {
       broadcastResult(room, false, room.currentCard, '');
       game.advanceTurn(room);
       setTimeout(() => nextRoundOrEnd(room), 3500);
+    }
+  });
+
+  // MAP GUESS (all players submit simultaneously)
+  socket.on('map_guess', (data) => {
+    if (!data || typeof data.lat !== 'number' || typeof data.lng !== 'number') return;
+    const room = game.getRoomBySocket(socket.id);
+    if (!room || room.mode !== 'map') return;
+
+    game.submitMapGuess(room, socket.id, data.lat, data.lng);
+
+    // Notify host that this player locked in
+    const player = room.players.find(p => p.id === socket.id);
+    if (player) {
+      io.to(room.hostSocketId).emit('map_player_locked', {
+        name: player.name, emoji: player.emoji,
+        lockedCount: Object.keys(room.mapGuesses).length,
+        totalPlayers: room.players.filter(p => p.connected).length,
+      });
+    }
+
+    // If all players have guessed, resolve immediately
+    if (game.allMapGuessesIn(room)) {
+      resolveMapRound(room);
     }
   });
 

@@ -222,6 +222,84 @@ socket.on('game_over', ({ scores, winner }) => {
     spawnConfetti();
 });
 
+// --- MAP GAME ---
+let mapInstance = null;
+let mapLocked = false;
+
+socket.on('map_round', ({ wiki, emoji, round, totalRounds, timeLimit }) => {
+    showScreen('map-screen');
+    mapLocked = false;
+    document.getElementById('map-round-info').textContent = `Round ${round} / ${totalRounds}`;
+    document.getElementById('map-lock-btn').disabled = false;
+    document.getElementById('map-lock-btn').textContent = 'LOCK IN';
+    document.getElementById('map-crosshair').style.display = 'block';
+    document.getElementById('map-dot').style.display = 'block';
+    document.getElementById('map-timer-fill').style.width = '100%';
+    document.getElementById('map-timer-fill').classList.remove('urgent');
+
+    // Load photo
+    const photo = document.getElementById('map-photo');
+    photo.src = '';
+    if (wiki) {
+        fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${wiki}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.thumbnail) photo.src = data.thumbnail.source.replace(/\/\d+px-/, '/500px-');
+            }).catch(() => {});
+    }
+
+    // Init map if not yet
+    if (!mapInstance) {
+        mapInstance = L.map('map-container', {
+            center: [25, 10], zoom: 2, minZoom: 2, maxZoom: 18,
+            zoomControl: false, attributionControl: false,
+        });
+        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {}).addTo(mapInstance);
+    } else {
+        mapInstance.setView([25, 10], 2);
+        // Remove old markers
+        mapInstance.eachLayer(l => { if (l instanceof L.Marker || l instanceof L.Polyline) mapInstance.removeLayer(l); });
+    }
+
+    setTimeout(() => mapInstance.invalidateSize(), 100);
+});
+
+socket.on('map_result', ({ card, results }) => {
+    mapLocked = true;
+    document.getElementById('map-crosshair').style.display = 'none';
+    document.getElementById('map-dot').style.display = 'none';
+
+    const me = results.find(r => r.name === playerName) || results[0];
+    let emoji = me.distPoints >= 900 ? '🎯' : me.distPoints >= 600 ? '🔥' : me.distPoints >= 300 ? '👍' : '😅';
+
+    const cName = (typeof isRTL === 'function' && isRTL() && card.name_he) ? card.name_he : card.name;
+
+    document.getElementById('map-result-card').innerHTML = `
+        <div style="font-size:3rem;">${emoji}</div>
+        <div style="font-size:1.2rem;font-weight:700;color:#ffd43b;">${card.emoji} ${esc(cName)}</div>
+        <div style="font-size:0.95rem;color:rgba(255,255,255,0.6);margin:4px 0;">${me.dist} km</div>
+        <div style="font-size:2.5rem;font-weight:900;color:#ffd43b;text-shadow:2px 2px 0 #e8590c;">+${me.roundScore}</div>
+        <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);line-height:1.8;">
+            Distance: +${me.distPoints}
+            ${me.speedBonus > 0 ? '<br><span style="color:#51cf66">Speed: +' + me.speedBonus + '</span>' : ''}
+            ${me.countryBonus > 0 ? '<br><span style="color:#51cf66">Country: +' + me.countryBonus + '</span>' : ''}
+        </div>
+        <div style="margin-top:10px;font-size:0.9rem;color:rgba(255,255,255,0.5);">Total: ${me.totalScore}</div>
+    `;
+    showScreen('map-result-screen');
+});
+
+function mapLockIn() {
+    if (mapLocked || !mapInstance) return;
+    mapLocked = true;
+    const center = mapInstance.getCenter();
+    socket.emit('map_guess', { lat: center.lat, lng: center.lng });
+    document.getElementById('map-lock-btn').disabled = true;
+    document.getElementById('map-lock-btn').textContent = '✓ LOCKED';
+    document.getElementById('map-crosshair').style.display = 'none';
+    document.getElementById('map-dot').style.display = 'none';
+}
+
 function spawnConfetti() {
     const emojis = ['🎉', '🎊', '⭐', '🏆', '✨', '🎈', '🇺🇸', '🇫🇷', '🇧🇷', '🇩🇪', '🇯🇵'];
     for (let i = 0; i < 25; i++) {
