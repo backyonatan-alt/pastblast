@@ -423,10 +423,23 @@ io.on('connection', (socket) => {
         });
         // Send current game state so player can rejoin mid-game
         const playerIndex = room.players.findIndex(p => p.name === name);
+        socket.emit('game_started', { mode: room.mode });
+
         if (room.phase === 'ended') {
           socket.emit('game_over', { scores: game.getScores(room), winner: game.getScores(room).sort((a, b) => b.score - a.score)[0] });
+        } else if (room.mode === 'map') {
+          // Map mode: send current round so player can still guess
+          const card = room.currentCard;
+          if (card) {
+            socket.emit('map_round', {
+              wiki: card.wiki,
+              emoji: card.emoji,
+              round: room.round,
+              totalRounds: room.totalRounds,
+              timeLimit: room.timerSeconds || C.MAP_TIME,
+            });
+          }
         } else if (playerIndex === room.currentPlayerIndex) {
-          socket.emit('game_started', { mode: room.mode });
           socket.emit('your_turn', {
             card: room.currentCard,
             timeline: room.mode === 'timeline' ? game.getPlayerTimeline(room, playerIndex) : null,
@@ -434,7 +447,6 @@ io.on('connection', (socket) => {
             timeLimit: room.timerSeconds || 30,
           });
         } else {
-          socket.emit('game_started', { mode: room.mode });
           const activePlayer = room.players[room.currentPlayerIndex];
           socket.emit('wait', { activePlayerName: activePlayer ? activePlayer.name : '...', scores: game.getScores(room) });
         }

@@ -143,6 +143,10 @@ socket.on('timer_tick', ({ secondsLeft }) => {
         fill.style.width = pct + '%';
         fill.className = 'p-timer-fill' + (secondsLeft <= 5 ? ' urgent' : '');
     });
+    // Auto-submit map guess at 1 second if not locked
+    if (secondsLeft <= 1 && currentMode === 'map' && !mapLocked && mapInstance) {
+        mapLockIn();
+    }
 });
 
 // --- ROUND RESULT ---
