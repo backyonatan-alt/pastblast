@@ -31,24 +31,25 @@
         .round-info {
             font-size: 0.75rem;
             color: rgba(255,255,255,0.4);
-            margin-bottom: 2px;
+            margin-bottom: 4px;
         }
 
-        .landmark-emoji {
-            font-size: 2rem;
-            line-height: 1;
+        .landmark-photo {
+            width: 100%;
+            max-width: 280px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.15);
+            margin: 4px auto;
+            display: block;
+            background: rgba(255,255,255,0.05);
         }
 
-        .landmark-name {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #ffd43b;
-            margin: 2px 0;
-        }
-
-        .landmark-hint {
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.45);
+        .landmark-question {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
         }
 
         .timer-strip {
@@ -240,9 +241,8 @@
 <body>
     <div class="top-bar">
         <div class="round-info" id="round-info">Round 1 / 10</div>
-        <div class="landmark-emoji" id="landmark-emoji">🗼</div>
-        <div class="landmark-name" id="landmark-name">Eiffel Tower</div>
-        <div class="landmark-hint" id="landmark-hint">Famous iron tower</div>
+        <img class="landmark-photo" id="landmark-photo" src="" alt="Where is this?">
+        <div class="landmark-question">Where is this place?</div>
         <div class="timer-strip"><div class="timer-fill" id="timer-fill"></div></div>
     </div>
 
@@ -272,16 +272,16 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
     const landmarks = [
-        { name: "Eiffel Tower", emoji: "🗼", lat: 48.8584, lng: 2.2945, hint: "Famous iron tower in Paris" },
-        { name: "Statue of Liberty", emoji: "🗽", lat: 40.6892, lng: -74.0445, hint: "Gift from France to America" },
-        { name: "Taj Mahal", emoji: "🕌", lat: 27.1751, lng: 78.0421, hint: "Marble mausoleum in India" },
-        { name: "Great Wall of China", emoji: "🧱", lat: 40.4319, lng: 116.5704, hint: "Ancient fortification" },
-        { name: "Colosseum", emoji: "🏟️", lat: 41.8902, lng: 12.4922, hint: "Roman amphitheatre in Italy" },
-        { name: "Machu Picchu", emoji: "🏔️", lat: -13.1631, lng: -72.5450, hint: "Inca citadel in the Andes" },
-        { name: "Sydney Opera House", emoji: "🎭", lat: -33.8568, lng: 151.2153, hint: "Iconic building in Australia" },
-        { name: "Pyramids of Giza", emoji: "🔺", lat: 29.9792, lng: 31.1342, hint: "Ancient tombs in Egypt" },
-        { name: "Big Ben", emoji: "🕐", lat: 51.5007, lng: -0.1246, hint: "Clock tower in London" },
-        { name: "Christ the Redeemer", emoji: "✝️", lat: -22.9519, lng: -43.2105, hint: "Statue overlooking Rio" },
+        { name: "Eiffel Tower", emoji: "🗼", lat: 48.8584, lng: 2.2945, wiki: "Eiffel_Tower" },
+        { name: "Statue of Liberty", emoji: "🗽", lat: 40.6892, lng: -74.0445, wiki: "Statue_of_Liberty" },
+        { name: "Taj Mahal", emoji: "🕌", lat: 27.1751, lng: 78.0421, wiki: "Taj_Mahal" },
+        { name: "Great Wall of China", emoji: "🧱", lat: 40.4319, lng: 116.5704, wiki: "Great_Wall_of_China" },
+        { name: "Colosseum", emoji: "🏟️", lat: 41.8902, lng: 12.4922, wiki: "Colosseum" },
+        { name: "Machu Picchu", emoji: "🏔️", lat: -13.1631, lng: -72.5450, wiki: "Machu_Picchu" },
+        { name: "Sydney Opera House", emoji: "🎭", lat: -33.8568, lng: 151.2153, wiki: "Sydney_Opera_House" },
+        { name: "Pyramids of Giza", emoji: "🔺", lat: 29.9792, lng: 31.1342, wiki: "Great_Pyramid_of_Giza" },
+        { name: "Big Ben", emoji: "🕐", lat: 51.5007, lng: -0.1246, wiki: "Big_Ben" },
+        { name: "Christ the Redeemer", emoji: "✝️", lat: -22.9519, lng: -43.2105, wiki: "Christ_the_Redeemer_(statue)" },
     ];
 
     let map, playerMarker, correctMarker, lineLayer;
@@ -326,10 +326,9 @@
 
     function startRound() {
         if (round >= shuffled.length) {
-            document.getElementById('landmark-name').textContent = 'Game Over!';
-            document.getElementById('landmark-hint').textContent = `Final Score: ${totalScore}`;
-            document.getElementById('landmark-emoji').textContent = '🏆';
-            document.getElementById('round-info').textContent = '';
+            document.getElementById('landmark-photo').style.display = 'none';
+            document.querySelector('.landmark-question').textContent = `🏆 Final Score: ${totalScore}`;
+            document.getElementById('round-info').textContent = 'Game Over!';
             document.getElementById('lock-btn').disabled = true;
             document.getElementById('lock-btn').textContent = 'DONE';
             document.getElementById('crosshair').style.display = 'none';
@@ -338,10 +337,23 @@
         }
 
         const lm = shuffled[round];
-        document.getElementById('landmark-emoji').textContent = lm.emoji;
-        document.getElementById('landmark-name').textContent = lm.name;
-        document.getElementById('landmark-hint').textContent = lm.hint;
         document.getElementById('round-info').textContent = `Round ${round + 1} / ${shuffled.length}`;
+
+        // Fetch photo from Wikipedia
+        const photo = document.getElementById('landmark-photo');
+        photo.src = '';
+        photo.alt = 'Where is this?';
+        fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${lm.wiki}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.thumbnail && data.thumbnail.source) {
+                    // Get a wider version
+                    photo.src = data.thumbnail.source.replace(/\/\d+px-/, '/600px-');
+                }
+            })
+            .catch(() => {
+                photo.alt = lm.emoji;
+            });
 
         // Reset
         if (playerMarker) { map.removeLayer(playerMarker); playerMarker = null; }

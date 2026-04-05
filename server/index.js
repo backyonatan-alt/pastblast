@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://unpkg.com; connect-src 'self' wss: ws: https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com; font-src 'self' fonts.gstatic.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com https://unpkg.com; img-src 'self' api.qrserver.com data: https://*.google-analytics.com https://*.googletagmanager.com https://*.tile.openstreetmap.org https://tiles.stadiamaps.com https://server.arcgisonline.com");
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://unpkg.com; connect-src 'self' wss: ws: https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://en.wikipedia.org; font-src 'self' fonts.gstatic.com; style-src 'self' 'unsafe-inline' fonts.googleapis.com https://unpkg.com; img-src 'self' api.qrserver.com data: https://*.google-analytics.com https://*.googletagmanager.com https://*.tile.openstreetmap.org https://tiles.stadiamaps.com https://server.arcgisonline.com https://upload.wikimedia.org");
   next();
 });
 
