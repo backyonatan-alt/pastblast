@@ -300,12 +300,8 @@
         attributionControl: false,
     });
 
+    // Watercolor only — no labels (labels would give away locations)
     L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {}).addTo(map);
-
-    // Add country labels on top of watercolor
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_terrain_labels/{z}/{x}/{y}{r}.png', {
-        pane: 'overlayPane',
-    }).addTo(map);
 
     const pinIcon = L.divIcon({
         html: '<div style="font-size:2rem;text-align:center;">📍</div>',
