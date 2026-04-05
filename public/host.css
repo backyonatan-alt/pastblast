@@ -100,8 +100,12 @@
 
 .mode-card:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 
-.mode-card-icon { font-size: 2.5rem; margin-bottom: 6px; }
-.mode-card-emojis { font-size: 1.2rem; margin-bottom: 8px; letter-spacing: 2px; }
+.mode-card-img {
+    width: 100%;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 8px;
+}
 .mode-card-title { font-size: 1.1rem; font-weight: 700; color: #ffd43b; margin-bottom: 4px; }
 .mode-card-desc { font-size: 0.75rem; color: rgba(255,255,255,0.45); line-height: 1.3; }
 
