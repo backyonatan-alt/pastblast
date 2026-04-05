@@ -38,7 +38,7 @@ if (socket.connected) {
 function generateQR(url) {
     const qrBox = document.getElementById('qr-code');
     const img = document.createElement('img');
-    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}&bgcolor=1b1464&color=ffffff`;
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}&bgcolor=ffffff&color=000000&margin=10`;
     img.width = 180;
     img.height = 180;
     img.alt = 'QR code to join the game';
