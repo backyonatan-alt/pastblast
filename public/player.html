@@ -62,18 +62,18 @@
     </div>
 
     <!-- MAP GAME -->
-    <div id="map-screen" class="p-screen" style="display:none;padding:0;justify-content:stretch;">
-        <div style="background:rgba(18,14,63,0.95);padding:8px 12px;text-align:center;z-index:1000;">
+    <div id="map-screen" style="display:none;flex-direction:column;height:100vh;height:100dvh;width:100%;position:fixed;top:0;left:0;right:0;bottom:0;z-index:10;">
+        <div style="background:rgba(18,14,63,0.95);padding:8px 12px;text-align:center;z-index:1000;flex:0 0 auto;">
             <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);" id="map-round-info"></div>
-            <img id="map-photo" style="width:100%;max-width:260px;height:140px;object-fit:contain;border-radius:10px;margin:4px auto;display:block;background:rgba(0,0,0,0.3);" src="" alt="">
+            <img id="map-photo" style="width:100%;max-width:260px;height:120px;object-fit:contain;border-radius:10px;margin:4px auto;display:block;background:rgba(0,0,0,0.3);" src="" alt="">
             <div style="font-size:0.8rem;color:rgba(255,255,255,0.45);" data-i18n="where_is_this">Where is this place?</div>
-            <div class="timer-strip" style="margin-top:4px;"><div class="timer-fill" id="map-timer-fill" style="height:4px;"></div></div>
+            <div style="height:4px;background:rgba(255,255,255,0.1);margin-top:4px;"><div id="map-timer-fill" style="height:100%;background:#ffd43b;width:100%;transition:width 1s linear;"></div></div>
         </div>
-        <div id="map-container" style="flex:1;z-index:1;"></div>
-        <div class="crosshair" id="map-crosshair" style="display:block;position:fixed;top:55%;left:50%;transform:translate(-50%,-100%);z-index:1500;pointer-events:none;font-size:2rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</div>
-        <div style="position:fixed;top:55%;left:50%;transform:translate(-50%,-50%);width:6px;height:6px;background:#ff6b6b;border:2px solid #fff;border-radius:50%;z-index:1500;pointer-events:none;box-shadow:0 0 8px rgba(255,107,107,0.6);" id="map-dot"></div>
-        <div style="background:rgba(18,14,63,0.95);padding:10px 16px;padding-bottom:max(10px,env(safe-area-inset-bottom));text-align:center;z-index:1000;">
-            <button class="lock-btn" id="map-lock-btn" onclick="mapLockIn()" style="background:#ffd43b;color:#1b1464;border:none;border-radius:14px;padding:14px 0;font-size:1.2rem;font-weight:900;font-family:'Fredoka',sans-serif;cursor:pointer;width:100%;max-width:350px;box-shadow:0 4px 0 #e8590c;letter-spacing:2px;">LOCK IN</button>
+        <div id="map-container" style="flex:1 1 auto;min-height:200px;z-index:1;"></div>
+        <div id="map-crosshair" style="position:fixed;top:55%;left:50%;transform:translate(-50%,-100%);z-index:1500;pointer-events:none;font-size:2rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</div>
+        <div id="map-dot" style="position:fixed;top:55%;left:50%;transform:translate(-50%,-50%);width:6px;height:6px;background:#ff6b6b;border:2px solid #fff;border-radius:50%;z-index:1500;pointer-events:none;box-shadow:0 0 8px rgba(255,107,107,0.6);"></div>
+        <div style="background:rgba(18,14,63,0.95);padding:10px 16px;padding-bottom:max(10px,env(safe-area-inset-bottom));text-align:center;z-index:1000;flex:0 0 auto;">
+            <button id="map-lock-btn" onclick="mapLockIn()" style="background:#ffd43b;color:#1b1464;border:none;border-radius:14px;padding:14px 0;font-size:1.2rem;font-weight:900;font-family:'Fredoka',sans-serif;cursor:pointer;width:100%;max-width:350px;box-shadow:0 4px 0 #e8590c;letter-spacing:2px;">LOCK IN</button>
         </div>
     </div>
 

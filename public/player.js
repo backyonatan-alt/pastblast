@@ -75,7 +75,15 @@ if (socket.connected) {
 
 function showScreen(id) {
     document.querySelectorAll('.p-screen').forEach(s => s.style.display = 'none');
-    document.getElementById(id).style.display = 'flex';
+    // Also hide map screen (it's not a .p-screen)
+    document.getElementById('map-screen').style.display = 'none';
+
+    const el = document.getElementById(id);
+    el.style.display = 'flex';
+
+    if (id === 'map-screen' && mapInstance) {
+        setTimeout(() => mapInstance.invalidateSize(), 200);
+    }
 }
 
 function formatYear(y) {

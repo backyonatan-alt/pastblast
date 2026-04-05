@@ -478,7 +478,11 @@ io.on('connection', (socket) => {
 
     // Send first card
     game.nextCard(room);
-    sendRound(room);
+    if (room.mode === 'map') {
+      sendMapRound(room);
+    } else {
+      sendRound(room);
+    }
   });
 
   // PLAYER places a card (timeline mode)

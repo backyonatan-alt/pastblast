@@ -232,6 +232,18 @@
     margin-bottom: 2px;
 }
 
+/* Map game */
+#map-container .leaflet-container {
+    background: #d4c4a8;
+}
+#map-container .leaflet-control-zoom,
+#map-container .leaflet-control-attribution {
+    display: none;
+}
+#map-container {
+    touch-action: none; /* Let Leaflet handle all touch */
+}
+
 .steal-warning {
     font-size: 0.95rem;
     color: rgba(255,107,107,0.7);
