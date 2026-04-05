@@ -370,6 +370,8 @@ function renderScores(scores, activeName) {
 }
 
 function showFeedback(correct, card) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'feedback-wrapper';
     const fb = document.createElement('div');
     fb.className = `feedback ${correct ? 'correct' : 'wrong'}`;
     const yearText = card.year < 0 ? `${Math.abs(card.year)} BCE` : `${card.year}`;
@@ -379,8 +381,9 @@ function showFeedback(correct, card) {
         <div class="fb-name">${correct ? '✅' : '❌'} ${cardName(card)}</div>
         ${showYear ? `<div class="fb-year">${yearText}</div>` : ''}
     `;
-    document.body.appendChild(fb);
-    setTimeout(() => fb.remove(), 3200);
+    wrapper.appendChild(fb);
+    document.body.appendChild(wrapper);
+    setTimeout(() => wrapper.remove(), 3200);
 }
 
 function spawnConfetti() {

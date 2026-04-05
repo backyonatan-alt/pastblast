@@ -160,6 +160,20 @@ socket.on('timer_tick', ({ secondsLeft }) => {
 // --- ROUND RESULT ---
 socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores }) => {
     resultLock = true;
+
+    // Timeline animation for the active player's own result
+    if (reveal && card && currentMode === 'timeline' && pName === playerName) {
+        showTimelineAnimation(correct, card);
+        setTimeout(() => {
+            showScreen('result-screen');
+            document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
+            const yearPart = `<br>${formatYear(card.year)}`;
+            document.getElementById('result-text').innerHTML = `${card.emoji} ${cardName(card)}${yearPart}`;
+        }, correct ? 1800 : 1200);
+        setTimeout(() => { resultLock = false; }, correct ? 5800 : 5200);
+        return;
+    }
+
     showScreen('result-screen');
     if (reveal && card) {
         document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
@@ -169,9 +183,101 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
         document.getElementById('result-icon').textContent = '❌';
         document.getElementById('result-text').textContent = `${pName} got it wrong...`;
     }
-    // Hold result screen for 2.5s before allowing other screens
     setTimeout(() => { resultLock = false; }, 4000);
 });
+
+// --- TIMELINE CARD ANIMATION ---
+function showTimelineAnimation(correct, card) {
+    // Show the timeline screen temporarily for the animation
+    showScreen('turn-timeline');
+    const el = document.getElementById('tl-timeline');
+
+    // Remove all drop zones
+    el.querySelectorAll('.tl-drop').forEach(d => d.closest('.tl-slot').remove());
+
+    if (correct) {
+        // Create the new card element at the top, then animate it to correct position
+        const newCardEl = document.createElement('div');
+        newCardEl.className = 'tl-slot tl-anim-card';
+        newCardEl.innerHTML = `
+            <div class="tl-card tl-card-new">
+                <div class="tl-emoji">${card.emoji}</div>
+                <div class="tl-info">
+                    <div class="tl-name">${cardName(card)}</div>
+                    <div class="tl-year" style="opacity:0;">${formatYear(card.year)}</div>
+                </div>
+            </div>`;
+
+        // Insert at the top initially
+        const firstSlot = el.querySelector('.tl-slot');
+        if (firstSlot) {
+            el.insertBefore(newCardEl, firstSlot);
+        } else {
+            el.appendChild(newCardEl);
+        }
+
+        // Find the correct position based on year
+        const existingCards = [...el.querySelectorAll('.tl-slot:not(.tl-anim-card)')];
+        let targetIndex = existingCards.length; // default: end
+        for (let i = 0; i < existingCards.length; i++) {
+            const yearEl = existingCards[i].querySelector('.tl-year');
+            if (yearEl) {
+                const yearText = yearEl.textContent;
+                const yearNum = yearText.includes('BCE') ? -parseInt(yearText) : parseInt(yearText);
+                if (card.year <= yearNum) { targetIndex = i; break; }
+            }
+        }
+
+        // Animate: after a beat, move to correct position
+        setTimeout(() => {
+            newCardEl.remove();
+            const target = existingCards[targetIndex];
+            if (target) {
+                el.insertBefore(newCardEl, target);
+            } else {
+                // Insert before the "Later" label at the end
+                const laterLabel = el.querySelector('.tl-direction-label:last-child');
+                if (laterLabel) {
+                    el.insertBefore(newCardEl, laterLabel);
+                } else {
+                    el.appendChild(newCardEl);
+                }
+            }
+            newCardEl.classList.add('tl-anim-slide');
+
+            // Pulse green + reveal year
+            setTimeout(() => {
+                const tlCard = newCardEl.querySelector('.tl-card');
+                if (tlCard) {
+                    tlCard.classList.add('tl-card-correct');
+                }
+                const yearEl = newCardEl.querySelector('.tl-year');
+                if (yearEl) yearEl.style.opacity = '1';
+            }, 600);
+        }, 400);
+
+    } else {
+        // Wrong: show the card with a shake, then fade out
+        // Show the card from the p-card area
+        const shakeEl = document.createElement('div');
+        shakeEl.className = 'tl-slot';
+        shakeEl.innerHTML = `
+            <div class="tl-card tl-card-wrong">
+                <div class="tl-emoji">${card.emoji}</div>
+                <div class="tl-info">
+                    <div class="tl-name">${cardName(card)}</div>
+                    <div class="tl-year">${formatYear(card.year)}</div>
+                </div>
+            </div>`;
+        el.insertBefore(shakeEl, el.querySelector('.tl-slot'));
+
+        setTimeout(() => {
+            shakeEl.style.transition = 'opacity 0.4s';
+            shakeEl.style.opacity = '0';
+            setTimeout(() => shakeEl.remove(), 400);
+        }, 800);
+    }
+}
 
 // --- STEAL TURN (you can steal) ---
 socket.on('steal_turn', ({ card, timeline, mode, timeLimit }) => {
