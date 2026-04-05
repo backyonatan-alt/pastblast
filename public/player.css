@@ -236,6 +236,14 @@
 #map-container .leaflet-container {
     background: #d4c4a8;
 }
+#map-container {
+    background: linear-gradient(135deg, #a8c8d4 0%, #d4c4a8 40%, #a8c8d4 70%, #d4c4a8 100%);
+    animation: mapSkeleton 2s ease-in-out infinite;
+}
+@keyframes mapSkeleton {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
 #map-container .leaflet-control-zoom,
 #map-container .leaflet-control-attribution {
     display: none;
@@ -262,6 +270,30 @@
 .btn-pass:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 
 .tl-drop:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+/* Map timer number */
+.map-timer-number {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.5);
+    font-weight: 700;
+    min-width: 24px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s, font-size 0.3s;
+}
+.map-timer-number.big {
+    font-size: 1.1rem;
+    color: #ffd43b;
+}
+.map-timer-number.urgent {
+    font-size: 1.3rem;
+    color: #ff6b6b;
+    animation: timerPulse 1s infinite;
+}
+@keyframes timerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
 
 /* Result */
 .result-icon { font-size: 4.5rem; margin-bottom: 8px; }

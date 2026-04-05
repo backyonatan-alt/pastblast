@@ -83,6 +83,16 @@
   "score": "Score",
   "round": "Round",
 
+  "waiting_for_players": "Waiting for other players...",
+  "score_distance": "Distance",
+  "score_speed": "Speed",
+  "score_nearby": "Nearby bonus",
+  "map_onboarding_title": "Drag the map!",
+  "map_onboarding_text": "Move the map so the pin is where you think this place is. Tap LOCK IN when ready!",
+  "where_landmark": "Where is this landmark?",
+  "where_city": "Where is this city?",
+  "where_nature": "Where is this natural wonder?",
+
   "language": "Language",
   "english": "English",
   "hebrew": "עברית"

@@ -93,6 +93,7 @@ function formatYear(y) {
 // --- GAME STARTED ---
 socket.on('game_started', ({ mode }) => {
     currentMode = mode;
+    mapHistory = [];
     showScreen('wait-screen');
     document.getElementById('wait-msg').textContent = 'Game starting...';
     // Warn before leaving mid-game
@@ -143,6 +144,13 @@ socket.on('timer_tick', ({ secondsLeft }) => {
         fill.style.width = pct + '%';
         fill.className = 'p-timer-fill' + (secondsLeft <= 5 ? ' urgent' : '');
     });
+    // Update seconds counter for map mode
+    const timerNum = document.getElementById('map-timer-number');
+    if (timerNum && currentMode === 'map') {
+        timerNum.textContent = secondsLeft;
+        timerNum.className = 'map-timer-number' + (secondsLeft <= 10 ? ' big' : '') + (secondsLeft <= 5 ? ' urgent' : '');
+        if (secondsLeft <= 5 && secondsLeft > 0 && !mapLocked) { haptic([50, 30, 50]); playTick(); }
+    }
     // Auto-submit map guess at 1 second if not locked
     if (secondsLeft <= 1 && currentMode === 'map' && !mapLocked && mapInstance) {
         mapLockIn();
@@ -226,19 +234,50 @@ socket.on('game_over', ({ scores, winner }) => {
     });
     html += `</div>`;
 
+    // Post-game world map summary (map mode only)
+    let summaryMapHtml = '';
+    if (currentMode === 'map' && mapHistory.length > 0) {
+        summaryMapHtml = `<div id="summary-map" style="width:100%;max-width:340px;height:200px;border-radius:14px;overflow:hidden;margin-top:16px;"></div>`;
+    }
+
     document.getElementById('end-screen').innerHTML = `
         <h1 class="p-logo">GAME OVER</h1>
         ${html}
+        ${summaryMapHtml}
     `;
 
+    // Build summary map
+    if (currentMode === 'map' && mapHistory.length > 0) {
+        setTimeout(() => {
+            const sMap = L.map('summary-map', {
+                zoomControl: false, attributionControl: false,
+            });
+            L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {}).addTo(sMap);
+            const bounds = [];
+            mapHistory.forEach(h => {
+                const score = h.me.roundScore;
+                const color = score >= 800 ? '#51cf66' : score >= 400 ? '#ffd43b' : '#ff6b6b';
+                const icon = L.divIcon({
+                    html: `<div style="width:12px;height:12px;background:${color};border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>`,
+                    iconSize: [12, 12], iconAnchor: [6, 6], className: ''
+                });
+                L.marker([h.card.lat, h.card.lng], { icon }).addTo(sMap);
+                bounds.push([h.card.lat, h.card.lng]);
+            });
+            if (bounds.length > 0) sMap.fitBounds(bounds, { padding: [20, 20], maxZoom: 6 });
+        }, 200);
+    }
+
     spawnConfetti();
+    playFanfare();
 });
 
 // --- MAP GAME ---
 let mapInstance = null;
 let mapLocked = false;
+let mapHistory = []; // accumulate round data for post-game summary
 
-socket.on('map_round', ({ wiki, emoji, round, totalRounds, timeLimit }) => {
+socket.on('map_round', ({ wiki, emoji, type, round, totalRounds, timeLimit }) => {
     showScreen('map-screen');
     mapLocked = false;
     document.getElementById('map-round-info').textContent = `Round ${round} / ${totalRounds}`;
@@ -249,56 +288,147 @@ socket.on('map_round', ({ wiki, emoji, round, totalRounds, timeLimit }) => {
     document.getElementById('map-timer-fill').style.width = '100%';
     document.getElementById('map-timer-fill').classList.remove('urgent');
 
-    // Load photo
+    // Vary prompt by type
+    const promptKey = type === 'landmark' ? 'where_landmark' : type === 'city' ? 'where_city' : type === 'nature' ? 'where_nature' : 'where_is_this';
+    const promptEl = document.getElementById('map-prompt');
+    if (promptEl) promptEl.textContent = t(promptKey) || t('where_is_this');
+
+    // Load photo with smart fallback
     const photo = document.getElementById('map-photo');
     photo.src = '';
+    photo.style.display = 'block';
+    const fallback = document.getElementById('map-photo-fallback');
+    if (fallback) fallback.style.display = 'none';
     if (wiki) {
         fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${wiki}`)
             .then(r => r.json())
             .then(data => {
-                if (data.thumbnail) photo.src = data.thumbnail.source.replace(/\/\d+px-/, '/500px-');
-            }).catch(() => {});
+                if (data.thumbnail) {
+                    photo.src = data.thumbnail.source.replace(/\/\d+px-/, '/500px-');
+                } else {
+                    showPhotoFallback(emoji, type);
+                }
+            }).catch(() => showPhotoFallback(emoji, type));
+    } else {
+        showPhotoFallback(emoji, type);
     }
+
+    // Hide lock overlay and reset counter
+    document.getElementById('map-lock-overlay').style.display = 'none';
+    document.getElementById('map-lock-counter').textContent = '';
 
     // Init map if not yet
     if (!mapInstance) {
         mapInstance = L.map('map-container', {
-            center: [25, 10], zoom: 2, minZoom: 2, maxZoom: 18,
+            center: [25, 10], zoom: 3, minZoom: 2, maxZoom: 18,
             zoomControl: false, attributionControl: false,
         });
         L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {}).addTo(mapInstance);
     } else {
-        mapInstance.setView([25, 10], 2);
+        mapInstance.setView([25, 10], 3);
         // Remove old markers
         mapInstance.eachLayer(l => { if (l instanceof L.Marker || l instanceof L.Polyline) mapInstance.removeLayer(l); });
+        // Re-enable controls after lock-in disabled them
+        mapInstance.dragging.enable();
+        mapInstance.touchZoom.enable();
+        mapInstance.scrollWheelZoom.enable();
     }
 
     setTimeout(() => mapInstance.invalidateSize(), 100);
+
+    // Show onboarding hint for first-time players
+    showOnboardingIfNeeded();
 });
 
-socket.on('map_result', ({ card, results }) => {
+let playerResultMap = null;
+
+socket.on('map_result', ({ card, results, scores }) => {
     mapLocked = true;
     document.getElementById('map-crosshair').style.display = 'none';
     document.getElementById('map-dot').style.display = 'none';
+    document.getElementById('map-lock-overlay').style.display = 'none';
 
     const me = results.find(r => r.name === playerName) || results[0];
     let emoji = me.distPoints >= 900 ? '🎯' : me.distPoints >= 600 ? '🔥' : me.distPoints >= 300 ? '👍' : '😅';
 
     const cName = (typeof isRTL === 'function' && isRTL() && card.name_he) ? card.name_he : card.name;
 
+    // Find player position in standings
+    const sorted = [...results].sort((a, b) => b.totalScore - a.totalScore);
+    const myRank = sorted.findIndex(r => r.name === playerName) + 1;
+    const medals = ['🥇', '🥈', '🥉'];
+    const posText = myRank > 0 ? (medals[myRank - 1] || '#' + myRank) : '';
+
     document.getElementById('map-result-card').innerHTML = `
+        <div id="map-result-map" style="height:200px;border-radius:14px;overflow:hidden;margin-bottom:12px;"></div>
         <div style="font-size:3rem;">${emoji}</div>
         <div style="font-size:1.2rem;font-weight:700;color:#ffd43b;">${card.emoji} ${esc(cName)}</div>
         <div style="font-size:0.95rem;color:rgba(255,255,255,0.6);margin:4px 0;">${me.dist} km</div>
         <div style="font-size:2.5rem;font-weight:900;color:#ffd43b;text-shadow:2px 2px 0 #e8590c;">+${me.roundScore}</div>
         <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);line-height:1.8;">
-            Distance: +${me.distPoints}
-            ${me.speedBonus > 0 ? '<br><span style="color:#51cf66">Speed: +' + me.speedBonus + '</span>' : ''}
-            ${me.countryBonus > 0 ? '<br><span style="color:#51cf66">Country: +' + me.countryBonus + '</span>' : ''}
+            ${t('score_distance') || 'Distance'}: +${me.distPoints}
+            ${me.speedBonus > 0 ? '<br><span style="color:#51cf66">' + (t('score_speed') || 'Speed') + ': +' + me.speedBonus + '</span>' : ''}
+            ${me.countryBonus > 0 ? '<br><span style="color:#51cf66">' + (t('score_nearby') || 'Nearby') + ': +' + me.countryBonus + '</span>' : ''}
         </div>
-        <div style="margin-top:10px;font-size:0.9rem;color:rgba(255,255,255,0.5);">Total: ${me.totalScore}</div>
+        <div style="margin-top:10px;font-size:0.9rem;color:rgba(255,255,255,0.5);">Total: ${me.totalScore} ${posText}</div>
     `;
+    // Save to history for post-game summary
+    mapHistory.push({ card, me, results });
+
+    // Player comparison — show other players' scores
+    const othersHtml = results
+        .filter(r => r.name !== playerName)
+        .sort((a, b) => b.roundScore - a.roundScore)
+        .map(r => `<span style="margin:0 6px;">${r.emoji} +${r.roundScore}</span>`)
+        .join('');
+    if (othersHtml) {
+        document.getElementById('map-result-card').innerHTML += `
+            <div style="margin-top:8px;font-size:0.75rem;color:rgba(255,255,255,0.35);border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;">
+                ${othersHtml}
+            </div>`;
+    }
+
     showScreen('map-result-screen');
+    if (me.distPoints >= 600) playResultGood(); else playResultBad();
+
+    // Build result map with guess vs answer
+    if (playerResultMap) { playerResultMap.remove(); playerResultMap = null; }
+    setTimeout(() => {
+        playerResultMap = L.map('map-result-map', {
+            zoomControl: false, attributionControl: false,
+            dragging: false, touchZoom: false, scrollWheelZoom: false, doubleClickZoom: false,
+        });
+        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg', {}).addTo(playerResultMap);
+
+        // Correct answer marker (green)
+        const correctIcon = L.divIcon({ html: '<div style="font-size:1.6rem;text-align:center;">✅</div>', iconSize: [26, 26], iconAnchor: [13, 26], className: '' });
+        L.marker([card.lat, card.lng], { icon: correctIcon }).addTo(playerResultMap);
+
+        // Player guess marker (red)
+        if (me.guessLat != null) {
+            const guessIcon = L.divIcon({ html: '<div style="font-size:1.6rem;text-align:center;">📍</div>', iconSize: [26, 26], iconAnchor: [13, 26], className: '' });
+            L.marker([me.guessLat, me.guessLng], { icon: guessIcon }).addTo(playerResultMap);
+
+            // Dashed line between guess and answer
+            L.polyline([[me.guessLat, me.guessLng], [card.lat, card.lng]], {
+                color: '#ff6b6b', weight: 2, dashArray: '8,6', opacity: 0.8
+            }).addTo(playerResultMap);
+
+            // Distance label at midpoint
+            const midLat = (me.guessLat + card.lat) / 2;
+            const midLng = (me.guessLng + card.lng) / 2;
+            const distLabel = L.divIcon({
+                html: `<div style="background:rgba(27,20,100,0.85);color:#ffd43b;padding:2px 8px;border-radius:8px;font-size:0.75rem;font-weight:700;white-space:nowrap;font-family:Fredoka,sans-serif;">${me.dist} km</div>`,
+                iconSize: [80, 20], iconAnchor: [40, 10], className: ''
+            });
+            L.marker([midLat, midLng], { icon: distLabel }).addTo(playerResultMap);
+
+            // Fit both points
+            playerResultMap.fitBounds([[me.guessLat, me.guessLng], [card.lat, card.lng]], { padding: [30, 30], maxZoom: 8 });
+        } else {
+            playerResultMap.setView([card.lat, card.lng], 4);
+        }
+    }, 150);
 });
 
 function mapLockIn() {
@@ -306,10 +436,106 @@ function mapLockIn() {
     mapLocked = true;
     const center = mapInstance.getCenter();
     socket.emit('map_guess', { lat: center.lat, lng: center.lng });
+    haptic(50);
+    playLockIn();
     document.getElementById('map-lock-btn').disabled = true;
     document.getElementById('map-lock-btn').textContent = '✓ LOCKED';
     document.getElementById('map-crosshair').style.display = 'none';
     document.getElementById('map-dot').style.display = 'none';
+
+    // Show marker at guess location
+    const guessIcon = L.divIcon({
+        html: '<div style="font-size:1.8rem;text-align:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</div>',
+        iconSize: [30, 30], iconAnchor: [15, 30], className: ''
+    });
+    L.marker([center.lat, center.lng], { icon: guessIcon }).addTo(mapInstance);
+    mapInstance.dragging.disable();
+    mapInstance.touchZoom.disable();
+    mapInstance.scrollWheelZoom.disable();
+
+    // Show waiting overlay
+    document.getElementById('map-lock-overlay').style.display = 'flex';
+}
+
+// Listen for lock-in progress from other players
+socket.on('map_player_locked', ({ lockedCount, totalPlayers }) => {
+    const counter = document.getElementById('map-lock-counter');
+    if (counter) counter.textContent = `${lockedCount}/${totalPlayers} locked in`;
+});
+
+// --- PHOTO FALLBACK ---
+function showPhotoFallback(emoji, type) {
+    document.getElementById('map-photo').style.display = 'none';
+    const fb = document.getElementById('map-photo-fallback');
+    if (fb) {
+        const label = type === 'landmark' ? t('landmark') : type === 'city' ? 'City' : type === 'nature' ? 'Nature' : '?';
+        fb.innerHTML = `<div style="font-size:3rem;">${emoji}</div><div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px;">${label}</div>`;
+        fb.style.display = 'flex';
+    }
+}
+
+// --- PHOTO EXPAND ---
+function togglePhotoExpand() {
+    const overlay = document.getElementById('photo-overlay');
+    if (overlay.style.display === 'flex') {
+        overlay.style.display = 'none';
+    } else {
+        document.getElementById('photo-overlay-img').src = document.getElementById('map-photo').src;
+        overlay.style.display = 'flex';
+    }
+}
+
+// --- ONBOARDING ---
+function showOnboardingIfNeeded() {
+    if (!localStorage.getItem('pb_map_onboarded')) {
+        document.getElementById('map-onboarding').style.display = 'flex';
+    }
+}
+function dismissOnboarding() {
+    document.getElementById('map-onboarding').style.display = 'none';
+    localStorage.setItem('pb_map_onboarded', '1');
+}
+
+// --- HAPTIC ---
+function haptic(pattern) { if (navigator.vibrate) navigator.vibrate(pattern); }
+
+// --- SOUND EFFECTS (Web Audio API) ---
+let audioCtx = null;
+let soundMuted = localStorage.getItem('pb_muted') === '1';
+
+function getAudioCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+}
+
+function playTone(freq, duration, type = 'sine', vol = 0.3) {
+    if (soundMuted) return;
+    try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.value = vol;
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+    } catch (e) {}
+}
+
+function playLockIn() { playTone(800, 0.1, 'square', 0.2); setTimeout(() => playTone(1200, 0.15, 'square', 0.15), 80); }
+function playTick() { playTone(600, 0.05, 'square', 0.1); }
+function playResultGood() { playTone(523, 0.15); setTimeout(() => playTone(659, 0.15), 120); setTimeout(() => playTone(784, 0.25), 240); }
+function playResultBad() { playTone(400, 0.2, 'sawtooth', 0.15); setTimeout(() => playTone(300, 0.3, 'sawtooth', 0.15), 200); }
+function playFanfare() { [523,659,784,1047].forEach((f,i) => setTimeout(() => playTone(f, 0.3, 'sine', 0.2), i * 150)); }
+
+function toggleMute() {
+    soundMuted = !soundMuted;
+    localStorage.setItem('pb_muted', soundMuted ? '1' : '0');
+    const btn = document.getElementById('mute-btn');
+    if (btn) btn.textContent = soundMuted ? '🔇' : '🔊';
 }
 
 function spawnConfetti() {

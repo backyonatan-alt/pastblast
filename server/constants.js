@@ -1,7 +1,7 @@
 module.exports = {
   TURN_TIME: 30,        // seconds per turn
   STEAL_TIME: 15,       // seconds per steal attempt
-  MAP_TIME: 30,         // seconds per map round
+  MAP_TIME: { 1: 40, 2: 30, 3: 20 },  // seconds per map round by difficulty
   MAX_PLAYERS: 8,
   CODE_LENGTH: 4,
   ROOM_TTL: 2 * 60 * 60 * 1000,  // 2 hours

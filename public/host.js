@@ -239,7 +239,8 @@ socket.on('map_round', ({ wiki, emoji, round, totalRounds, deckLeft, scores, tim
 });
 
 socket.on('map_player_locked', ({ name, emoji, lockedCount, totalPlayers }) => {
-    document.getElementById('round-label').textContent = `${lockedCount}/${totalPlayers} locked in`;
+    const label = document.getElementById('round-label');
+    label.innerHTML = `<span style="font-size:1.3rem;animation:pulse 1s infinite;">${lockedCount}/${totalPlayers} locked in</span>`;
 });
 
 let hostResultMap = null;
@@ -286,29 +287,29 @@ socket.on('map_result', ({ card, results, scores }) => {
     const correctIcon = L.divIcon({ html: '<div style="font-size:2rem;text-align:center;">✅</div>', iconSize: [30, 30], iconAnchor: [15, 30], className: '' });
     L.marker([card.lat, card.lng], { icon: correctIcon }).addTo(hostResultMap);
 
-    // All player pins + lines
+    // All player pins + lines — staggered reveal
     const bounds = [[card.lat, card.lng]];
-    results.forEach(r => {
-        if (r.guessLat == null) return;
-        // Player pin with their color
-        const playerIcon = L.divIcon({
-            html: `<div style="font-size:1.4rem;text-align:center;background:${r.color};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);">${r.emoji}</div>`,
-            iconSize: [28, 28], iconAnchor: [14, 14], className: ''
-        });
-        L.marker([r.guessLat, r.guessLng], { icon: playerIcon }).addTo(hostResultMap);
+    const guessResults = results.filter(r => r.guessLat != null);
+    guessResults.forEach(r => bounds.push([r.guessLat, r.guessLng]));
 
-        // Dashed line from guess to correct
-        L.polyline([[r.guessLat, r.guessLng], [card.lat, card.lng]], {
-            color: r.color, weight: 2, dashArray: '8,6', opacity: 0.7
-        }).addTo(hostResultMap);
-
-        bounds.push([r.guessLat, r.guessLng]);
-    });
-
-    // Fit map to show all pins
+    // Fit map first, then animate pins in
     if (bounds.length > 1) {
         hostResultMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 8 });
     }
+
+    guessResults.forEach((r, i) => {
+        setTimeout(() => {
+            const playerIcon = L.divIcon({
+                html: `<div style="font-size:1.4rem;text-align:center;background:${r.color};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);">${r.emoji}</div>`,
+                iconSize: [28, 28], iconAnchor: [14, 14], className: ''
+            });
+            L.marker([r.guessLat, r.guessLng], { icon: playerIcon }).addTo(hostResultMap);
+
+            L.polyline([[r.guessLat, r.guessLng], [card.lat, card.lng]], {
+                color: r.color, weight: 2, dashArray: '8,6', opacity: 0.7
+            }).addTo(hostResultMap);
+        }, (i + 1) * 400);
+    });
 
     if (scores) renderScores(scores);
 });

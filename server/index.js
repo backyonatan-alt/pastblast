@@ -294,15 +294,18 @@ function sendMapRound(room) {
   // Fetch Wikipedia thumbnail URL
   const wikiUrl = card.wiki ? `https://en.wikipedia.org/api/rest_v1/page/summary/${card.wiki}` : null;
 
+  const timeLimit = room.mapTimeLimit || 30;
+
   // Send to host: photo info + round info (no lat/lng yet!)
   io.to(room.hostSocketId).emit('map_round', {
     wiki: card.wiki,
     emoji: card.emoji,
+    type: card.type,
     round: room.round,
     totalRounds: room.totalRounds,
     deckLeft: room.deck.length,
     scores: game.getScores(room),
-    timeLimit: C.MAP_TIME,
+    timeLimit,
   });
 
   // Send to ALL players simultaneously: wiki for photo (no lat/lng!)
@@ -311,15 +314,16 @@ function sendMapRound(room) {
       io.to(p.id).emit('map_round', {
         wiki: card.wiki,
         emoji: card.emoji,
+        type: card.type,
         round: room.round,
         totalRounds: room.totalRounds,
-        timeLimit: C.MAP_TIME,
+        timeLimit,
       });
     }
   });
 
   // Start timer
-  startTimer(room, C.MAP_TIME,
+  startTimer(room, timeLimit,
     (sec) => {
       io.to(room.code).emit('timer_tick', { secondsLeft: sec });
       io.to(room.hostSocketId).emit('timer_tick', { secondsLeft: sec });
@@ -361,9 +365,7 @@ function nextRoundOrEnd(room) {
       mode: room.mode,
       players: room.players.length,
       rounds: room.round,
-      winner: sorted[0] ? sorted[0].name : null,
       topScore: sorted[0] ? sorted[0].score : 0,
-      scores: sorted.map(s => ({ name: s.name, score: s.score })),
     });
     io.to(room.code).emit('game_over', data);
     io.to(room.hostSocketId).emit('game_over', data);
@@ -434,9 +436,10 @@ io.on('connection', (socket) => {
             socket.emit('map_round', {
               wiki: card.wiki,
               emoji: card.emoji,
+              type: card.type,
               round: room.round,
               totalRounds: room.totalRounds,
-              timeLimit: room.timerSeconds || C.MAP_TIME,
+              timeLimit: room.timerSeconds || room.mapTimeLimit || 30,
             });
           }
         } else if (playerIndex === room.currentPlayerIndex) {
@@ -461,7 +464,7 @@ io.on('connection', (socket) => {
 
     socket.join(code);
     totalPlayersJoined++;
-    track('player_joined', { room: code, name: player.name, playerCount: room.players.length });
+    track('player_joined', { room: code, playerCount: room.players.length });
 
     // Notify host and all players
     io.to(room.hostSocketId).emit('player_joined', {
@@ -619,13 +622,17 @@ io.on('connection', (socket) => {
 
     game.submitMapGuess(room, socket.id, data.lat, data.lng);
 
-    // Notify host that this player locked in
+    // Notify host AND all players that this player locked in
     const player = room.players.find(p => p.id === socket.id);
     if (player) {
-      io.to(room.hostSocketId).emit('map_player_locked', {
+      const lockData = {
         name: player.name, emoji: player.emoji,
         lockedCount: Object.keys(room.mapGuesses).length,
         totalPlayers: room.players.filter(p => p.connected).length,
+      };
+      io.to(room.hostSocketId).emit('map_player_locked', lockData);
+      room.players.forEach(p => {
+        if (p.connected) io.to(p.id).emit('map_player_locked', lockData);
       });
     }
 

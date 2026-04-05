@@ -64,16 +64,47 @@
     <!-- MAP GAME -->
     <div id="map-screen" style="display:none;flex-direction:column;height:100vh;height:100dvh;width:100%;position:fixed;top:0;left:0;right:0;bottom:0;z-index:10;">
         <div style="background:rgba(18,14,63,0.95);padding:8px 12px;text-align:center;z-index:1000;flex:0 0 auto;">
-            <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);" id="map-round-info"></div>
-            <img id="map-photo" style="width:100%;max-width:260px;height:120px;object-fit:contain;border-radius:10px;margin:4px auto;display:block;background:rgba(0,0,0,0.3);" src="" alt="">
-            <div style="font-size:0.8rem;color:rgba(255,255,255,0.45);" data-i18n="where_is_this">Where is this place?</div>
-            <div style="height:4px;background:rgba(255,255,255,0.1);margin-top:4px;"><div id="map-timer-fill" class="p-timer-fill" style="height:100%;width:100%;"></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);" id="map-round-info"></div>
+                <button id="mute-btn" onclick="toggleMute()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:2px 6px;">🔊</button>
+            </div>
+            <img id="map-photo" style="width:100%;max-width:260px;height:160px;object-fit:contain;border-radius:10px;margin:4px auto;display:block;background:rgba(0,0,0,0.3);cursor:pointer;" src="" alt="" onclick="togglePhotoExpand()">
+            <div id="map-photo-fallback" style="display:none;width:100%;max-width:260px;height:120px;border-radius:10px;margin:4px auto;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;flex-direction:column;"></div>
+            <div id="map-prompt" style="font-size:0.8rem;color:rgba(255,255,255,0.45);" data-i18n="where_is_this">Where is this place?</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                <div style="flex:1;height:4px;background:rgba(255,255,255,0.1);"><div id="map-timer-fill" class="p-timer-fill" style="height:100%;width:100%;"></div></div>
+                <div id="map-timer-number" class="map-timer-number">30</div>
+            </div>
         </div>
         <div id="map-container" style="flex:1 1 auto;min-height:200px;z-index:1;"></div>
-        <div id="map-crosshair" style="position:fixed;top:55%;left:50%;transform:translate(-50%,-100%);z-index:1500;pointer-events:none;font-size:2rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));">📍</div>
+        <div id="map-crosshair" style="position:fixed;top:55%;left:50%;transform:translate(-50%,-100%);z-index:1500;pointer-events:none;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5));">
+            <svg width="32" height="42" viewBox="0 0 32 42">
+                <path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26s16-14 16-26C32 7.2 24.8 0 16 0z" fill="#ff6b6b" stroke="#fff" stroke-width="2"/>
+                <circle cx="16" cy="16" r="6" fill="#fff"/>
+            </svg>
+        </div>
         <div id="map-dot" style="position:fixed;top:55%;left:50%;transform:translate(-50%,-50%);width:6px;height:6px;background:#ff6b6b;border:2px solid #fff;border-radius:50%;z-index:1500;pointer-events:none;box-shadow:0 0 8px rgba(255,107,107,0.6);"></div>
+        <!-- Lock-in waiting overlay -->
+        <div id="map-lock-overlay" style="display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:1600;flex-direction:column;align-items:center;gap:6px;pointer-events:none;">
+            <div style="background:rgba(18,14,63,0.9);padding:10px 20px;border-radius:14px;border:2px solid rgba(255,212,59,0.3);text-align:center;">
+                <div style="color:rgba(255,255,255,0.6);font-size:0.85rem;" data-i18n="waiting_for_players">Waiting for other players...</div>
+                <div id="map-lock-counter" style="color:#ffd43b;font-size:1.1rem;font-weight:700;margin-top:4px;"></div>
+            </div>
+        </div>
+        <!-- Photo expand overlay -->
+        <div id="photo-overlay" onclick="togglePhotoExpand()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;cursor:pointer;">
+            <img id="photo-overlay-img" style="max-width:90%;max-height:80vh;object-fit:contain;border-radius:12px;" src="" alt="">
+        </div>
+        <!-- Onboarding hint (first time only) -->
+        <div id="map-onboarding" onclick="dismissOnboarding()" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;cursor:pointer;">
+            <div style="background:#1f1a5c;border:3px solid #ffd43b;border-radius:20px;padding:24px;max-width:300px;text-align:center;pointer-events:none;">
+                <div style="font-size:2.5rem;margin-bottom:8px;">📍</div>
+                <div style="font-size:1.1rem;font-weight:700;color:#ffd43b;margin-bottom:8px;" data-i18n="map_onboarding_title">Drag the map!</div>
+                <div style="font-size:0.9rem;color:rgba(255,255,255,0.7);" data-i18n="map_onboarding_text">Move the map so the pin is where you think this place is. Tap LOCK IN when ready!</div>
+            </div>
+        </div>
         <div style="background:rgba(18,14,63,0.95);padding:10px 16px;padding-bottom:max(10px,env(safe-area-inset-bottom));text-align:center;z-index:1000;flex:0 0 auto;">
-            <button id="map-lock-btn" onclick="mapLockIn()" style="background:#ffd43b;color:#1b1464;border:none;border-radius:14px;padding:14px 0;font-size:1.2rem;font-weight:900;font-family:'Fredoka',sans-serif;cursor:pointer;width:100%;max-width:350px;box-shadow:0 4px 0 #e8590c;letter-spacing:2px;">LOCK IN</button>
+            <button id="map-lock-btn" onclick="mapLockIn()" style="background:#ffd43b;color:#1b1464;border:none;border-radius:14px;padding:14px 0;font-size:1.2rem;font-weight:900;font-family:'Fredoka',sans-serif;cursor:pointer;width:100%;max-width:350px;box-shadow:0 4px 0 #e8590c;letter-spacing:2px;" data-i18n="lock_in">LOCK IN</button>
         </div>
     </div>
 

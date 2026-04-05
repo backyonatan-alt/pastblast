@@ -152,6 +152,8 @@ function startGame(room, mode, difficulty, length) {
     room.deck = mapCards.slice(0, mapRounds);
     room.totalRounds = room.deck.length;
     room.mapGuesses = {}; // { socketId: { lat, lng, time } }
+    room.difficulty = difficulty;
+    room.mapTimeLimit = C.MAP_TIME[difficulty] || 30;
     room.players.forEach(p => {
       p.score = 0;
     });
@@ -185,7 +187,8 @@ function haversine(lat1, lon1, lat2, lon2) {
 }
 
 function submitMapGuess(room, socketId, lat, lng) {
-  const timeUsed = C.MAP_TIME - (room.timerSeconds || 0);
+  const timeLimit = room.mapTimeLimit || 30;
+  const timeUsed = timeLimit - (room.timerSeconds || 0);
   room.mapGuesses[socketId] = { lat, lng, timeUsed };
 }
 
@@ -200,7 +203,8 @@ function calculateMapScores(room) {
     if (guess) {
       dist = haversine(guess.lat, guess.lng, card.lat, card.lng);
       distPoints = Math.max(0, Math.round(1000 * Math.exp(-dist / 1500)));
-      speedBonus = Math.max(0, Math.round(500 * (1 - guess.timeUsed / C.MAP_TIME)));
+      const timeLimit = room.mapTimeLimit || 30;
+      speedBonus = Math.max(0, Math.round(500 * (1 - guess.timeUsed / timeLimit)));
       countryBonus = dist < 300 ? 200 : 0;
       roundScore = distPoints + speedBonus + countryBonus;
     } else {

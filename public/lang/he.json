@@ -83,6 +83,16 @@
   "score": "ניקוד",
   "round": "סיבוב",
 
+  "waiting_for_players": "...ממתינים לשחקנים אחרים",
+  "score_distance": "מרחק",
+  "score_speed": "מהירות",
+  "score_nearby": "בונוס קרבה",
+  "map_onboarding_title": "!גרור את המפה",
+  "map_onboarding_text": "הזז את המפה כך שהסיכה תהיה במקום שאתה מוכן. לחץ נעילה כשאתה מוכן!",
+  "where_landmark": "?איפה האתר הזה",
+  "where_city": "?איפה העיר הזו",
+  "where_nature": "?איפה פלא הטבע הזה",
+
   "language": "שפה",
   "english": "English",
   "hebrew": "עברית"

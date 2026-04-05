@@ -192,6 +192,12 @@ body {
     outline-offset: 2px;
 }
 
+/* Pulse animation for lock counter */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
     .feedback { animation: none; opacity: 1; transform: translate(-50%, -50%) scale(1); }
