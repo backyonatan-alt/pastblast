@@ -81,7 +81,7 @@
     border: 3px solid rgba(255,255,255,0.1);
     border-radius: 20px;
     padding: 0 0 16px;
-    width: 220px;
+    width: 260px;
     text-align: center;
     cursor: pointer;
     transition: border-color 0.2s, background-color 0.2s, transform 0.15s;
@@ -103,11 +103,11 @@
 
 .mode-card-img {
     width: 100%;
-    height: 140px;
-    object-fit: cover;
+    height: 160px;
+    object-fit: contain;
     display: block;
     margin-bottom: 10px;
-    background: #1f1a5c;
+    background: #1b1464;
 }
 .mode-card-title { font-size: 1.2rem; font-weight: 700; color: #ffd43b; margin-bottom: 4px; padding: 0 12px; }
 .mode-card-desc { font-size: 0.8rem; color: rgba(255,255,255,0.5); line-height: 1.4; padding: 0 12px; }
