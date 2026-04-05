@@ -564,3 +564,4 @@ server.listen(PORT, () => {
 });
 // PastBlast v1.0
 
+// map prototype
