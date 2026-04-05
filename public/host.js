@@ -211,18 +211,28 @@ socket.on('map_round', ({ wiki, emoji, round, totalRounds, deckLeft, scores, tim
     // Show photo on host
     const area = document.getElementById('card-area');
     area.innerHTML = `
-        <div class="host-card" style="padding:16px 24px;">
-            <img src="" id="host-map-photo" style="width:100%;max-width:400px;height:250px;object-fit:contain;border-radius:12px;background:rgba(0,0,0,0.3);display:block;margin:0 auto;">
-            <div style="font-size:1.1rem;color:rgba(255,255,255,0.5);margin-top:8px;">Where is this place?</div>
+        <div style="text-align:center;">
+            <img src="" id="host-map-photo" style="width:100%;max-width:700px;height:400px;object-fit:contain;border-radius:16px;background:rgba(0,0,0,0.3);display:block;margin:0 auto;">
+            <div style="font-size:1.3rem;color:rgba(255,255,255,0.5);margin-top:10px;">${t('where_is_this')}</div>
         </div>`;
 
     if (wiki) {
         fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${wiki}`)
-            .then(r => r.json())
+            .then(r => {
+                if (!r.ok) throw new Error('Not found');
+                return r.json();
+            })
             .then(data => {
                 const img = document.getElementById('host-map-photo');
-                if (img && data.thumbnail) img.src = data.thumbnail.source.replace(/\/\d+px-/, '/800px-');
-            }).catch(() => {});
+                if (!img) return;
+                const src = (data.originalimage && data.originalimage.source)
+                    || (data.thumbnail && data.thumbnail.source && data.thumbnail.source.replace(/\/\d+px-/, '/1200px-'));
+                if (src) img.src = src;
+            }).catch(e => {
+                console.log('Wiki photo failed:', wiki, e);
+                const img = document.getElementById('host-map-photo');
+                if (img) img.alt = emoji + ' ?';
+            });
     }
 
     if (scores) renderScores(scores);
