@@ -402,9 +402,9 @@ function showFeedback(correct, card) {
         { transform: 'translate(-50%,-50%) scale(1) rotate(0)', opacity: 1, offset: 0.2 },
         { transform: 'translate(-50%,-50%) scale(1)', opacity: 1, offset: 0.85 },
         { transform: 'translate(-50%,-50%) scale(0.95)', opacity: 0 }
-    ], { duration: 3000, easing: 'ease', fill: 'forwards' });
+    ], { duration: 3500, easing: 'ease', fill: 'forwards' });
 
-    setTimeout(() => popup.remove(), 3200);
+    setTimeout(() => popup.remove(), 3600);
 }
 
 function spawnConfetti() {

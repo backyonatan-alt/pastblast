@@ -164,23 +164,7 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
     clearTimeout(resultLockTimer);
     resultLockTimer = setTimeout(() => { resultLock = false; }, 8000); // safety net
 
-    // Timeline animation for the active player's own result
-    if (reveal && card && currentMode === 'timeline' && pName === playerName) {
-        try {
-            showTimelineAnimation(correct, card);
-        } catch (e) {
-            console.error('Timeline animation error:', e);
-        }
-        setTimeout(() => {
-            showScreen('result-screen');
-            document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
-            const yearPart = `<br>${formatYear(card.year)}`;
-            document.getElementById('result-text').innerHTML = `${card.emoji} ${cardName(card)}${yearPart}`;
-        }, correct ? 1800 : 1200);
-        // Safety: always unlock after max 6s
-        setTimeout(() => { resultLock = false; }, 6000);
-        return;
-    }
+    // Timeline result for the active player — show result directly (no animation to avoid stuck state)
 
     // Always show result for all players
     showScreen('result-screen');
