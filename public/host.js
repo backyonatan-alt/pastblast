@@ -385,18 +385,30 @@ function showFeedback(correct, card) {
     const showYear = currentMode === 'timeline';
     const bg = correct ? '#51cf66' : '#ff6b6b';
 
-    // Use inline styles to guarantee centering regardless of any CSS context
-    const wrapper = document.createElement('div');
-    wrapper.setAttribute('style', 'position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:99999;pointer-events:none;');
-    wrapper.innerHTML = `
-        <div style="background:${bg};color:#fff;font-family:Fredoka,sans-serif;font-size:2rem;font-weight:900;padding:24px 44px;border-radius:24px;border:4px solid #fff;text-align:center;min-width:260px;box-shadow:0 8px 40px rgba(0,0,0,0.5);animation:popIn 3s ease forwards;transform:scale(0);pointer-events:none;">
-            <div style="font-size:3rem;">${card.emoji}</div>
-            <div style="font-size:1.4rem;margin:4px 0;">${correct ? '✅' : '❌'} ${cardName(card)}</div>
-            ${showYear ? `<div style="font-size:1.8rem;">${yearText}</div>` : ''}
-        </div>
+    // Fullscreen overlay with centered popup — all inline, no CSS deps
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;z-index:99999;pointer-events:none;';
+
+    const popup = document.createElement('div');
+    popup.style.cssText = `background:${bg};color:#fff;font-family:Fredoka,sans-serif;font-size:2rem;font-weight:900;padding:24px 44px;border-radius:24px;border:4px solid #fff;text-align:center;min-width:260px;box-shadow:0 8px 40px rgba(0,0,0,0.5);opacity:0;`;
+    popup.innerHTML = `
+        <div style="font-size:3rem;">${card.emoji}</div>
+        <div style="font-size:1.4rem;margin:4px 0;">${correct ? '✅' : '❌'} ${cardName(card)}</div>
+        ${showYear ? `<div style="font-size:1.8rem;">${yearText}</div>` : ''}
     `;
-    document.documentElement.appendChild(wrapper);
-    setTimeout(() => wrapper.remove(), 3200);
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+
+    // Animate with Web Animations API — no CSS keyframes needed
+    popup.animate([
+        { transform: 'scale(0) rotate(-8deg)', opacity: 0 },
+        { transform: 'scale(1.15) rotate(2deg)', opacity: 1, offset: 0.1 },
+        { transform: 'scale(1) rotate(0)', opacity: 1, offset: 0.2 },
+        { transform: 'scale(1)', opacity: 1, offset: 0.85 },
+        { transform: 'scale(0.95)', opacity: 0 }
+    ], { duration: 3000, easing: 'ease', fill: 'forwards' });
+
+    setTimeout(() => overlay.remove(), 3200);
 }
 
 function spawnConfetti() {
