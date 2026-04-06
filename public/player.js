@@ -499,7 +499,7 @@ socket.on('map_result', ({ card, results, scores }) => {
     document.getElementById('map-lock-overlay').style.display = 'none';
 
     const me = results.find(r => r.name === playerName) || results[0];
-    let emoji = me.distPoints >= 900 ? '🎯' : me.distPoints >= 600 ? '🔥' : me.distPoints >= 300 ? '👍' : '😅';
+    let emoji = me.distPoints >= 1000 ? '🎯' : me.distPoints >= 600 ? '🔥' : me.distPoints >= 200 ? '👏' : me.distPoints >= 50 ? '👍' : me.distPoints > 0 ? '😐' : '❌';
 
     const cName = (typeof isRTL === 'function' && isRTL() && card.name_he) ? card.name_he : card.name;
 

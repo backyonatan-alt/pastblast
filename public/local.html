@@ -2115,10 +2115,18 @@
         document.getElementById('map-local-crosshair').style.display = 'none';
         document.getElementById('map-local-dot').style.display = 'none';
 
-        // Calculate score
+        // Calculate score — tiered system
         const dist = haversine(center.lat, center.lng, card.lat, card.lng);
-        const distPoints = Math.max(0, Math.round(1000 * Math.exp(-dist / 1500)));
-        const speedBonus = Math.max(0, Math.round(500 * (1 - timeUsed / timeLimit)));
+        let distPoints;
+        if (dist < 50) distPoints = 1000;
+        else if (dist < 300) distPoints = Math.round(600 + 400 * (1 - (dist - 50) / 250));
+        else if (dist < 1000) distPoints = Math.round(200 + 400 * (1 - (dist - 300) / 700));
+        else if (dist < 2000) distPoints = Math.round(50 + 150 * (1 - (dist - 1000) / 1000));
+        else if (dist < 4000) distPoints = Math.round(10 + 40 * (1 - (dist - 2000) / 2000));
+        else distPoints = 0;
+
+        const rawSpeed = Math.max(0, Math.round(500 * (1 - timeUsed / timeLimit)));
+        const speedBonus = dist < 1000 ? rawSpeed : dist < 2000 ? Math.round(rawSpeed * 0.5) : 0;
         const countryBonus = dist < 300 ? 200 : 0;
         const roundScore = distPoints + speedBonus + countryBonus;
 
@@ -2136,7 +2144,7 @@
         document.getElementById('map-game-area').style.display = 'none';
         document.getElementById('map-local-result').style.display = 'flex';
 
-        const emoji = me.distPoints >= 900 ? '🎯' : me.distPoints >= 600 ? '🔥' : me.distPoints >= 300 ? '👍' : '😅';
+        const emoji = me.distPoints >= 1000 ? '🎯' : me.distPoints >= 600 ? '🔥' : me.distPoints >= 200 ? '👏' : me.distPoints >= 50 ? '👍' : me.distPoints > 0 ? '😐' : '❌';
         const p = mapLocalPlayers[mapLocalCurrentPlayerIndex];
 
         document.getElementById('map-local-result-content').innerHTML = `

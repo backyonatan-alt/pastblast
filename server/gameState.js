@@ -202,9 +202,34 @@ function calculateMapScores(room) {
 
     if (guess) {
       dist = haversine(guess.lat, guess.lng, card.lat, card.lng);
-      distPoints = Math.max(0, Math.round(1000 * Math.exp(-dist / 1500)));
       const timeLimit = room.mapTimeLimit || 30;
-      speedBonus = Math.max(0, Math.round(500 * (1 - guess.timeUsed / timeLimit)));
+
+      // Tiered distance scoring
+      if (dist < 50) {
+        distPoints = 1000;
+      } else if (dist < 300) {
+        distPoints = Math.round(600 + 400 * (1 - (dist - 50) / 250));
+      } else if (dist < 1000) {
+        distPoints = Math.round(200 + 400 * (1 - (dist - 300) / 700));
+      } else if (dist < 2000) {
+        distPoints = Math.round(50 + 150 * (1 - (dist - 1000) / 1000));
+      } else if (dist < 4000) {
+        distPoints = Math.round(10 + 40 * (1 - (dist - 2000) / 2000));
+      } else {
+        distPoints = 0;
+      }
+
+      // Speed bonus: full if <1000km, half if 1000-2000km, none if >2000km
+      const rawSpeed = Math.max(0, Math.round(500 * (1 - guess.timeUsed / timeLimit)));
+      if (dist < 1000) {
+        speedBonus = rawSpeed;
+      } else if (dist < 2000) {
+        speedBonus = Math.round(rawSpeed * 0.5);
+      } else {
+        speedBonus = 0;
+      }
+
+      // Nearby bonus: within 300km
       countryBonus = dist < 300 ? 200 : 0;
       roundScore = distPoints + speedBonus + countryBonus;
     } else {

@@ -276,7 +276,7 @@ socket.on('map_result', ({ card, results, scores }) => {
     results.sort((a, b) => b.roundScore - a.roundScore);
     let sbHtml = '';
     results.forEach(r => {
-        const re = r.roundScore >= 1000 ? '🎯' : r.roundScore >= 500 ? '🔥' : r.roundScore >= 200 ? '👍' : '😅';
+        const re = r.roundScore >= 1200 ? '🎯' : r.roundScore >= 600 ? '🔥' : r.roundScore >= 200 ? '👏' : r.roundScore >= 50 ? '👍' : r.roundScore > 0 ? '😐' : '❌';
         sbHtml += `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin:4px 0;background:rgba(255,255,255,0.04);border-radius:10px;">
             <span>${r.emoji} ${esc(r.name)}</span>
             <span>${re} <b>+${r.roundScore}</b> <span style="color:rgba(255,255,255,0.4);font-size:0.8rem;">${r.dist}km</span></span>
