@@ -1801,7 +1801,7 @@
             }
             renderScoreChart(quizPlayers, quizCurrentPlayerIndex, quizTotalRounds, 'quiz');
             updateQuizStreak();
-            setTimeout(() => nextQuizCard(), 1400);
+            setTimeout(() => nextQuizCard(), 5000);
         } else {
             p.streak = 0;
             input.style.borderColor = '#ff6b6b';
@@ -1823,7 +1823,7 @@
                 showFeedback(false, quizCurrentCard);
                 renderScoreChart(quizPlayers, quizCurrentPlayerIndex, quizTotalRounds, 'quiz');
                 updateQuizStreak();
-                setTimeout(() => nextQuizCard(), 1400);
+                setTimeout(() => nextQuizCard(), 5000);
             }
         }
     }
@@ -1839,7 +1839,7 @@
             }
             renderScoreChart(quizPlayers, quizCurrentPlayerIndex, quizTotalRounds, 'quiz');
             updateQuizStreak();
-            setTimeout(() => nextQuizCard(), 1400);
+            setTimeout(() => nextQuizCard(), 5000);
             return;
         }
 

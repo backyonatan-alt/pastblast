@@ -1,5 +1,14 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* Twemoji: render flag emojis as images on all platforms */
+img.emoji {
+    height: 1em;
+    width: 1em;
+    margin: 0 .05em 0 .1em;
+    vertical-align: -0.1em;
+    display: inline;
+}
+
 body {
     font-family: 'Fredoka', 'Segoe UI', system-ui, sans-serif;
     background: #1b1464;

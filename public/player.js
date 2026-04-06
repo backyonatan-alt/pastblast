@@ -179,7 +179,7 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
         document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
         document.getElementById('result-text').innerHTML = correct ? 'Correct!' : 'Wrong!';
     }
-    setTimeout(() => { resultLock = false; }, 4000);
+    setTimeout(() => { resultLock = false; }, 6000);
 });
 
 // --- TIMELINE CARD ANIMATION ---
@@ -720,6 +720,10 @@ function cardDesc(card) {
     return (typeof isRTL === 'function' && isRTL() && card.desc_he) ? card.desc_he : (card.desc || '');
 }
 
+function parseEmoji() {
+    if (typeof twemoji !== 'undefined') twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+}
+
 function renderPlayerCard(containerId, card) {
     const el = document.getElementById(containerId);
     if (card.type === 'flag' && currentMode === 'timeline') {
@@ -734,6 +738,7 @@ function renderPlayerCard(containerId, card) {
             <div class="card-title">${cardName(card)}</div>
             <div class="card-desc">${cardDesc(card)}</div>`;
     }
+    parseEmoji();
 }
 
 function renderPlayerTimeline(timeline) {

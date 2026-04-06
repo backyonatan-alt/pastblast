@@ -132,12 +132,16 @@
 }
 
 .tl-direction-label {
-    font-size: 0.75rem;
-    color: rgba(255,255,255,0.4);
+    font-size: 0.9rem;
+    color: #ffd43b;
     text-transform: uppercase;
     letter-spacing: 3px;
-    padding: 6px 0 2px;
+    padding: 10px 16px;
     font-weight: 700;
+    background: rgba(255,212,59,0.1);
+    border-radius: 12px;
+    border: 2px solid rgba(255,212,59,0.2);
+    margin: 4px 0;
 }
 
 .tl-card {

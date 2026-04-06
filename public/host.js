@@ -136,6 +136,12 @@ function cardDesc(card) {
     return (isRTL() && card.desc_he) ? card.desc_he : (card.desc || '');
 }
 
+function parseEmoji() {
+    if (typeof twemoji !== 'undefined') {
+        twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+    }
+}
+
 function renderCard(card, mode) {
     const area = document.getElementById('card-area');
     if (card.type === 'flag' && mode === 'timeline') {
@@ -159,6 +165,7 @@ function renderCard(card, mode) {
                 <div class="card-desc">${cardDesc(card)}</div>
             </div>`;
     }
+    parseEmoji();
 }
 
 // --- TIMER ---
@@ -190,6 +197,7 @@ socket.on('round_result', ({ correct, card, playerName, reveal, scores }) => {
                 ${showYear ? `<div style="font-size:2.5rem;font-weight:900;color:#ffd43b;margin-top:8px;">${yearText}</div>` : ''}
             </div>`;
         document.getElementById('turn-label').innerHTML = '';
+        parseEmoji();
     } else if (!correct && playerName) {
         document.getElementById('turn-label').innerHTML = `${esc(playerName)} ${t('got_it_wrong')}`;
     }
@@ -394,6 +402,7 @@ function showFeedback(correct, card) {
         ${showYear ? `<div style="font-size:1.8rem;">${yearText}</div>` : ''}
     `;
     document.body.appendChild(popup);
+    parseEmoji();
 
     // translate(-50%,-50%) baked into every keyframe so centering is always applied
     popup.animate([
