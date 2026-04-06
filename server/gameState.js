@@ -143,10 +143,9 @@ function startGame(room, mode, difficulty, length) {
     });
     room.totalRounds = room.deck.length;
   } else if (mode === 'map') {
-    // Map mode: landmarks + cities + nature with coordinates
+    // Map mode: landmarks only
     const mapCards = shuffle(ALL_CARDS.filter(c =>
-      (c.type === 'landmark' || c.type === 'city' || c.type === 'nature') &&
-      c.lat && c.lng && diffFilter(c)
+      c.type === 'landmark' && c.lat && c.lng && diffFilter(c)
     ));
     const mapRounds = C.MAP_ROUNDS[length] || 10;
     room.deck = mapCards.slice(0, mapRounds);
