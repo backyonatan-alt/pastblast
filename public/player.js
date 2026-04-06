@@ -14,6 +14,7 @@ let currentMode = '';
 let timerMax = 30;
 let allCountryNames = [];
 let resultLock = false; // prevent wait screen from overriding result
+let resultLockTimer = null;
 let submitLock = false; // prevent double-submit on rapid tap
 
 // Load country names for autocomplete (with Hebrew support)
@@ -160,17 +161,24 @@ socket.on('timer_tick', ({ secondsLeft }) => {
 // --- ROUND RESULT ---
 socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores }) => {
     resultLock = true;
+    clearTimeout(resultLockTimer);
+    resultLockTimer = setTimeout(() => { resultLock = false; }, 8000); // safety net
 
     // Timeline animation for the active player's own result
     if (reveal && card && currentMode === 'timeline' && pName === playerName) {
-        showTimelineAnimation(correct, card);
+        try {
+            showTimelineAnimation(correct, card);
+        } catch (e) {
+            console.error('Timeline animation error:', e);
+        }
         setTimeout(() => {
             showScreen('result-screen');
             document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
             const yearPart = `<br>${formatYear(card.year)}`;
             document.getElementById('result-text').innerHTML = `${card.emoji} ${cardName(card)}${yearPart}`;
         }, correct ? 1800 : 1200);
-        setTimeout(() => { resultLock = false; }, correct ? 5800 : 5200);
+        // Safety: always unlock after max 6s
+        setTimeout(() => { resultLock = false; }, 6000);
         return;
     }
 
