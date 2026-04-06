@@ -135,8 +135,29 @@ function startGame(room, mode, difficulty, length) {
 
   if (mode === 'timeline') {
     // Timeline mode: landmarks + history only (no flags)
-    const landmarks = shuffle(ALL_CARDS.filter(c => c.type === 'landmark' && diffFilter(c)));
-    const history = shuffle(ALL_CARDS.filter(c => c.type === 'history' && diffFilter(c)));
+    let pool = ALL_CARDS.filter(c => (c.type === 'landmark' || c.type === 'history') && diffFilter(c));
+
+    // For harder difficulties, prefer cards with closer year gaps
+    if (difficulty >= 2) {
+      // Sort by year, then pick cards that cluster together
+      pool.sort((a, b) => a.year - b.year);
+      const clustered = [];
+      for (let i = 0; i < pool.length; i++) {
+        const hasCloseNeighbor = pool.some((other, j) => {
+          if (i === j) return false;
+          const gap = Math.abs(other.year - pool[i].year);
+          return difficulty >= 3 ? gap < 100 : gap < 300;
+        });
+        if (hasCloseNeighbor) clustered.push(pool[i]);
+      }
+      // Use clustered cards if we have enough, otherwise fall back to full pool
+      if (clustered.length >= targetRounds + 4) {
+        pool = clustered;
+      }
+    }
+
+    const landmarks = shuffle(pool.filter(c => c.type === 'landmark'));
+    const history = shuffle(pool.filter(c => c.type === 'history'));
     room.deck = shuffle([...landmarks, ...history]).slice(0, targetRounds + room.players.length);
 
     // Give each player a starter card

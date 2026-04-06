@@ -190,7 +190,7 @@
         /* Timeline */
         .timeline-container {
             width: 100%;
-            max-width: 1100px;
+            max-width: 100%;
             margin: 16px auto 0;
             overflow-x: auto;
             padding: 10px 20px 30px;
@@ -233,25 +233,32 @@
         }
 
         .timeline-slot.drop-zone {
-            min-width: 32px;
-            border: none;
-            border-radius: 16px;
-            background: #1f1a5c;
-            padding: 8px 6px;
+            min-width: 60px;
+            border: 3px solid rgba(255,212,59,0.25);
+            border-radius: 50px;
+            background: rgba(255,212,59,0.08);
+            padding: 10px 16px;
             cursor: pointer;
-            transition: background-color 0.15s, transform 0.1s;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
         }
 
         .timeline-slot.drop-zone:hover {
-            background: #2a2470;
-            transform: scale(1.08);
+            background: rgba(255,212,59,0.2);
+            border-color: #ffd43b;
+            transform: scale(1.02);
+        }
+
+        .timeline-slot.drop-zone:active {
+            transform: scale(0.98);
         }
 
         .timeline-slot.drop-zone .drop-label {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: #ffd43b;
             text-align: center;
             font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .timeline-slot.drop-zone .drop-text {
@@ -1222,7 +1229,7 @@
         for (let i = 0; i <= tl.length; i++) {
             const drop = document.createElement('div');
             drop.className = 'timeline-slot drop-zone';
-            drop.innerHTML = `<div class="drop-label">+ place here</div>`;
+            drop.innerHTML = `<div class="drop-label">Tap to place</div>`;
             drop.dataset.index = i;
             drop.addEventListener('click', () => placeCard(i));
             el.appendChild(drop);

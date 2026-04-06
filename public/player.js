@@ -180,7 +180,39 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
         document.getElementById('result-text').innerHTML = correct ? 'Correct!' : 'Wrong!';
     }
     setTimeout(() => { resultLock = false; }, 6000);
+
+    // Start countdown on Next button
+    startResultCountdown(10);
 });
+
+let resultCountdownTimer = null;
+function startResultCountdown(seconds) {
+    clearInterval(resultCountdownTimer);
+    const btn = document.getElementById('result-next-btn');
+    const span = document.getElementById('result-countdown');
+    if (!btn || !span) return;
+    btn.style.display = 'inline-block';
+    let remaining = seconds;
+    span.textContent = `(${remaining})`;
+    resultCountdownTimer = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+            clearInterval(resultCountdownTimer);
+            dismissResult();
+        } else {
+            span.textContent = `(${remaining})`;
+        }
+    }, 1000);
+}
+
+function dismissResult() {
+    clearInterval(resultCountdownTimer);
+    const btn = document.getElementById('result-next-btn');
+    if (btn) btn.style.display = 'none';
+    resultLock = false;
+    showScreen('wait-screen');
+    document.getElementById('wait-msg').textContent = t('waiting_host') || 'Waiting...';
+}
 
 // --- TIMELINE CARD ANIMATION ---
 function showTimelineAnimation(correct, card) {
@@ -754,7 +786,7 @@ function renderPlayerTimeline(timeline) {
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.textContent = t('place_here');
+        dropBtn.textContent = t('tap_to_place');
         dropBtn.addEventListener('click', () => {
             if (submitLock) return;
             submitLock = true;
@@ -784,7 +816,7 @@ function renderPlayerTimeline(timeline) {
     // Direction label at bottom
     const laterLabel = document.createElement('div');
     laterLabel.className = 'tl-direction-label';
-    laterLabel.textContent = t('later');
+    laterLabel.textContent = `${t('later')} · 2026`;
     el.appendChild(laterLabel);
 }
 
@@ -800,7 +832,7 @@ function renderStealTimeline(timeline, card) {
         drop.className = 'tl-slot';
         const dropBtn = document.createElement('div');
         dropBtn.className = 'tl-drop';
-        dropBtn.textContent = t('place_here');
+        dropBtn.textContent = t('tap_to_place');
         dropBtn.addEventListener('click', () => {
             if (submitLock) return;
             submitLock = true;

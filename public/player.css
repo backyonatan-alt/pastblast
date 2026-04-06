@@ -99,7 +99,12 @@
     gap: 0;
     overflow-y: auto;
     max-height: 55vh;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,212,59,0.3) transparent;
 }
+.p-timeline::-webkit-scrollbar { width: 4px; }
+.p-timeline::-webkit-scrollbar-thumb { background: rgba(255,212,59,0.3); border-radius: 4px; }
+.p-timeline::-webkit-scrollbar-track { background: transparent; }
 
 .tl-slot {
     width: 100%;
@@ -110,38 +115,51 @@
 .tl-drop {
     width: 85%;
     padding: 12px 16px;
-    border: none;
-    border-radius: 12px;
-    background: #2a2470;
+    border: 3px solid rgba(255,212,59,0.25);
+    border-radius: 50px;
+    background: rgba(255,212,59,0.08);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     color: #ffd43b;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     margin: 4px 0;
     font-weight: 700;
-    min-height: 46px;
-    transition: background-color 0.15s, transform 0.1s;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    min-height: 44px;
+    transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.tl-drop:hover {
+    background: rgba(255,212,59,0.2);
+    border-color: #ffd43b;
 }
 
 .tl-drop:active {
-    background: #3d35a0;
-    transform: scale(1.03);
+    transform: scale(0.98);
 }
 
 .tl-direction-label {
-    font-size: 0.9rem;
-    color: #ffd43b;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 85%;
+    margin: 8px auto;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.3);
     text-transform: uppercase;
-    letter-spacing: 3px;
-    padding: 10px 16px;
+    letter-spacing: 2px;
     font-weight: 700;
-    background: rgba(255,212,59,0.1);
-    border-radius: 12px;
-    border: 2px solid rgba(255,212,59,0.2);
-    margin: 4px 0;
+}
+.tl-direction-label::before,
+.tl-direction-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.15);
 }
 
 .tl-card {
