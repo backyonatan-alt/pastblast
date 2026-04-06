@@ -174,14 +174,16 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
         return;
     }
 
-    showScreen('result-screen');
+    // Always show result for all players
     if (reveal && card) {
+        showScreen('result-screen');
         document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
         const yearPart = currentMode === 'timeline' ? `<br>${formatYear(card.year)}` : '';
         document.getElementById('result-text').innerHTML = `${card.emoji} ${cardName(card)}${yearPart}`;
     } else if (pName) {
+        showScreen('result-screen');
         document.getElementById('result-icon').textContent = '❌';
-        document.getElementById('result-text').textContent = `${pName} got it wrong...`;
+        document.getElementById('result-text').innerHTML = `${esc(pName)} got it wrong...`;
     }
     setTimeout(() => { resultLock = false; }, 4000);
 });

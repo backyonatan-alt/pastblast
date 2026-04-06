@@ -381,19 +381,21 @@ function renderScores(scores, activeName) {
 }
 
 function showFeedback(correct, card) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'feedback-wrapper';
-    const fb = document.createElement('div');
-    fb.className = `feedback ${correct ? 'correct' : 'wrong'}`;
     const yearText = card.year < 0 ? `${Math.abs(card.year)} BCE` : `${card.year}`;
     const showYear = currentMode === 'timeline';
-    fb.innerHTML = `
-        <div class="fb-flag">${card.emoji}</div>
-        <div class="fb-name">${correct ? '✅' : '❌'} ${cardName(card)}</div>
-        ${showYear ? `<div class="fb-year">${yearText}</div>` : ''}
+    const bg = correct ? '#51cf66' : '#ff6b6b';
+
+    // Use inline styles to guarantee centering regardless of any CSS context
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('style', 'position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;z-index:99999;pointer-events:none;');
+    wrapper.innerHTML = `
+        <div style="background:${bg};color:#fff;font-family:Fredoka,sans-serif;font-size:2rem;font-weight:900;padding:24px 44px;border-radius:24px;border:4px solid #fff;text-align:center;min-width:260px;box-shadow:0 8px 40px rgba(0,0,0,0.5);animation:popIn 3s ease forwards;transform:scale(0);pointer-events:none;">
+            <div style="font-size:3rem;">${card.emoji}</div>
+            <div style="font-size:1.4rem;margin:4px 0;">${correct ? '✅' : '❌'} ${cardName(card)}</div>
+            ${showYear ? `<div style="font-size:1.8rem;">${yearText}</div>` : ''}
+        </div>
     `;
-    wrapper.appendChild(fb);
-    document.body.appendChild(wrapper);
+    document.documentElement.appendChild(wrapper);
     setTimeout(() => wrapper.remove(), 3200);
 }
 
