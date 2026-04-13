@@ -466,6 +466,24 @@
             border-color: #ffd43b;
         }
 
+        .btn-share {
+            background: rgba(255,255,255,0.1);
+            color: #51cf66;
+            border: 3px solid rgba(81,207,102,0.3);
+            box-shadow: none;
+        }
+
+        .btn-share:hover {
+            background: rgba(81,207,102,0.15);
+            border-color: #51cf66;
+        }
+
+        .btn-share.copied {
+            background: rgba(81,207,102,0.2);
+            border-color: #51cf66;
+            color: #51cf66;
+        }
+
         /* Heart break animation */
         @keyframes heartBreak {
             0% { transform: scale(1); }
@@ -663,6 +681,7 @@
         </div>
         <div class="end-buttons">
             <button class="btn" id="end-play-again" data-i18n="play_again">PLAY AGAIN</button>
+            <button class="btn btn-share" id="end-share" onclick="shareScore()" data-i18n="share">SHARE</button>
             <button class="btn btn-secondary" onclick="showModeSelect()" data-i18n="change_mode">Change Mode</button>
         </div>
         <a href="/" class="back-link" data-i18n="back_home">Back to Home</a>
@@ -1218,6 +1237,34 @@ const ALL_CARDS = [
         }
 
         parseEmoji();
+    }
+
+    // ===========================
+    // SHARE
+    // ===========================
+    function shareScore() {
+        const modeLabel = gameMode === 'timeline' ? t('timeline_survival') : t('flag_survival');
+        const streakText = bestStreak >= 3 ? ' | ' + '🔥'.repeat(Math.min(bestStreak, 10)) : '';
+        const text = `PastBlast ${modeLabel}\n🏆 ${score} ${t('points')}${streakText}\n\nCan you beat my score?\nhttps://pastblast-production.up.railway.app/solo.html`;
+
+        const btn = document.getElementById('end-share');
+
+        if (navigator.share) {
+            navigator.share({ text }).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = t('share', 'SHARE');
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(() => {});
+        }
+
+        if (typeof trackEvent === 'function') {
+            trackEvent('solo_share', { mode: gameMode, score });
+        }
     }
 
     // ===========================
