@@ -107,5 +107,17 @@
 
   "language": "Language",
   "english": "English",
-  "hebrew": "עברית"
+  "hebrew": "עברית",
+
+  "solo_mode": "SOLO MODE",
+  "timeline_survival": "Timeline Survival",
+  "flag_survival": "Flag Quiz Survival",
+  "how_far": "How far can you go?",
+  "lives_remaining": "Lives",
+  "best_score": "Best",
+  "new_best": "NEW BEST!",
+  "your_score": "Your Score",
+  "streak": "Streak",
+  "best_streak": "Best Streak",
+  "change_mode": "Change Mode"
 }

@@ -107,5 +107,17 @@
 
   "language": "שפה",
   "english": "English",
-  "hebrew": "עברית"
+  "hebrew": "עברית",
+
+  "solo_mode": "מצב יחיד",
+  "timeline_survival": "הישרדות ציר זמן",
+  "flag_survival": "הישרדות חידון דגלים",
+  "how_far": "?כמה רחוק תגיעו",
+  "lives_remaining": "חיים",
+  "best_score": "שיא",
+  "new_best": "!שיא חדש",
+  "your_score": "הניקוד שלך",
+  "streak": "רצף",
+  "best_streak": "רצף שיא",
+  "change_mode": "החלף מצב"
 }

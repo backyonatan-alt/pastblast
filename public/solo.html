@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1b1464">
+    <title>PastBlast — Solo Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <link rel="stylesheet" href="rtl.css">
+    <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+    <style>
+        /* ===== SOLO MODE STYLES ===== */
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .screen.active { display: flex; }
+
+        .logo {
+            font-size: min(3.5rem, 12vw);
+            color: #ffd43b;
+            letter-spacing: 4px;
+            text-shadow: 3px 3px 0 #e8590c;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 1.4rem;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        .tagline {
+            color: rgba(255,255,255,0.5);
+            font-size: 1.15rem;
+            margin-top: 20px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 24px;
+            color: rgba(255,255,255,0.45);
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #fff; }
+
+        /* Mode cards */
+        .mode-cards {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .mode-card {
+            flex: 1 1 240px;
+            max-width: 280px;
+            background: #2b2280;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 28px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .mode-card:hover {
+            border-color: #ffd43b;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        .mode-card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+        }
+
+        .mode-card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffd43b;
+            margin-bottom: 6px;
+        }
+
+        .mode-card-desc {
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.55);
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .mode-card-best {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.4);
+            font-weight: 600;
+        }
+        .mode-card-best span {
+            color: #ffd43b;
+        }
+
+        /* Top bar */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+            background: #120e3f;
+            border-bottom: 4px solid #ff6b6b;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lives {
+            font-size: 1.6rem;
+            letter-spacing: 4px;
+        }
+
+        .top-bar-center {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffd43b;
+        }
+
+        .top-bar-right {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.7);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .streak-display {
+            font-size: 1.1rem;
+            color: #ff6b6b;
+            font-weight: 700;
+            min-height: 1.4em;
+        }
+
+        /* Current card */
+        .current-card {
+            background: #2b2280;
+            border: 4px solid #ffd43b;
+            border-radius: 24px;
+            padding: 24px 40px;
+            text-align: center;
+            max-width: 340px;
+            width: 100%;
+            box-shadow: 0 6px 0 #e8590c, 0 12px 30px rgba(0,0,0,0.3);
+            animation: cardBounce 0.4s ease;
+        }
+
+        .current-card .category {
+            display: inline-block;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #1b1464;
+            background: #ffd43b;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .current-card .flag-display {
+            font-size: 7rem;
+            line-height: 1.1;
+            margin: 8px 0;
+        }
+
+        .current-card .hint {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 6px;
+        }
+
+        .current-card .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .current-card .description {
+            font-size: 1.15rem;
+            color: rgba(255,255,255,0.55);
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+
+        .instruction {
+            margin-top: 16px;
+            font-size: 1.2rem;
+            color: #ffd43b;
+            font-weight: 600;
+        }
+
+        /* Timeline */
+        .timeline-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 16px auto 0;
+            overflow-x: auto;
+            padding: 10px 20px 30px;
+        }
+
+        .timeline {
+            display: flex;
+            align-items: center;
+            min-height: 150px;
+            position: relative;
+            gap: 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: #ff6b6b;
+            border-radius: 3px;
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        .timeline-slot {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+            padding: 8px 4px;
+            border-radius: 14px;
+            z-index: 1;
+            position: relative;
+        }
+
+        .timeline-slot.drop-zone {
+            min-width: 60px;
+            border: 3px solid rgba(255,212,59,0.25);
+            border-radius: 50px;
+            background: rgba(255,212,59,0.08);
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+        }
+
+        .timeline-slot.drop-zone:hover {
+            background: rgba(255,212,59,0.2);
+            border-color: #ffd43b;
+            transform: scale(1.02);
+        }
+
+        .timeline-slot.drop-zone:active {
+            transform: scale(0.98);
+        }
+
+        .timeline-slot.drop-zone .drop-label {
+            font-size: 0.75rem;
+            color: #ffd43b;
+            text-align: center;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .placed-card {
+            background: #2b2280;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-radius: 14px;
+            padding: 10px 14px;
+            text-align: center;
+            min-width: 110px;
+            max-width: 150px;
+        }
+
+        .placed-card .card-emoji { font-size: 2.4rem; }
+        .placed-card .card-name { font-size: 0.85rem; font-weight: 700; margin: 4px 0; }
+        .placed-card .card-year { font-size: 1.15rem; color: #ffd43b; font-weight: 700; }
+
+        /* Quiz styles */
+        .quiz-card {
+            background: #2b2280;
+            border: 4px solid #ffd43b;
+            border-radius: 24px;
+            padding: 30px 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 6px 0 #e8590c, 0 12px 30px rgba(0,0,0,0.3);
+            animation: cardBounce 0.4s ease;
+        }
+
+        .quiz-card .quiz-flag {
+            font-size: 8rem;
+            line-height: 1.1;
+            margin: 10px 0 20px;
+        }
+
+        .quiz-input-wrap {
+            position: relative;
+            width: 100%;
+        }
+
+        .quiz-input {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 1.3rem;
+            font-family: 'Fredoka', sans-serif;
+            border-radius: 14px;
+            border: 3px solid rgba(255,255,255,0.2);
+            background: #1b1464;
+            color: #fff;
+        }
+
+        .quiz-input::placeholder { color: rgba(255,255,255,0.35); }
+        .quiz-input:focus { outline: none; border-color: #ffd43b; }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #1b1464;
+            border: 2px solid #ffd43b;
+            border-top: none;
+            border-radius: 0 0 14px 14px;
+            z-index: 60;
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 10px 18px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: rgba(255,212,59,0.2);
+            color: #ffd43b;
+        }
+
+        .autocomplete-item .match {
+            color: #ffd43b;
+            font-weight: 700;
+        }
+
+        /* Game area wrapper */
+        .game-area {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-area.active { display: flex; }
+
+        .game-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* Game over */
+        .final-score {
+            font-size: 5rem;
+            font-weight: 900;
+            color: #ffd43b;
+            text-shadow: 3px 3px 0 #e8590c;
+            margin: 10px 0;
+        }
+
+        .new-best {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #51cf66;
+            animation: popIn 1s ease forwards;
+            margin-bottom: 10px;
+        }
+
+        .end-stats {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .end-stat {
+            text-align: center;
+        }
+
+        .end-stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #ffd43b;
+        }
+
+        .end-stat-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .end-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #ffd43b;
+            border: 3px solid rgba(255,212,59,0.3);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,212,59,0.15);
+            border-color: #ffd43b;
+        }
+
+        /* Heart break animation */
+        @keyframes heartBreak {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.3); }
+            60% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .heart-break { animation: heartBreak 0.5s ease; }
+
+        /* Animations */
+        @keyframes cardBounce {
+            0% { opacity: 0; transform: translateY(-30px) scale(0.9); }
+            60% { transform: translateY(8px) scale(1.02); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            30% { transform: scale(1.2) rotate(3deg); opacity: 1; }
+            50% { transform: scale(1) rotate(0deg); }
+            80% { opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0; }
+        }
+
+        @keyframes popInStay {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            40% { transform: scale(1.15) rotate(2deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .confetti {
+            position: fixed;
+            top: -10px;
+            font-size: 2rem;
+            animation: confettiFall linear forwards;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .current-card { padding: 20px; }
+            .current-card .flag-display { font-size: 5rem; }
+            .quiz-card .quiz-flag { font-size: 6rem; }
+
+            .timeline-container { overflow-x: visible; padding: 10px 16px 30px; }
+
+            .timeline {
+                flex-direction: column;
+                align-items: center;
+                min-height: auto;
+            }
+
+            .timeline::before {
+                top: 0; bottom: 0; left: 50%; right: auto;
+                width: 4px; height: 100%;
+                transform: translateX(-50%);
+            }
+
+            .timeline-slot { min-width: auto; width: 100%; max-width: 280px; }
+
+            .timeline-slot.drop-zone {
+                min-width: auto;
+                width: 70%;
+                padding: 8px 0;
+                margin: 4px auto;
+            }
+
+            .placed-card {
+                min-width: auto;
+                max-width: none;
+                width: 85%;
+                margin: 3px auto;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                text-align: left;
+                padding: 8px 14px;
+            }
+
+            .placed-card .card-emoji { font-size: 1.5rem; flex: 0 0 auto; }
+            .placed-card .card-name { font-size: 0.8rem; }
+            .placed-card .card-year { font-size: 0.85rem; }
+
+            .mode-card { flex: 1 1 100%; max-width: 100%; }
+            .top-bar { padding: 10px 14px; }
+            .top-bar-center { font-size: 1.1rem; }
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .current-card, .quiz-card { animation: none; }
+            .confetti { animation: none; display: none; }
+            .new-best { animation: none; opacity: 1; transform: scale(1); }
+            .heart-break { animation: none; }
+            .btn { transition: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== MODE SELECT ===== -->
+    <div id="solo-start" class="screen active">
+        <div class="lang-switcher">
+            <button class="lang-btn" onclick="switchLang('en')" id="lang-en">English</button>
+            <button class="lang-btn" onclick="switchLang('he')" id="lang-he">&#x05E2;&#x05D1;&#x05E8;&#x05D9;&#x05EA;</button>
+        </div>
+        <h1 class="logo">PASTBLAST</h1>
+        <div class="subtitle" data-i18n="solo_mode">SOLO MODE</div>
+
+        <div class="mode-cards">
+            <div class="mode-card" onclick="startTimelineGame()">
+                <div class="mode-card-icon">&#x1F3DB;&#xFE0F;</div>
+                <div class="mode-card-title" data-i18n="timeline_survival">Timeline Survival</div>
+                <div class="mode-card-desc" data-i18n="timeline_desc">Place events in chronological order</div>
+                <div class="mode-card-best" id="best-timeline"></div>
+            </div>
+            <div class="mode-card" onclick="startQuizGame()">
+                <div class="mode-card-icon">&#x1F3C1;</div>
+                <div class="mode-card-title" data-i18n="flag_survival">Flag Quiz Survival</div>
+                <div class="mode-card-desc" data-i18n="flag_quiz_desc">Name the country from its flag</div>
+                <div class="mode-card-best" id="best-quiz"></div>
+            </div>
+        </div>
+
+        <div class="tagline" data-i18n="how_far">How far can you go?</div>
+        <a href="/" class="back-link" data-i18n="back_home">Back to Home</a>
+    </div>
+
+    <!-- ===== TIMELINE GAME ===== -->
+    <div id="solo-timeline" class="game-area">
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="lives" id="tl-lives"></div>
+            </div>
+            <div class="top-bar-center">
+                <div data-i18n="score">Score</div>
+                <div id="tl-score">0</div>
+            </div>
+            <div class="top-bar-right">
+                <div class="streak-display" id="tl-streak"></div>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="current-card" id="tl-current-card"></div>
+            <p class="instruction" data-i18n="tap_to_place">TAP TO PLACE</p>
+            <div class="timeline-container">
+                <div class="timeline" id="tl-timeline"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FLAG QUIZ GAME ===== -->
+    <div id="solo-quiz" class="game-area">
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="lives" id="qz-lives"></div>
+            </div>
+            <div class="top-bar-center">
+                <div data-i18n="score">Score</div>
+                <div id="qz-score">0</div>
+            </div>
+            <div class="top-bar-right">
+                <div class="streak-display" id="qz-streak"></div>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="quiz-card" id="qz-card"></div>
+            <div style="margin-top:20px;width:100%;max-width:400px;">
+                <div class="quiz-input-wrap">
+                    <input type="text" class="quiz-input" id="qz-input" data-i18n="type_country" placeholder="Type country name..." autocomplete="off">
+                    <div class="autocomplete-list" id="qz-autocomplete"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== GAME OVER ===== -->
+    <div id="solo-end" class="screen">
+        <h1 class="logo" data-i18n="game_over">GAME OVER!</h1>
+        <div id="end-new-best"></div>
+        <div class="final-score" id="end-score">0</div>
+        <div class="end-stats">
+            <div class="end-stat">
+                <div class="end-stat-value" id="end-best-streak">0</div>
+                <div class="end-stat-label" data-i18n="best_streak">Best Streak</div>
+            </div>
+        </div>
+        <div class="end-buttons">
+            <button class="btn" id="end-play-again" data-i18n="play_again">PLAY AGAIN</button>
+            <button class="btn btn-secondary" onclick="showModeSelect()" data-i18n="change_mode">Change Mode</button>
+        </div>
+        <a href="/" class="back-link" data-i18n="back_home">Back to Home</a>
+    </div>
+
+    <script src="i18n.js"></script>
+    <script src="analytics.js"></script>
+    <script>
+const ALL_CARDS = [
+{name:"United States",name_he:"ארצות הברית",emoji:"🇺🇸",year:1776,type:"flag"},
+{name:"France",name_he:"צרפת",emoji:"🇫🇷",year:1794,type:"flag"},
+{name:"Brazil",name_he:"ברזיל",emoji:"🇧🇷",year:1822,type:"flag"},
+{name:"Italy",name_he:"איטליה",emoji:"🇮🇹",year:1861,type:"flag"},
+{name:"Germany",name_he:"גרמניה",emoji:"🇩🇪",year:1871,type:"flag"},
+{name:"Australia",name_he:"אוסטרליה",emoji:"🇦🇺",year:1901,type:"flag"},
+{name:"Israel",name_he:"ישראל",emoji:"🇮🇱",year:1948,type:"flag"},
+{name:"India",name_he:"הודו",emoji:"🇮🇳",year:1947,type:"flag"},
+{name:"South Sudan",name_he:"דרום סודן",emoji:"🇸🇸",year:2011,type:"flag"},
+{name:"Pakistan",name_he:"פקיסטן",emoji:"🇵🇰",year:1947,type:"flag"},
+{name:"South Africa",name_he:"דרום אפריקה",emoji:"🇿🇦",year:1994,type:"flag"},
+{name:"Japan",name_he:"יפן",emoji:"🇯🇵",year:1870,type:"flag"},
+{name:"Mexico",name_he:"מקסיקו",emoji:"🇲🇽",year:1821,type:"flag"},
+{name:"Greece",name_he:"יוון",emoji:"🇬🇷",year:1829,type:"flag"},
+{name:"Canada",name_he:"קנדה",emoji:"🇨🇦",year:1965,type:"flag"},
+{name:"China",name_he:"סין",emoji:"🇨🇳",year:1949,type:"flag"},
+{name:"Russia",name_he:"רוסיה",emoji:"🇷🇺",year:1991,type:"flag"},
+{name:"Turkey",name_he:"טורקיה",emoji:"🇹🇷",year:1923,type:"flag"},
+{name:"Argentina",name_he:"ארגנטינה",emoji:"🇦🇷",year:1816,type:"flag"},
+{name:"Nigeria",name_he:"ניגריה",emoji:"🇳🇬",year:1960,type:"flag"},
+{name:"Indonesia",name_he:"אינדונזיה",emoji:"🇮🇩",year:1945,type:"flag"},
+{name:"South Korea",name_he:"דרום קוריאה",emoji:"🇰🇷",year:1948,type:"flag"},
+{name:"Ireland",name_he:"אירלנד",emoji:"🇮🇪",year:1922,type:"flag"},
+{name:"Egypt",name_he:"מצרים",emoji:"🇪🇬",year:1984,type:"flag"},
+{name:"Norway",name_he:"נורווגיה",emoji:"🇳🇴",year:1905,type:"flag"},
+{name:"Poland",name_he:"פולין",emoji:"🇵🇱",year:1918,type:"flag"},
+{name:"Colombia",name_he:"קולומביה",emoji:"🇨🇴",year:1810,type:"flag"},
+{name:"Thailand",name_he:"תאילנד",emoji:"🇹🇭",year:1917,type:"flag"},
+{name:"Vietnam",name_he:"וייטנאם",emoji:"🇻🇳",year:1945,type:"flag"},
+{name:"Kenya",name_he:"קניה",emoji:"🇰🇪",year:1963,type:"flag"},
+{name:"Ukraine",name_he:"אוקראינה",emoji:"🇺🇦",year:1991,type:"flag"},
+{name:"Chile",name_he:"צ׳ילה",emoji:"🇨🇱",year:1818,type:"flag"},
+{name:"Saudi Arabia",name_he:"ערב הסעודית",emoji:"🇸🇦",year:1932,type:"flag"},
+{name:"Jamaica",name_he:"ג׳מייקה",emoji:"🇯🇲",year:1962,type:"flag"},
+{name:"Nepal",name_he:"נפאל",emoji:"🇳🇵",year:1962,type:"flag"},
+{name:"Cuba",name_he:"קובה",emoji:"🇨🇺",year:1902,type:"flag"},
+{name:"Ethiopia",name_he:"אתיופיה",emoji:"🇪🇹",year:1897,type:"flag"},
+{name:"UAE",name_he:"איחוד האמירויות",emoji:"🇦🇪",year:1971,type:"flag"},
+{name:"Switzerland",name_he:"שווייץ",emoji:"🇨🇭",year:1848,type:"flag"},
+{name:"Denmark",name_he:"דנמרק",emoji:"🇩🇰",year:1219,type:"flag"},
+{name:"United Kingdom",name_he:"בריטניה",emoji:"🇬🇧",year:1801,type:"flag"},
+{name:"Spain",name_he:"ספרד",emoji:"🇪🇸",year:1981,type:"flag"},
+{name:"Portugal",name_he:"פורטוגל",emoji:"🇵🇹",year:1910,type:"flag"},
+{name:"Sweden",name_he:"שוודיה",emoji:"🇸🇪",year:1906,type:"flag"},
+{name:"Finland",name_he:"פינלנד",emoji:"🇫🇮",year:1917,type:"flag"},
+{name:"Belgium",name_he:"בלגיה",emoji:"🇧🇪",year:1830,type:"flag"},
+{name:"Netherlands",name_he:"הולנד",emoji:"🇳🇱",year:1815,type:"flag"},
+{name:"Austria",name_he:"אוסטריה",emoji:"🇦🇹",year:1230,type:"flag"},
+{name:"Czech Republic",name_he:"צ׳כיה",emoji:"🇨🇿",year:1993,type:"flag"},
+{name:"Romania",name_he:"רומניה",emoji:"🇷🇴",year:1848,type:"flag"},
+{name:"Hungary",name_he:"הונגריה",emoji:"🇭🇺",year:1918,type:"flag"},
+{name:"Croatia",name_he:"קרואטיה",emoji:"🇭🇷",year:1991,type:"flag"},
+{name:"Serbia",name_he:"סרביה",emoji:"🇷🇸",year:2006,type:"flag"},
+{name:"Iceland",name_he:"איסלנד",emoji:"🇮🇸",year:1944,type:"flag"},
+{name:"New Zealand",name_he:"ניו זילנד",emoji:"🇳🇿",year:1907,type:"flag"},
+{name:"Philippines",name_he:"הפיליפינים",emoji:"🇵🇭",year:1898,type:"flag"},
+{name:"Malaysia",name_he:"מלזיה",emoji:"🇲🇾",year:1963,type:"flag"},
+{name:"Singapore",name_he:"סינגפור",emoji:"🇸🇬",year:1965,type:"flag"},
+{name:"Bangladesh",name_he:"בנגלדש",emoji:"🇧🇩",year:1971,type:"flag"},
+{name:"Peru",name_he:"פרו",emoji:"🇵🇪",year:1821,type:"flag"},
+{name:"Venezuela",name_he:"ונצואלה",emoji:"🇻🇪",year:1811,type:"flag"},
+{name:"Ecuador",name_he:"אקוודור",emoji:"🇪🇨",year:1830,type:"flag"},
+{name:"Morocco",name_he:"מרוקו",emoji:"🇲🇦",year:1956,type:"flag"},
+{name:"Tunisia",name_he:"תוניסיה",emoji:"🇹🇳",year:1956,type:"flag"},
+{name:"Algeria",name_he:"אלג׳יריה",emoji:"🇩🇿",year:1962,type:"flag"},
+{name:"Ghana",name_he:"גאנה",emoji:"🇬🇭",year:1957,type:"flag"},
+{name:"Tanzania",name_he:"טנזניה",emoji:"🇹🇿",year:1964,type:"flag"},
+{name:"Libya",name_he:"לוב",emoji:"🇱🇾",year:2011,type:"flag"},
+{name:"Iraq",name_he:"עיראק",emoji:"🇮🇶",year:1932,type:"flag"},
+{name:"Iran",name_he:"איראן",emoji:"🇮🇷",year:1980,type:"flag"},
+{name:"Jordan",name_he:"ירדן",emoji:"🇯🇴",year:1946,type:"flag"},
+{name:"Lebanon",name_he:"לבנון",emoji:"🇱🇧",year:1943,type:"flag"},
+{name:"Qatar",name_he:"קטאר",emoji:"🇶🇦",year:1971,type:"flag"},
+{name:"Bahrain",name_he:"בחריין",emoji:"🇧🇭",year:1971,type:"flag"},
+{name:"Kuwait",name_he:"כווית",emoji:"🇰🇼",year:1961,type:"flag"},
+{name:"Oman",name_he:"עומאן",emoji:"🇴🇲",year:1970,type:"flag"},
+{name:"Panama",name_he:"פנמה",emoji:"🇵🇦",year:1903,type:"flag"},
+{name:"Costa Rica",name_he:"קוסטה ריקה",emoji:"🇨🇷",year:1821,type:"flag"},
+{name:"Dominican Republic",name_he:"הרפובליקה הדומיניקנית",emoji:"🇩🇴",year:1844,type:"flag"},
+{name:"Haiti",name_he:"האיטי",emoji:"🇭🇹",year:1804,type:"flag"},
+{name:"Bolivia",name_he:"בוליביה",emoji:"🇧🇴",year:1825,type:"flag"},
+{name:"Paraguay",name_he:"פרגוואי",emoji:"🇵🇾",year:1811,type:"flag"},
+{name:"Uruguay",name_he:"אורוגוואי",emoji:"🇺🇾",year:1825,type:"flag"},
+{name:"Sri Lanka",name_he:"סרי לנקה",emoji:"🇱🇰",year:1948,type:"flag"},
+{name:"Myanmar",name_he:"מיאנמר",emoji:"🇲🇲",year:2010,type:"flag"},
+{name:"Cambodia",name_he:"קמבודיה",emoji:"🇰🇭",year:1953,type:"flag"},
+{name:"Laos",name_he:"לאוס",emoji:"🇱🇦",year:1975,type:"flag"},
+{name:"Mongolia",name_he:"מונגוליה",emoji:"🇲🇳",year:1911,type:"flag"},
+{name:"North Korea",name_he:"צפון קוריאה",emoji:"🇰🇵",year:1948,type:"flag"},
+{name:"Afghanistan",name_he:"אפגניסטן",emoji:"🇦🇫",year:1919,type:"flag"},
+{name:"Congo (DRC)",name_he:"קונגו (הרפובליקה הדמוקרטית)",emoji:"🇨🇩",year:1960,type:"flag"},
+{name:"Mozambique",name_he:"מוזמביק",emoji:"🇲🇿",year:1975,type:"flag"},
+{name:"Zimbabwe",name_he:"זימבבואה",emoji:"🇿🇼",year:1980,type:"flag"},
+{name:"Namibia",name_he:"נמיביה",emoji:"🇳🇦",year:1990,type:"flag"},
+{name:"Eritrea",name_he:"אריתריאה",emoji:"🇪🇷",year:1993,type:"flag"},
+{name:"East Timor",name_he:"מזרח טימור",emoji:"🇹🇱",year:2002,type:"flag"},
+{name:"Kosovo",name_he:"קוסובו",emoji:"🇽🇰",year:2008,type:"flag"},
+{name:"Montenegro",name_he:"מונטנגרו",emoji:"🇲🇪",year:2006,type:"flag"},
+{name:"Albania",name_he:"אלבניה",emoji:"🇦🇱",year:1912,type:"flag"},
+{name:"Andorra",name_he:"אנדורה",emoji:"🇦🇩",year:1278,type:"flag"},
+{name:"Angola",name_he:"אנגולה",emoji:"🇦🇴",year:1975,type:"flag"},
+{name:"Antigua and Barbuda",name_he:"אנטיגואה וברבודה",emoji:"🇦🇬",year:1981,type:"flag"},
+{name:"Armenia",name_he:"ארמניה",emoji:"🇦🇲",year:1991,type:"flag"},
+{name:"Azerbaijan",name_he:"אזרבייג׳ן",emoji:"🇦🇿",year:1991,type:"flag"},
+{name:"Bahamas",name_he:"איי בהאמה",emoji:"🇧🇸",year:1973,type:"flag"},
+{name:"Barbados",name_he:"ברבדוס",emoji:"🇧🇧",year:1966,type:"flag"},
+{name:"Belarus",name_he:"בלארוס",emoji:"🇧🇾",year:1991,type:"flag"},
+{name:"Belize",name_he:"בליז",emoji:"🇧🇿",year:1981,type:"flag"},
+{name:"Benin",name_he:"בנין",emoji:"🇧🇯",year:1960,type:"flag"},
+{name:"Bhutan",name_he:"בהוטן",emoji:"🇧🇹",year:1949,type:"flag"},
+{name:"Bosnia and Herzegovina",name_he:"בוסניה והרצגובינה",emoji:"🇧🇦",year:1992,type:"flag"},
+{name:"Botswana",name_he:"בוצוואנה",emoji:"🇧🇼",year:1966,type:"flag"},
+{name:"Brunei",name_he:"ברוניי",emoji:"🇧🇳",year:1984,type:"flag"},
+{name:"Bulgaria",name_he:"בולגריה",emoji:"🇧🇬",year:1908,type:"flag"},
+{name:"Burkina Faso",name_he:"בורקינה פאסו",emoji:"🇧🇫",year:1960,type:"flag"},
+{name:"Burundi",name_he:"בורונדי",emoji:"🇧🇮",year:1962,type:"flag"},
+{name:"Cabo Verde",name_he:"כף ורדה",emoji:"🇨🇻",year:1975,type:"flag"},
+{name:"Cameroon",name_he:"קמרון",emoji:"🇨🇲",year:1960,type:"flag"},
+{name:"Central African Republic",name_he:"הרפובליקה המרכז-אפריקנית",emoji:"🇨🇫",year:1960,type:"flag"},
+{name:"Chad",name_he:"צ׳אד",emoji:"🇹🇩",year:1960,type:"flag"},
+{name:"Comoros",name_he:"קומורו",emoji:"🇰🇲",year:1975,type:"flag"},
+{name:"Congo (Republic)",name_he:"קונגו (הרפובליקה)",emoji:"🇨🇬",year:1960,type:"flag"},
+{name:"Cyprus",name_he:"קפריסין",emoji:"🇨🇾",year:1960,type:"flag"},
+{name:"Djibouti",name_he:"ג׳יבוטי",emoji:"🇩🇯",year:1977,type:"flag"},
+{name:"Dominica",name_he:"דומיניקה",emoji:"🇩🇲",year:1978,type:"flag"},
+{name:"El Salvador",name_he:"אל סלבדור",emoji:"🇸🇻",year:1821,type:"flag"},
+{name:"Equatorial Guinea",name_he:"גינאה המשוונית",emoji:"🇬🇶",year:1968,type:"flag"},
+{name:"Eswatini",name_he:"אסוואטיני",emoji:"🇸🇿",year:1968,type:"flag"},
+{name:"Fiji",name_he:"פיג׳י",emoji:"🇫🇯",year:1970,type:"flag"},
+{name:"Gabon",name_he:"גבון",emoji:"🇬🇦",year:1960,type:"flag"},
+{name:"Gambia",name_he:"גמביה",emoji:"🇬🇲",year:1965,type:"flag"},
+{name:"Georgia",name_he:"גאורגיה",emoji:"🇬🇪",year:1991,type:"flag"},
+{name:"Grenada",name_he:"גרנדה",emoji:"🇬🇩",year:1974,type:"flag"},
+{name:"Guatemala",name_he:"גואטמלה",emoji:"🇬🇹",year:1821,type:"flag"},
+{name:"Guinea",name_he:"גינאה",emoji:"🇬🇳",year:1958,type:"flag"},
+{name:"Guinea-Bissau",name_he:"גינאה-ביסאו",emoji:"🇬🇼",year:1973,type:"flag"},
+{name:"Guyana",name_he:"גיאנה",emoji:"🇬🇾",year:1966,type:"flag"},
+{name:"Honduras",name_he:"הונדורס",emoji:"🇭🇳",year:1821,type:"flag"},
+{name:"Ivory Coast (Cote d'Ivoire)",name_he:"חוף השנהב",emoji:"🇨🇮",year:1960,type:"flag"},
+{name:"Kazakhstan",name_he:"קזחסטן",emoji:"🇰🇿",year:1991,type:"flag"},
+{name:"Kiribati",name_he:"קיריבטי",emoji:"🇰🇮",year:1979,type:"flag"},
+{name:"Kyrgyzstan",name_he:"קירגיזסטן",emoji:"🇰🇬",year:1991,type:"flag"},
+{name:"Latvia",name_he:"לטביה",emoji:"🇱🇻",year:1918,type:"flag"},
+{name:"Lesotho",name_he:"לסוטו",emoji:"🇱🇸",year:1966,type:"flag"},
+{name:"Liberia",name_he:"ליבריה",emoji:"🇱🇷",year:1847,type:"flag"},
+{name:"Liechtenstein",name_he:"ליכטנשטיין",emoji:"🇱🇮",year:1719,type:"flag"},
+{name:"Lithuania",name_he:"ליטא",emoji:"🇱🇹",year:1918,type:"flag"},
+{name:"Luxembourg",name_he:"לוקסמבורג",emoji:"🇱🇺",year:1839,type:"flag"},
+{name:"Madagascar",name_he:"מדגסקר",emoji:"🇲🇬",year:1960,type:"flag"},
+{name:"Malawi",name_he:"מלאווי",emoji:"🇲🇼",year:1964,type:"flag"},
+{name:"Maldives",name_he:"האיים המלדיביים",emoji:"🇲🇻",year:1965,type:"flag"},
+{name:"Mali",name_he:"מאלי",emoji:"🇲🇱",year:1960,type:"flag"},
+{name:"Malta",name_he:"מלטה",emoji:"🇲🇹",year:1964,type:"flag"},
+{name:"Marshall Islands",name_he:"איי מרשל",emoji:"🇲🇭",year:1986,type:"flag"},
+{name:"Mauritania",name_he:"מאוריטניה",emoji:"🇲🇷",year:1960,type:"flag"},
+{name:"Mauritius",name_he:"מאוריציוס",emoji:"🇲🇺",year:1968,type:"flag"},
+{name:"Micronesia",name_he:"מיקרונזיה",emoji:"🇫🇲",year:1986,type:"flag"},
+{name:"Moldova",name_he:"מולדובה",emoji:"🇲🇩",year:1991,type:"flag"},
+{name:"Monaco",name_he:"מונקו",emoji:"🇲🇨",year:1297,type:"flag"},
+{name:"Nicaragua",name_he:"ניקרגואה",emoji:"🇳🇮",year:1821,type:"flag"},
+{name:"Niger",name_he:"ניז׳ר",emoji:"🇳🇪",year:1960,type:"flag"},
+{name:"North Macedonia",name_he:"מקדוניה הצפונית",emoji:"🇲🇰",year:1991,type:"flag"},
+{name:"Palau",name_he:"פלאו",emoji:"🇵🇼",year:1994,type:"flag"},
+{name:"Palestine",name_he:"פלסטין",emoji:"🇵🇸",year:1988,type:"flag"},
+{name:"Papua New Guinea",name_he:"פפואה גינאה החדשה",emoji:"🇵🇬",year:1975,type:"flag"},
+{name:"Rwanda",name_he:"רואנדה",emoji:"🇷🇼",year:1962,type:"flag"},
+{name:"Saint Kitts and Nevis",name_he:"סנט קיטס ונוויס",emoji:"🇰🇳",year:1983,type:"flag"},
+{name:"Saint Lucia",name_he:"סנט לוסיה",emoji:"🇱🇨",year:1979,type:"flag"},
+{name:"Saint Vincent and the Grenadines",name_he:"סנט וינסנט והגרנדינים",emoji:"🇻🇨",year:1979,type:"flag"},
+{name:"Samoa",name_he:"סמואה",emoji:"🇼🇸",year:1962,type:"flag"},
+{name:"San Marino",name_he:"סן מרינו",emoji:"🇸🇲",year:301,type:"flag"},
+{name:"Sao Tome and Principe (Sao Tome)",name_he:"סאו טומה ופרינסיפה",emoji:"🇸🇹",year:1975,type:"flag"},
+{name:"Senegal",name_he:"סנגל",emoji:"🇸🇳",year:1960,type:"flag"},
+{name:"Seychelles",name_he:"סיישל",emoji:"🇸🇨",year:1976,type:"flag"},
+{name:"Sierra Leone",name_he:"סיירה לאונה",emoji:"🇸🇱",year:1961,type:"flag"},
+{name:"Slovakia",name_he:"סלובקיה",emoji:"🇸🇰",year:1993,type:"flag"},
+{name:"Slovenia",name_he:"סלובניה",emoji:"🇸🇮",year:1991,type:"flag"},
+{name:"Solomon Islands",name_he:"איי שלמה",emoji:"🇸🇧",year:1978,type:"flag"},
+{name:"Somalia",name_he:"סומליה",emoji:"🇸🇴",year:1960,type:"flag"},
+{name:"Sudan",name_he:"סודן",emoji:"🇸🇩",year:1956,type:"flag"},
+{name:"Suriname",name_he:"סורינאם",emoji:"🇸🇷",year:1975,type:"flag"},
+{name:"Syria",name_he:"סוריה",emoji:"🇸🇾",year:1946,type:"flag"},
+{name:"Taiwan",name_he:"טייוואן",emoji:"🇹🇼",year:1949,type:"flag"},
+{name:"Tajikistan",name_he:"טג׳יקיסטן",emoji:"🇹🇯",year:1991,type:"flag"},
+{name:"Togo",name_he:"טוגו",emoji:"🇹🇬",year:1960,type:"flag"},
+{name:"Tonga",name_he:"טונגה",emoji:"🇹🇴",year:1970,type:"flag"},
+{name:"Trinidad and Tobago",name_he:"טרינידד וטובגו",emoji:"🇹🇹",year:1962,type:"flag"},
+{name:"Turkmenistan",name_he:"טורקמניסטן",emoji:"🇹🇲",year:1991,type:"flag"},
+{name:"Tuvalu",name_he:"טובאלו",emoji:"🇹🇻",year:1978,type:"flag"},
+{name:"Uganda",name_he:"אוגנדה",emoji:"🇺🇬",year:1962,type:"flag"},
+{name:"Uzbekistan",name_he:"אוזבקיסטן",emoji:"🇺🇿",year:1991,type:"flag"},
+{name:"Vanuatu",name_he:"ונואטו",emoji:"🇻🇺",year:1980,type:"flag"},
+{name:"Vatican City",name_he:"הוותיקן",emoji:"🇻🇦",year:1929,type:"flag"},
+{name:"Yemen",name_he:"תימן",emoji:"🇾🇪",year:1990,type:"flag"},
+{name:"Zambia",name_he:"זמביה",emoji:"🇿🇲",year:1964,type:"flag"},
+{name:"Great Pyramid of Giza",name_he:"הפירמידה הגדולה של גיזה",emoji:"🔺",year:-2560,type:"landmark",desc:"Ancient tomb in Egypt",desc_he:"קבר עתיק במצרים",difficulty:1},
+{name:"Stonehenge",name_he:"סטונהנג׳",emoji:"🪨",year:-3000,type:"landmark",desc:"Prehistoric stone circle in England",desc_he:"מעגל אבנים פרהיסטורי באנגליה",difficulty:1},
+{name:"Parthenon",name_he:"הפרתנון",emoji:"🏛️",year:-432,type:"landmark",desc:"Temple in Athens",desc_he:"מקדש באתונה",difficulty:2},
+{name:"Colosseum",name_he:"הקולוסיאום",emoji:"🏟️",year:80,type:"landmark",desc:"Amphitheatre in Rome",desc_he:"אמפיתיאטרון ברומא",difficulty:1},
+{name:"Hagia Sophia",name_he:"איה סופיה",emoji:"🕌",year:537,type:"landmark",desc:"Cathedral turned mosque in Istanbul",desc_he:"קתדרלה שהפכה למסגד באיסטנבול",difficulty:2},
+{name:"Angkor Wat",name_he:"אנגקור ואט",emoji:"🛕",year:1150,type:"landmark",desc:"Largest religious monument",desc_he:"המונומנט הדתי הגדול בעולם",difficulty:2},
+{name:"Notre-Dame Cathedral",name_he:"קתדרלת נוטרדאם",emoji:"⛪",year:1345,type:"landmark",desc:"Gothic cathedral in Paris",desc_he:"קתדרלה גותית בפריז",difficulty:1},
+{name:"Leaning Tower of Pisa",name_he:"מגדל פיזה הנטוי",emoji:"🏗️",year:1372,type:"landmark",desc:"Famous tilted tower in Italy",desc_he:"מגדל נטוי מפורסם באיטליה",difficulty:1},
+{name:"Machu Picchu",name_he:"מאצ׳ו פיצ׳ו",emoji:"🏔️",year:1450,type:"landmark",desc:"Inca citadel in Peru",desc_he:"מצודת אינקה בפרו",difficulty:1},
+{name:"Taj Mahal",name_he:"טאג׳ מהאל",emoji:"🕌",year:1653,type:"landmark",desc:"Marble mausoleum in India",desc_he:"מאוזוליאום שיש בהודו",difficulty:1},
+{name:"Statue of Liberty",name_he:"פסל החירות",emoji:"🗽",year:1886,type:"landmark",desc:"Iconic statue in New York",desc_he:"פסל מפורסם בניו יורק",difficulty:1},
+{name:"Eiffel Tower",name_he:"מגדל אייפל",emoji:"🗼",year:1889,type:"landmark",desc:"Iron tower in Paris",desc_he:"מגדל ברזל בפריז",difficulty:1},
+{name:"Empire State Building",name_he:"בניין אמפייר סטייט",emoji:"🏙️",year:1931,type:"landmark",desc:"Skyscraper in New York",desc_he:"גורד שחקים בניו יורק",difficulty:1},
+{name:"Golden Gate Bridge",name_he:"גשר שער הזהב",emoji:"🌉",year:1937,type:"landmark",desc:"Bridge in San Francisco",desc_he:"גשר בסן פרנסיסקו",difficulty:1},
+{name:"Sydney Opera House",name_he:"בית האופרה של סידני",emoji:"🎭",year:1973,type:"landmark",desc:"Performing arts center in Australia",desc_he:"מרכז אמנויות הבמה באוסטרליה",difficulty:1},
+{name:"Burj Khalifa",name_he:"בורג׳ ח׳ליפה",emoji:"🏗️",year:2010,type:"landmark",desc:"Tallest building in the world",desc_he:"הבניין הגבוה בעולם",difficulty:1},
+{name:"Great Wall of China",name_he:"החומה הסינית הגדולה",emoji:"🧱",year:-700,type:"landmark",desc:"Fortification across China",desc_he:"ביצור לאורך סין",difficulty:1},
+{name:"Petra",name_he:"פטרה",emoji:"🏜️",year:-312,type:"landmark",desc:"City carved in rock, Jordan",desc_he:"עיר חצובה בסלע בירדן",difficulty:2},
+{name:"Chichen Itza",name_he:"צ׳יצ׳ן איצה",emoji:"🏛️",year:600,type:"landmark",desc:"Mayan pyramid in Mexico",desc_he:"פירמידה של המאיה במקסיקו",difficulty:2},
+{name:"Christ the Redeemer",name_he:"ישו הגואל",emoji:"✝️",year:1931,type:"landmark",desc:"Statue in Rio de Janeiro",desc_he:"פסל בריו דה ז׳נירו",difficulty:1},
+{name:"Kremlin",name_he:"הקרמלין",emoji:"🏰",year:1495,type:"landmark",desc:"Fortified complex in Moscow",desc_he:"מתחם מבוצר במוסקבה",difficulty:1},
+{name:"Big Ben",name_he:"ביג בן",emoji:"🕰️",year:1859,type:"landmark",desc:"Clock tower in London",desc_he:"מגדל שעון בלונדון",difficulty:1},
+{name:"Sagrada Familia",name_he:"סגרדה פמיליה",emoji:"⛪",year:1882,type:"landmark",desc:"Gaudi's basilica in Barcelona",desc_he:"הבזיליקה של גאודי בברצלונה",difficulty:2},
+{name:"Forbidden City",name_he:"העיר האסורה",emoji:"🏯",year:1420,type:"landmark",desc:"Imperial palace in Beijing",desc_he:"ארמון קיסרי בבייג׳ינג",difficulty:2},
+{name:"Palace of Versailles",name_he:"ארמון ורסאי",emoji:"👑",year:1682,type:"landmark",desc:"Royal palace near Paris",desc_he:"ארמון מלכותי ליד פריז",difficulty:1},
+{name:"Acropolis",name_he:"האקרופוליס",emoji:"🏛️",year:-447,type:"landmark",desc:"Citadel above Athens",desc_he:"מצודה מעל אתונה",difficulty:2},
+{name:"Tower of London",name_he:"מגדל לונדון",emoji:"🏰",year:1066,type:"landmark",desc:"Historic castle in London",desc_he:"טירה היסטורית בלונדון",difficulty:1},
+{name:"Pompeii Ruins",name_he:"חורבות פומפיי",emoji:"🌋",year:-600,type:"landmark",desc:"Roman city buried by Vesuvius",desc_he:"עיר רומית שנקברה בהר געש",difficulty:2},
+{name:"Easter Island Moai",name_he:"פסלי מואי באי הפסחא",emoji:"🗿",year:1250,type:"landmark",desc:"Stone statues in Pacific Ocean",desc_he:"פסלי אבן באוקיינוס השקט",difficulty:2},
+{name:"Mount Rushmore",name_he:"הר ראשמור",emoji:"⛰️",year:1941,type:"landmark",desc:"Presidential faces carved in rock",desc_he:"פני נשיאים חצובים בסלע",difficulty:1},
+{name:"Sistine Chapel",name_he:"הקפלה הסיסטינית",emoji:"🎨",year:1512,type:"landmark",desc:"Michelangelo's ceiling in Vatican",desc_he:"תקרת מיכלאנג׳לו בוותיקן",difficulty:2},
+{name:"Pantheon",name_he:"הפנתיאון",emoji:"🏛️",year:125,type:"landmark",desc:"Ancient temple in Rome",desc_he:"מקדש עתיק ברומא",difficulty:2},
+{name:"Brandenburg Gate",name_he:"שער ברנדנבורג",emoji:"🚪",year:1791,type:"landmark",desc:"Neoclassical gate in Berlin",desc_he:"שער ניאו-קלאסי בברלין",difficulty:2},
+{name:"Neuschwanstein Castle",name_he:"טירת נוישוונשטיין",emoji:"🏰",year:1886,type:"landmark",desc:"Fairy-tale castle in Bavaria",desc_he:"טירת אגדות בבוואריה",difficulty:2},
+{name:"Alhambra",name_he:"אלהמברה",emoji:"🕌",year:1238,type:"landmark",desc:"Moorish palace in Granada, Spain",desc_he:"ארמון מורי בגרנדה, ספרד",difficulty:2},
+{name:"Blue Mosque",name_he:"המסגד הכחול",emoji:"🕌",year:1616,type:"landmark",desc:"Ottoman mosque in Istanbul",desc_he:"מסגד עות׳מאני באיסטנבול",difficulty:2},
+{name:"Western Wall",name_he:"הכותל המערבי",emoji:"🧱",year:-19,type:"landmark",desc:"Holy site in Jerusalem",desc_he:"אתר קדוש בירושלים",difficulty:2},
+{name:"Great Sphinx of Giza",name_he:"הספינקס הגדול של גיזה",emoji:"🦁",year:-2500,type:"landmark",desc:"Limestone statue in Egypt",desc_he:"פסל אבן גיר במצרים",difficulty:1},
+{name:"Abu Simbel",name_he:"אבו סימבל",emoji:"🏛️",year:-1264,type:"landmark",desc:"Rock temples in southern Egypt",desc_he:"מקדשי סלע בדרום מצרים",difficulty:3},
+{name:"Terracotta Army",name_he:"צבא החרס",emoji:"🪖",year:-210,type:"landmark",desc:"Clay soldiers in Xi'an, China",desc_he:"חיילי חרס בשיאן, סין",difficulty:2},
+{name:"Potala Palace",name_he:"ארמון פוטאלה",emoji:"🏯",year:1649,type:"landmark",desc:"Dalai Lama's palace in Tibet",desc_he:"ארמון הדלאי לאמה בטיבט",difficulty:3},
+{name:"Borobudur",name_he:"בורובודור",emoji:"🛕",year:800,type:"landmark",desc:"Buddhist temple in Java",desc_he:"מקדש בודהיסטי בג׳אווה",difficulty:3},
+{name:"Pyramids of Teotihuacan",name_he:"פירמידות טאוטיוואקן",emoji:"🔺",year:200,type:"landmark",desc:"Ancient pyramids near Mexico City",desc_he:"פירמידות עתיקות ליד מקסיקו סיטי",difficulty:3},
+{name:"Mesa Verde",name_he:"מסה ורדה",emoji:"🏚️",year:1190,type:"landmark",desc:"Cliff dwellings in Colorado",desc_he:"מגורי צוק בקולורדו",difficulty:3},
+{name:"Great Zimbabwe",name_he:"זימבבואה הגדולה",emoji:"🏰",year:1100,type:"landmark",desc:"Medieval stone city in Africa",desc_he:"עיר אבן ימי-ביניימית באפריקה",difficulty:3},
+{name:"Timbuktu",name_he:"טימבוקטו",emoji:"🕌",year:1100,type:"landmark",desc:"Ancient learning center in Mali",desc_he:"מרכז למידה עתיק במאלי",difficulty:3},
+{name:"Luxor Temple",name_he:"מקדש לוקסור",emoji:"🏛️",year:-1400,type:"landmark",desc:"Ancient temple complex in Egypt",desc_he:"מתחם מקדשים עתיק במצרים",difficulty:3},
+{name:"St. Basil's Cathedral",name_he:"קתדרלת ואסילי הקדוש",emoji:"⛪",year:1561,type:"landmark",desc:"Colorful cathedral in Moscow",desc_he:"קתדרלה צבעונית במוסקבה",difficulty:2},
+{name:"Opera Garnier",name_he:"אופרה גרנייה",emoji:"🎭",year:1875,type:"landmark",desc:"Opera house in Paris",desc_he:"בית אופרה בפריז",difficulty:3},
+{name:"Buckingham Palace",name_he:"ארמון בקינגהאם",emoji:"👑",year:1703,type:"landmark",desc:"Royal residence in London",desc_he:"מעון מלכותי בלונדון",difficulty:1},
+{name:"Reichstag Building",name_he:"בניין הרייכסטאג",emoji:"🏛️",year:1894,type:"landmark",desc:"Parliament building in Berlin",desc_he:"בניין הפרלמנט בברלין",difficulty:2},
+{name:"Tokyo Tower",name_he:"מגדל טוקיו",emoji:"🗼",year:1958,type:"landmark",desc:"Broadcast tower in Tokyo",desc_he:"מגדל שידור בטוקיו",difficulty:1},
+{name:"CN Tower",name_he:"מגדל CN",emoji:"🗼",year:1976,type:"landmark",desc:"Communications tower in Toronto",desc_he:"מגדל תקשורת בטורונטו",difficulty:2},
+{name:"Space Needle",name_he:"מחט החלל",emoji:"🗼",year:1962,type:"landmark",desc:"Observation tower in Seattle",desc_he:"מגדל תצפית בסיאטל",difficulty:1},
+{name:"Panama Canal",name_he:"תעלת פנמה",emoji:"🚢",year:1914,type:"landmark",desc:"Waterway connecting two oceans",desc_he:"תעלה המחברת שני אוקיינוסים",difficulty:1},
+{name:"Suez Canal",name_he:"תעלת סואץ",emoji:"⛴️",year:1869,type:"landmark",desc:"Waterway connecting two seas",desc_he:"תעלה המחברת שני ימים",difficulty:2},
+{name:"Petra Treasury",name_he:"האוצר בפטרה",emoji:"🏜️",year:-100,type:"landmark",desc:"Carved facade in Jordan",desc_he:"חזית חצובה בירדן",difficulty:2},
+{name:"Moai of Ahu Tongariki",name_he:"מואי של אהו טונגריקי",emoji:"🗿",year:1450,type:"landmark",desc:"Largest moai platform on Easter Is.",desc_he:"במת המואי הגדולה באי הפסחא",difficulty:3},
+{name:"Persepolis",name_he:"פרסיפוליס",emoji:"🏛️",year:-515,type:"landmark",desc:"Ancient Persian capital ruins",desc_he:"חורבות בירת פרס העתיקה",difficulty:3},
+{name:"Newgrange",name_he:"ניוגריינג׳",emoji:"🪨",year:-3200,type:"landmark",desc:"Prehistoric tomb in Ireland",desc_he:"קבר פרהיסטורי באירלנד",difficulty:3},
+{name:"Wat Arun",name_he:"ואט ארון",emoji:"🛕",year:1768,type:"landmark",desc:"Temple of Dawn in Bangkok",desc_he:"מקדש השחר בבנגקוק",difficulty:2},
+{name:"Lincoln Memorial",name_he:"אנדרטת לינקולן",emoji:"🏛️",year:1922,type:"landmark",desc:"Memorial in Washington D.C.",desc_he:"אנדרטה בוושינגטון",difficulty:1},
+{name:"Dome of the Rock",name_he:"כיפת הסלע",emoji:"🕌",year:691,type:"landmark",desc:"Islamic shrine in Jerusalem",desc_he:"מקדש אסלאמי בירושלים",difficulty:1},
+{name:"Windmills of Kinderdijk",name_he:"טחנות הרוח של קינדרדייק",emoji:"🌬️",year:1740,type:"landmark",desc:"Windmill network in Netherlands",desc_he:"רשת טחנות רוח בהולנד",difficulty:2},
+{name:"Moai National Park",name_he:"פארק לאומי ראפה נוי",emoji:"🗿",year:1000,type:"landmark",desc:"Easter Island stone figures",desc_he:"דמויות אבן באי הפסחא",difficulty:2},
+{name:"Treasury at Petra",name_he:"האוצר בפטרה",emoji:"🏜️",year:-100,type:"landmark",desc:"Rock-cut facade in Jordan",desc_he:"חזית חצובה בירדן",difficulty:2},
+{name:"Himeji Castle",name_he:"טירת הימג׳י",emoji:"🏯",year:1609,type:"landmark",desc:"White castle in Japan",desc_he:"טירה לבנה ביפן",difficulty:2},
+{name:"Petronas Towers",name_he:"מגדלי פטרונאס",emoji:"🏙️",year:1998,type:"landmark",desc:"Twin skyscrapers in Kuala Lumpur",desc_he:"גורדי שחקים תאומים בקואלה לומפור",difficulty:1},
+{name:"Hollywood Sign",name_he:"שלט הוליווד",emoji:"🎬",year:1923,type:"landmark",desc:"Iconic sign in Los Angeles",desc_he:"שלט מפורסם בלוס אנג׳לס",difficulty:1},
+{name:"Arc de Triomphe",name_he:"שער הניצחון",emoji:"🚪",year:1836,type:"landmark",desc:"Triumphal arch in Paris",desc_he:"שער ניצחון בפריז",difficulty:1},
+{name:"Mosque of Cordoba",name_he:"מסגד קורדובה",emoji:"🕌",year:784,type:"landmark",desc:"Cathedral-Mosque in Spain",desc_he:"קתדרלה-מסגד בספרד",difficulty:2},
+{name:"Forbidden Palace Museum",name_he:"מוזיאון הארמון האסור",emoji:"🏯",year:1925,type:"landmark",desc:"Museum in Beijing's imperial palace",desc_he:"מוזיאון בארמון הקיסרי בבייג׳ינג",difficulty:2},
+{name:"Little Mermaid Statue",name_he:"פסל בת הים הקטנה",emoji:"🧜‍♀️",year:1913,type:"landmark",desc:"Bronze statue in Copenhagen",desc_he:"פסל ברונזה בקופנהגן",difficulty:1},
+{name:"Atomium",name_he:"אטומיום",emoji:"⚛️",year:1958,type:"landmark",desc:"Iron crystal building in Brussels",desc_he:"מבנה גביש ברזל בבריסל",difficulty:2},
+{name:"Manneken Pis",name_he:"מנקן פיס",emoji:"🚿",year:1619,type:"landmark",desc:"Small fountain statue in Brussels",desc_he:"פסל מזרקה קטן בבריסל",difficulty:2},
+{name:"Trevi Fountain",name_he:"מזרקת טרווי",emoji:"⛲",year:1762,type:"landmark",desc:"Baroque fountain in Rome",desc_he:"מזרקה בארוקית ברומא",difficulty:1},
+{name:"Charles Bridge",name_he:"גשר קארל",emoji:"🌉",year:1402,type:"landmark",desc:"Medieval bridge in Prague",desc_he:"גשר ימי-ביניימי בפראג",difficulty:1},
+{name:"La Pedrera",name_he:"לה פדררה",emoji:"🏠",year:1912,type:"landmark",desc:"Gaudi building in Barcelona",desc_he:"בניין של גאודי בברצלונה",difficulty:2},
+{name:"Topkapi Palace",name_he:"ארמון טופקאפי",emoji:"👑",year:1465,type:"landmark",desc:"Ottoman palace in Istanbul",desc_he:"ארמון עות׳מאני באיסטנבול",difficulty:2},
+{name:"Belem Tower",name_he:"מגדל בלם",emoji:"🏰",year:1519,type:"landmark",desc:"Fortified tower in Lisbon",desc_he:"מגדל מבוצר בליסבון",difficulty:2},
+{name:"Marina Bay Sands",name_he:"מרינה ביי סנדס",emoji:"🏨",year:2010,type:"landmark",desc:"Hotel complex in Singapore",desc_he:"מתחם מלונות בסינגפור",difficulty:1},
+{name:"Fushimi Inari Shrine",name_he:"מקדש פושימי אינארי",emoji:"⛩️",year:711,type:"landmark",desc:"Thousand red gates in Kyoto",desc_he:"אלף שערים אדומים בקיוטו",difficulty:2},
+{name:"Edinburgh Castle",name_he:"טירת אדינבורו",emoji:"🏰",year:1103,type:"landmark",desc:"Castle on volcanic rock in Scotland",desc_he:"טירה על סלע וולקני בסקוטלנד",difficulty:1},
+{name:"Hoover Dam",name_he:"סכר הובר",emoji:"🏗️",year:1936,type:"landmark",desc:"Dam on Colorado River, USA",desc_he:"סכר על נהר קולורדו, ארה״ב",difficulty:1},
+{name:"Christ the King",name_he:"ישו המלך",emoji:"✝️",year:1959,type:"landmark",desc:"Statue overlooking Lisbon",desc_he:"פסל הצופה על ליסבון",difficulty:2},
+{name:"Opera House Vienna",name_he:"בית האופרה של וינה",emoji:"🎭",year:1869,type:"landmark",desc:"State opera house in Vienna",desc_he:"בית האופרה הממלכתי בוינה",difficulty:2},
+{name:"Louvre Museum",name_he:"מוזיאון הלובר",emoji:"🎨",year:1793,type:"landmark",desc:"World's largest art museum in Paris",desc_he:"מוזיאון האמנות הגדול בעולם בפריז",difficulty:1},
+{name:"Colossus of Rhodes Site",name_he:"אתר הקולוסוס של רודוס",emoji:"🗿",year:-280,type:"landmark",desc:"Ancient wonder site in Greece",desc_he:"אתר פלא עתיק ביוון",difficulty:3},
+{name:"Corcovado Mountain",name_he:"הר קורקובדו",emoji:"⛰️",year:1931,type:"landmark",desc:"Peak with Christ statue in Rio",desc_he:"פסגה עם פסל ישו בריו",difficulty:1},
+{name:"Hassan II Mosque",name_he:"מסגד חסן השני",emoji:"🕌",year:1993,type:"landmark",desc:"Massive mosque in Casablanca",desc_he:"מסגד ענקי בקזבלנקה",difficulty:2},
+{name:"Sydney Harbour Bridge",name_he:"גשר נמל סידני",emoji:"🌉",year:1932,type:"landmark",desc:"Steel arch bridge in Sydney",desc_he:"גשר קשת פלדה בסידני",difficulty:1},
+{name:"Gateway of India",name_he:"שער הודו",emoji:"🚪",year:1924,type:"landmark",desc:"Arch monument in Mumbai",desc_he:"אנדרטת קשת במומבאי",difficulty:2},
+{name:"Meiji Shrine",name_he:"מקדש מייג׳י",emoji:"⛩️",year:1920,type:"landmark",desc:"Shinto shrine in Tokyo",desc_he:"מקדש שינטו בטוקיו",difficulty:2},
+{name:"Ponte Vecchio",name_he:"פונטה וקיו",emoji:"🌉",year:1345,type:"landmark",desc:"Medieval bridge in Florence",desc_he:"גשר ימי-ביניימי בפירנצה",difficulty:2},
+{name:"Alcatraz Island",name_he:"אי אלקטרז",emoji:"🏚️",year:1934,type:"landmark",desc:"Former prison in San Francisco Bay",desc_he:"כלא לשעבר במפרץ סן פרנסיסקו",difficulty:1},
+{name:"Tower Bridge",name_he:"גשר המגדל",emoji:"🌉",year:1894,type:"landmark",desc:"Iconic bridge in London",desc_he:"גשר מפורסם בלונדון",difficulty:1},
+{name:"White House",name_he:"הבית הלבן",emoji:"🏛️",year:1800,type:"landmark",desc:"Presidential residence in Washington",desc_he:"מעון הנשיא בוושינגטון",difficulty:1},
+{name:"Kremlin Palace",name_he:"ארמון הקרמלין",emoji:"🏰",year:1961,type:"landmark",desc:"State palace in Moscow",desc_he:"ארמון ממלכתי במוסקבה",difficulty:2},
+{name:"Blue Domed Church Santorini",name_he:"הכנסייה הכחולה בסנטוריני",emoji:"⛪",year:1700,type:"landmark",desc:"Iconic church in Santorini, Greece",desc_he:"כנסייה מפורסמת בסנטוריני, יוון",difficulty:1},
+{name:"Invention of Writing",name_he:"המצאת הכתב",emoji:"📜",year:-3200,type:"history",desc:"Cuneiform in Mesopotamia",desc_he:"כתב יתדות במסופוטמיה",difficulty:2},
+{name:"Founding of Rome",name_he:"ייסוד רומא",emoji:"🐺",year:-753,type:"history",desc:"Traditional founding by Romulus",desc_he:"הייסוד המסורתי בידי רומולוס",difficulty:2},
+{name:"Fall of Rome",name_he:"נפילת רומא",emoji:"⚔️",year:476,type:"history",desc:"Western Roman Empire collapsed",desc_he:"האימפריה הרומית המערבית קרסה",difficulty:2},
+{name:"Magna Carta Signed",name_he:"חתימת המגנא כרטא",emoji:"📜",year:1215,type:"history",desc:"Foundation of constitutional law",desc_he:"יסוד המשפט החוקתי",difficulty:2},
+{name:"Renaissance Begins",name_he:"תחילת הרנסנס",emoji:"🎨",year:1400,type:"history",desc:"Cultural rebirth in Italy",desc_he:"תחייה תרבותית באיטליה",difficulty:2},
+{name:"Gutenberg Printing Press",name_he:"דפוס גוטנברג",emoji:"📰",year:1440,type:"history",desc:"Revolutionized information spread",desc_he:"חולל מהפכה בהפצת מידע",difficulty:2},
+{name:"Columbus Reaches America",name_he:"קולומבוס מגיע לאמריקה",emoji:"⛵",year:1492,type:"history",desc:"European discovery of the New World",desc_he:"גילוי אירופי של העולם החדש",difficulty:1},
+{name:"Industrial Revolution",name_he:"המהפכה התעשייתית",emoji:"🏭",year:1760,type:"history",desc:"Transition to machine manufacturing",desc_he:"מעבר לייצור מכונות",difficulty:1},
+{name:"French Revolution",name_he:"המהפכה הצרפתית",emoji:"🔥",year:1789,type:"history",desc:"Storming of the Bastille",desc_he:"פריצה לבסטיליה",difficulty:1},
+{name:"Suez Canal Opens",name_he:"פתיחת תעלת סואץ",emoji:"⛴️",year:1869,type:"history",desc:"Connecting Mediterranean and Red Sea",desc_he:"חיבור הים התיכון לים סוף",difficulty:2},
+{name:"First Olympic Games (Modern)",name_he:"המשחקים האולימפיים הראשונים",emoji:"🏅",year:1896,type:"history",desc:"Revived in Athens",desc_he:"חודשו באתונה",difficulty:1},
+{name:"Titanic Sinks",name_he:"טביעת הטיטאניק",emoji:"🚢",year:1912,type:"history",desc:"Unsinkable ship hits an iceberg",desc_he:"האונייה הבלתי ניתנת לטביעה טבעה",difficulty:1},
+{name:"World War I Begins",name_he:"פרוץ מלחמת העולם הראשונה",emoji:"💣",year:1914,type:"history",desc:"The Great War erupts",desc_he:"המלחמה הגדולה פורצת",difficulty:1},
+{name:"Panama Canal Opens",name_he:"פתיחת תעלת פנמה",emoji:"🚢",year:1914,type:"history",desc:"Connecting Atlantic and Pacific",desc_he:"חיבור האוקיינוס האטלנטי לשקט",difficulty:2},
+{name:"Women's Suffrage in US",name_he:"זכות בחירה לנשים בארה״ב",emoji:"✊",year:1920,type:"history",desc:"19th Amendment grants voting rights",desc_he:"התיקון ה-19 מעניק זכות הצבעה",difficulty:1},
+{name:"Discovery of Penicillin",name_he:"גילוי הפניצילין",emoji:"💊",year:1928,type:"history",desc:"Alexander Fleming's breakthrough",desc_he:"פריצת הדרך של אלכסנדר פלמינג",difficulty:1},
+{name:"World War II Ends",name_he:"סיום מלחמת העולם השנייה",emoji:"🕊️",year:1945,type:"history",desc:"Allied victory, end of global conflict",desc_he:"ניצחון בעלות הברית",difficulty:1},
+{name:"Mount Everest First Summit",name_he:"כיבוש האוורסט לראשונה",emoji:"⛰️",year:1953,type:"history",desc:"Hillary and Tenzing reach the top",desc_he:"הילארי וטנזינג מגיעים לפסגה",difficulty:1},
+{name:"DNA Structure Discovered",name_he:"גילוי מבנה ה-DNA",emoji:"🧬",year:1953,type:"history",desc:"Watson and Crick's double helix",desc_he:"הסליל הכפול של ווטסון וקריק",difficulty:1},
+{name:"First Moon Landing",name_he:"הנחיתה הראשונה על הירח",emoji:"🌙",year:1969,type:"history",desc:"Neil Armstrong walks on the Moon",desc_he:"ניל ארמסטרונג הולך על הירח",difficulty:1},
+{name:"Fall of the Berlin Wall",name_he:"נפילת חומת ברלין",emoji:"🧱",year:1989,type:"history",desc:"Symbolic end of the Cold War",desc_he:"סוף סמלי למלחמה הקרה",difficulty:1},
+{name:"Nelson Mandela Freed",name_he:"שחרור נלסון מנדלה",emoji:"✊",year:1990,type:"history",desc:"Released after 27 years in prison",desc_he:"שוחרר אחרי 27 שנות מאסר",difficulty:1},
+{name:"Internet Goes Public",name_he:"האינטרנט נפתח לציבור",emoji:"🌐",year:1991,type:"history",desc:"World Wide Web becomes accessible",desc_he:"הרשת העולמית נגישה לכולם",difficulty:1},
+{name:"First iPhone Released",name_he:"השקת האייפון הראשון",emoji:"📱",year:2007,type:"history",desc:"Apple revolutionized smartphones",desc_he:"אפל חוללה מהפכה בסמארטפונים",difficulty:1},
+{name:"COVID-19 Pandemic",name_he:"מגפת הקורונה",emoji:"😷",year:2020,type:"history",desc:"Global pandemic changes the world",desc_he:"מגפה עולמית משנה את העולם",difficulty:1},
+{name:"Black Death Reaches Europe",name_he:"המוות השחור מגיע לאירופה",emoji:"☠️",year:1347,type:"history",desc:"Plague kills millions across Europe",desc_he:"מגפה הורגת מיליונים באירופה",difficulty:2},
+{name:"Wright Brothers First Flight",name_he:"הטיסה הראשונה של האחים רייט",emoji:"✈️",year:1903,type:"history",desc:"First powered airplane flight",desc_he:"טיסת המטוס הממונע הראשונה",difficulty:1},
+{name:"Sputnik Launched",name_he:"שיגור ספוטניק",emoji:"🛰️",year:1957,type:"history",desc:"First artificial satellite in orbit",desc_he:"הלוויין המלאכותי הראשון במסלול",difficulty:1},
+{name:"Berlin Wall Built",name_he:"בניית חומת ברלין",emoji:"🧱",year:1961,type:"history",desc:"Cold War divides Berlin",desc_he:"המלחמה הקרה מחלקת את ברלין",difficulty:1},
+{name:"Cuban Missile Crisis",name_he:"משבר הטילים בקובה",emoji:"☢️",year:1962,type:"history",desc:"Nuclear standoff US vs. USSR",desc_he:"עימות גרעיני בין ארה״ב לברה״מ",difficulty:1},
+{name:"Chernobyl Disaster",name_he:"אסון צ׳רנוביל",emoji:"☢️",year:1986,type:"history",desc:"Nuclear reactor meltdown in USSR",desc_he:"התמוטטות כור גרעיני בברה״מ",difficulty:1},
+{name:"September 11 Attacks",name_he:"פיגועי 11 בספטמבר",emoji:"🏢",year:2001,type:"history",desc:"Terrorist attacks in the US",desc_he:"פיגועי טרור בארצות הברית",difficulty:1},
+{name:"Arab Spring Begins",name_he:"תחילת האביב הערבי",emoji:"✊",year:2010,type:"history",desc:"Protests sweep the Middle East",desc_he:"מחאות גורפות במזרח התיכון",difficulty:2},
+{name:"Rosetta Stone Discovered",name_he:"גילוי אבן רוזטה",emoji:"🪨",year:1799,type:"history",desc:"Key to deciphering hieroglyphs",desc_he:"מפתח לפענוח הירוגליפים",difficulty:2},
+{name:"Boston Tea Party",name_he:"מסיבת התה של בוסטון",emoji:"🍵",year:1773,type:"history",desc:"American colonists protest taxes",desc_he:"מתיישבים אמריקנים מוחים נגד מסים",difficulty:1},
+{name:"Battle of Waterloo",name_he:"קרב ווטרלו",emoji:"⚔️",year:1815,type:"history",desc:"Napoleon's final defeat",desc_he:"תבוסתו האחרונה של נפוליאון",difficulty:2},
+{name:"Treaty of Versailles",name_he:"חוזה ורסאי",emoji:"📜",year:1919,type:"history",desc:"Ended World War I officially",desc_he:"סיים רשמית את מלחה״ע הראשונה",difficulty:1},
+{name:"Stock Market Crash 1929",name_he:"קריסת שוק המניות 1929",emoji:"📉",year:1929,type:"history",desc:"Wall Street crash starts Depression",desc_he:"קריסת וול סטריט פותחת את השפל",difficulty:1},
+{name:"Pearl Harbor Attack",name_he:"התקפת פרל הארבור",emoji:"💥",year:1941,type:"history",desc:"Japan bombs US naval base",desc_he:"יפן מפציצה בסיס ימי אמריקני",difficulty:1},
+{name:"D-Day Normandy Invasion",name_he:"פלישת יום D לנורמנדי",emoji:"⚔️",year:1944,type:"history",desc:"Allied invasion of Nazi Europe",desc_he:"פלישת בעלות הברית לאירופה",difficulty:1},
+{name:"Korean War Begins",name_he:"פרוץ מלחמת קוריאה",emoji:"💣",year:1950,type:"history",desc:"North Korea invades the South",desc_he:"צפון קוריאה פולשת לדרום",difficulty:2},
+{name:"Vietnam War Ends",name_he:"סיום מלחמת וייטנאם",emoji:"🕊️",year:1975,type:"history",desc:"Fall of Saigon ends the war",desc_he:"נפילת סייגון מסיימת את המלחמה",difficulty:1},
+{name:"Assassination of JFK",name_he:"רצח ג׳ון פ. קנדי",emoji:"🎯",year:1963,type:"history",desc:"President Kennedy shot in Dallas",desc_he:"הנשיא קנדי נורה בדאלאס",difficulty:1},
+{name:"Cloning of Dolly the Sheep",name_he:"שיבוט הכבשה דולי",emoji:"🐑",year:1996,type:"history",desc:"First cloned mammal",desc_he:"היונק המשובט הראשון",difficulty:2},
+{name:"Human Genome Project Done",name_he:"השלמת פרויקט הגנום האנושי",emoji:"🧬",year:2003,type:"history",desc:"Complete map of human DNA",desc_he:"מיפוי מלא של ה-DNA האנושי",difficulty:2},
+{name:"Bitcoin Created",name_he:"יצירת הביטקוין",emoji:"₿",year:2009,type:"history",desc:"First decentralized cryptocurrency",desc_he:"המטבע הקריפטוגרפי הראשון",difficulty:1},
+{name:"Mars Rover Curiosity Lands",name_he:"נחיתת קיוריוסיטי על מאדים",emoji:"🤖",year:2012,type:"history",desc:"NASA rover lands on Mars",desc_he:"רובר של נאס״א נוחת על מאדים",difficulty:2},
+{name:"Discovery of X-Rays",name_he:"גילוי קרני הרנטגן",emoji:"💀",year:1895,type:"history",desc:"Roentgen discovers X-radiation",desc_he:"רנטגן מגלה קרינת איקס",difficulty:2},
+{name:"Invention of the Telephone",name_he:"המצאת הטלפון",emoji:"📞",year:1876,type:"history",desc:"Bell patents the telephone",desc_he:"בל רושם פטנט על הטלפון",difficulty:1},
+{name:"First Radio Broadcast",name_he:"שידור הרדיו הראשון",emoji:"📻",year:1920,type:"history",desc:"KDKA begins regular broadcasts",desc_he:"תחילת שידורי רדיו סדירים",difficulty:2},
+{name:"First TV Broadcast",name_he:"שידור הטלוויזיה הראשון",emoji:"📺",year:1928,type:"history",desc:"Baird demonstrates television",desc_he:"בארד מדגים את הטלוויזיה",difficulty:2},
+{name:"Splitting the Atom",name_he:"פיצול האטום",emoji:"⚛️",year:1932,type:"history",desc:"First nuclear fission achieved",desc_he:"ביצוע ביקוע גרעיני ראשון",difficulty:2},
+{name:"Polio Vaccine",name_he:"חיסון הפוליו",emoji:"💉",year:1955,type:"history",desc:"Salk's vaccine saves millions",desc_he:"החיסון של סאלק מציל מיליונים",difficulty:1},
+{name:"Berlin Airlift",name_he:"גשר האוויר לברלין",emoji:"✈️",year:1948,type:"history",desc:"Allies supply blockaded Berlin",desc_he:"בעלות הברית מספקות לברלין",difficulty:2},
+{name:"Hungarian Revolution",name_he:"המהפכה ההונגרית",emoji:"✊",year:1956,type:"history",desc:"Uprising against Soviet rule",desc_he:"מרד נגד השלטון הסובייטי",difficulty:3},
+{name:"Six-Day War",name_he:"מלחמת ששת הימים",emoji:"⚔️",year:1967,type:"history",desc:"Israel defeats Arab coalition",desc_he:"ישראל מנצחת קואליציה ערבית",difficulty:2},
+{name:"Camp David Accords",name_he:"הסכמי קמפ דיוויד",emoji:"🤝",year:1978,type:"history",desc:"Egypt-Israel peace agreement",desc_he:"הסכם שלום מצרים-ישראל",difficulty:2},
+{name:"Tiananmen Square Protests",name_he:"מחאות כיכר טיאננמן",emoji:"✊",year:1989,type:"history",desc:"Pro-democracy protests in Beijing",desc_he:"מחאות פרו-דמוקרטיות בבייג׳ינג",difficulty:1},
+{name:"USSR Dissolves",name_he:"התפרקות ברית המועצות",emoji:"🏳️",year:1991,type:"history",desc:"Soviet Union breaks apart",desc_he:"ברית המועצות מתפרקת",difficulty:1},
+{name:"Euro Currency Introduced",name_he:"השקת מטבע האירו",emoji:"💶",year:2002,type:"history",desc:"Euro coins and notes launched",desc_he:"מטבעות ושטרות אירו מושקים",difficulty:2},
+{name:"Fukushima Disaster",name_he:"אסון פוקושימה",emoji:"☢️",year:2011,type:"history",desc:"Nuclear meltdown after tsunami",desc_he:"התמוטטות גרעינית אחרי צונאמי",difficulty:1},
+{name:"Brexit Referendum",name_he:"משאל העם על הברקזיט",emoji:"🗳️",year:2016,type:"history",desc:"UK votes to leave the EU",desc_he:"בריטניה מצביעה לעזוב את האיחוד",difficulty:1},
+{name:"American Civil War Begins",name_he:"פרוץ מלחמת האזרחים האמריקנית",emoji:"⚔️",year:1861,type:"history",desc:"North vs. South over slavery",desc_he:"צפון מול דרום בנושא העבדות",difficulty:1},
+{name:"Abolition of Slavery in US",name_he:"ביטול העבדות בארה״ב",emoji:"⛓️",year:1865,type:"history",desc:"13th Amendment ends slavery",desc_he:"התיקון ה-13 מבטל את העבדות",difficulty:1},
+{name:"Russian Revolution",name_he:"המהפכה הרוסית",emoji:"🔴",year:1917,type:"history",desc:"Bolsheviks overthrow the Tsar",desc_he:"הבולשביקים מפילים את הצאר",difficulty:1},
+{name:"Hiroshima Atomic Bomb",name_he:"הפצצת הירושימה",emoji:"💥",year:1945,type:"history",desc:"First nuclear weapon used in war",desc_he:"נשק גרעיני ראשון בשימוש מלחמתי",difficulty:1},
+{name:"Indian Independence",name_he:"עצמאות הודו",emoji:"🇮🇳",year:1947,type:"history",desc:"India freed from British rule",desc_he:"הודו משתחררת מהשלטון הבריטי",difficulty:1}
+];
+    // ===========================
+    // LANGUAGE
+    // ===========================
+    function switchLang(lang) {
+        setLanguage(lang).then(() => {
+            updateLangButtons();
+            updateBestScores();
+            parseEmoji();
+        });
+    }
+
+    function updateLangButtons() {
+        const lang = getLang();
+        document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+        document.getElementById('lang-he').classList.toggle('active', lang === 'he');
+    }
+
+    // Wait for i18n to init then update
+    setTimeout(() => { updateLangButtons(); updateBestScores(); parseEmoji(); }, 200);
+
+    // ===========================
+    // HELPERS
+    // ===========================
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function formatYear(y) {
+        if (y < 0) return `${Math.abs(y)} BCE`;
+        return `${y}`;
+    }
+
+    function cName(card) {
+        return (typeof isRTL === 'function' && isRTL() && card.name_he) ? card.name_he : card.name;
+    }
+
+    function cDesc(card) {
+        return (typeof isRTL === 'function' && isRTL() && card.desc_he) ? card.desc_he : card.desc;
+    }
+
+    function parseEmoji() {
+        if (typeof twemoji !== 'undefined') {
+            twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+        }
+    }
+
+    // ===========================
+    // SCREENS
+    // ===========================
+    function showScreen(id) {
+        document.querySelectorAll('.screen, .game-area').forEach(el => {
+            el.classList.remove('active');
+            el.style.display = '';
+        });
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.add('active');
+            if (el.classList.contains('game-area')) {
+                el.style.display = 'flex';
+            }
+        }
+    }
+
+    function showModeSelect() {
+        showScreen('solo-start');
+        updateBestScores();
+        parseEmoji();
+    }
+
+    function updateBestScores() {
+        const btl = localStorage.getItem('pb_solo_best_timeline');
+        const bqz = localStorage.getItem('pb_solo_best_quiz');
+        const bestEl = document.getElementById('best-timeline');
+        const bestQzEl = document.getElementById('best-quiz');
+        if (btl && bestEl) bestEl.innerHTML = `${t('best_score', 'Best')}: <span>${btl}</span>`;
+        else if (bestEl) bestEl.textContent = '';
+        if (bqz && bestQzEl) bestQzEl.innerHTML = `${t('best_score', 'Best')}: <span>${bqz}</span>`;
+        else if (bestQzEl) bestQzEl.textContent = '';
+    }
+
+    // ===========================
+    // SHARED GAME STATE
+    // ===========================
+    let gameMode = ''; // 'timeline' or 'quiz'
+    let lives = 3;
+    let score = 0;
+    let streak = 0;
+    let bestStreak = 0;
+
+    function renderLives(elId) {
+        const el = document.getElementById(elId);
+        let html = '';
+        for (let i = 0; i < 3; i++) {
+            html += i < lives ? '\u2764\uFE0F' : '\uD83D\uDDA4';
+        }
+        el.innerHTML = html;
+        parseEmoji();
+    }
+
+    function loseLife(elId) {
+        lives--;
+        const el = document.getElementById(elId);
+        el.classList.add('heart-break');
+        setTimeout(() => el.classList.remove('heart-break'), 500);
+        renderLives(elId);
+        return lives <= 0;
+    }
+
+    function updateStreak(elId) {
+        const el = document.getElementById(elId);
+        if (streak >= 10) el.textContent = '\uD83D\uDD25\uD83D\uDD25\uD83D\uDD25 x' + streak;
+        else if (streak >= 5) el.textContent = '\uD83D\uDD25\uD83D\uDD25 x' + streak;
+        else if (streak >= 3) el.textContent = '\uD83D\uDD25 x' + streak;
+        else el.textContent = '';
+    }
+
+    function showFeedback(correct, card) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'feedback-wrapper';
+        const fb = document.createElement('div');
+        fb.className = `feedback ${correct ? 'correct' : 'wrong'}`;
+        fb.innerHTML = `
+            <div class="fb-flag">${card.emoji}</div>
+            <div class="fb-name">${correct ? '\u2705' : '\u274C'} ${cName(card)}</div>
+            <div class="fb-year">${formatYear(card.year)}</div>
+        `;
+        wrapper.appendChild(fb);
+        document.body.appendChild(wrapper);
+        parseEmoji();
+        setTimeout(() => wrapper.remove(), 2500);
+    }
+
+    function spawnConfetti() {
+        const flags = ALL_CARDS.filter(c => c.type === 'flag').map(c => c.emoji);
+        for (let i = 0; i < 35; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti';
+            c.textContent = flags[Math.floor(Math.random() * flags.length)];
+            c.style.left = Math.random() * 100 + 'vw';
+            c.style.animationDuration = (1.5 + Math.random() * 2) + 's';
+            c.style.animationDelay = (Math.random() * 1) + 's';
+            document.body.appendChild(c);
+            setTimeout(() => c.remove(), 4000);
+        }
+        parseEmoji();
+    }
+
+    // ===========================
+    // GAME OVER
+    // ===========================
+    function endGame() {
+        showScreen('solo-end');
+        spawnConfetti();
+
+        document.getElementById('end-score').textContent = score;
+        document.getElementById('end-best-streak').textContent = bestStreak;
+
+        const key = gameMode === 'timeline' ? 'pb_solo_best_timeline' : 'pb_solo_best_quiz';
+        const prev = parseInt(localStorage.getItem(key) || '0', 10);
+        const isNewBest = score > prev;
+        if (isNewBest) {
+            localStorage.setItem(key, score);
+        }
+
+        const newBestEl = document.getElementById('end-new-best');
+        newBestEl.innerHTML = isNewBest ? `<div class="new-best">${t('new_best', 'NEW BEST!')}</div>` : '';
+
+        const playAgainBtn = document.getElementById('end-play-again');
+        playAgainBtn.onclick = () => {
+            if (gameMode === 'timeline') startTimelineGame();
+            else startQuizGame();
+        };
+
+        // Track analytics
+        if (typeof trackEvent === 'function') {
+            trackEvent('solo_game_over', { mode: gameMode, score, best_streak: bestStreak, new_best: isNewBest });
+        }
+
+        parseEmoji();
+    }
+
+    // ===========================
+    // TIMELINE SURVIVAL
+    // ===========================
+    let tlDeck = [];
+    let tlTimeline = [];
+    let tlCurrentCard = null;
+
+    function buildTimelineDeck() {
+        const landmarks = ALL_CARDS.filter(c => c.type === 'landmark' || c.type === 'history');
+        const easy = shuffle(landmarks.filter(c => c.difficulty === 1 || (!c.difficulty && c.type === 'history')));
+        const medium = shuffle(landmarks.filter(c => c.difficulty === 2));
+        const hard = shuffle(landmarks.filter(c => c.difficulty === 3));
+        // Flag cards for timeline: first 40 well-known, then rest
+        const flagsEasy = ALL_CARDS.filter(c => c.type === 'flag').slice(0, 40);
+        const flagsHard = ALL_CARDS.filter(c => c.type === 'flag').slice(40);
+        return [...shuffle(easy), ...shuffle(flagsEasy), ...shuffle(medium), ...shuffle(flagsHard), ...shuffle(hard)];
+    }
+
+    function startTimelineGame() {
+        gameMode = 'timeline';
+        lives = 3;
+        score = 0;
+        streak = 0;
+        bestStreak = 0;
+
+        tlDeck = buildTimelineDeck();
+        // Start with 1 card on the timeline
+        const starter = tlDeck.shift();
+        tlTimeline = [starter];
+
+        showScreen('solo-timeline');
+        renderLives('tl-lives');
+        updateScore('tl-score');
+        updateStreak('tl-streak');
+        drawTimelineCard();
+        renderTimeline();
+
+        if (typeof trackEvent === 'function') {
+            trackEvent('solo_game_start', { mode: 'timeline' });
+        }
+    }
+
+    function updateScore(elId) {
+        document.getElementById(elId).textContent = score;
+    }
+
+    function drawTimelineCard() {
+        if (tlDeck.length === 0) {
+            // Reshuffle all cards except ones on timeline
+            const usedNames = new Set(tlTimeline.map(c => c.name));
+            let fresh = ALL_CARDS.filter(c => !usedNames.has(c.name));
+            if (fresh.length === 0) fresh = [...ALL_CARDS]; // truly exhausted
+            tlDeck = shuffle(fresh);
+        }
+        tlCurrentCard = tlDeck.shift();
+        renderCurrentCard();
+        parseEmoji();
+    }
+
+    function renderCurrentCard() {
+        const card = tlCurrentCard;
+        const el = document.getElementById('tl-current-card');
+        if (card.type === 'flag') {
+            el.innerHTML = `
+                <div class="category">${t('flag', 'Flag')}</div>
+                <div class="flag-display">${card.emoji}</div>
+                <div class="hint">${t('when_founded', 'When was this country founded?')}</div>
+            `;
+        } else {
+            const label = card.type === 'landmark' ? t('landmark', 'Landmark') : t('history', 'History');
+            el.innerHTML = `
+                <div class="category">${label}</div>
+                <div class="flag-display">${card.emoji}</div>
+                <div class="card-title">${cName(card)}</div>
+                <div class="description">${cDesc(card) || ''}</div>
+            `;
+        }
+        parseEmoji();
+    }
+
+    function renderTimeline() {
+        const el = document.getElementById('tl-timeline');
+        el.innerHTML = '';
+        const tl = [...tlTimeline].sort((a, b) => a.year - b.year);
+
+        for (let i = 0; i <= tl.length; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'timeline-slot drop-zone';
+            drop.innerHTML = `<div class="drop-label">${t('place_here', 'Place here')}</div>`;
+            drop.dataset.index = i;
+            drop.addEventListener('click', () => placeTimelineCard(i));
+            el.appendChild(drop);
+
+            if (i < tl.length) {
+                const card = tl[i];
+                const placed = document.createElement('div');
+                placed.className = 'timeline-slot';
+                placed.innerHTML = `
+                    <div class="placed-card">
+                        <div class="card-emoji">${card.emoji}</div>
+                        <div class="card-name">${cName(card)}</div>
+                        <div class="card-year">${formatYear(card.year)}</div>
+                    </div>
+                `;
+                el.appendChild(placed);
+            }
+        }
+        parseEmoji();
+    }
+
+    function isCorrectPlacement(card, index, tl) {
+        const sorted = [...tl].sort((a, b) => a.year - b.year);
+        const before = index > 0 ? sorted[index - 1] : null;
+        const after = index < sorted.length ? sorted[index] : null;
+        return (!before || before.year <= card.year) && (!after || card.year <= after.year);
+    }
+
+    function placeTimelineCard(index) {
+        if (!tlCurrentCard) return;
+        const card = tlCurrentCard;
+        tlCurrentCard = null;
+
+        const correct = isCorrectPlacement(card, index, tlTimeline);
+
+        if (correct) {
+            tlTimeline.push(card);
+            score++;
+            streak++;
+            if (streak > bestStreak) bestStreak = streak;
+            showFeedback(true, card);
+        } else {
+            streak = 0;
+            showFeedback(false, card);
+            const gameOver = loseLife('tl-lives');
+            if (gameOver) {
+                setTimeout(() => endGame(), 1800);
+                return;
+            }
+        }
+
+        updateScore('tl-score');
+        updateStreak('tl-streak');
+
+        setTimeout(() => {
+            drawTimelineCard();
+            renderTimeline();
+        }, 1200);
+    }
+
+    // ===========================
+    // FLAG QUIZ SURVIVAL
+    // ===========================
+    let qzDeck = [];
+    let qzCurrentCard = null;
+    let qzLocked = false;
+    let acActiveIndex = -1;
+
+    const FLAG_CARDS = ALL_CARDS.filter(c => c.type === 'flag');
+
+    function buildQuizDeck() {
+        // First 40 are well-known, rest harder — serve in that implicit order
+        const wellKnown = shuffle(FLAG_CARDS.slice(0, 40));
+        const harder = shuffle(FLAG_CARDS.slice(40));
+        return [...wellKnown, ...harder];
+    }
+
+    function startQuizGame() {
+        gameMode = 'quiz';
+        lives = 3;
+        score = 0;
+        streak = 0;
+        bestStreak = 0;
+
+        qzDeck = buildQuizDeck();
+        qzLocked = false;
+        acActiveIndex = -1;
+
+        showScreen('solo-quiz');
+        renderLives('qz-lives');
+        updateScore('qz-score');
+        updateStreak('qz-streak');
+        initQuizAutocomplete();
+        nextQuizCard();
+
+        if (typeof trackEvent === 'function') {
+            trackEvent('solo_game_start', { mode: 'quiz' });
+        }
+    }
+
+    function nextQuizCard() {
+        if (qzDeck.length === 0) {
+            // Reshuffle
+            qzDeck = shuffle([...FLAG_CARDS]);
+        }
+
+        qzCurrentCard = qzDeck.shift();
+        qzLocked = false;
+        acActiveIndex = -1;
+
+        const el = document.getElementById('qz-card');
+        el.innerHTML = `<div class="quiz-flag">${qzCurrentCard.emoji}</div>`;
+
+        const input = document.getElementById('qz-input');
+        input.value = '';
+        input.style.borderColor = 'rgba(255,255,255,0.2)';
+        input.disabled = false;
+        input.focus();
+        document.getElementById('qz-autocomplete').style.display = 'none';
+
+        parseEmoji();
+    }
+
+    function initQuizAutocomplete() {
+        const input = document.getElementById('qz-input');
+        const list = document.getElementById('qz-autocomplete');
+
+        // Remove old listeners by replacing element
+        const newInput = input.cloneNode(true);
+        input.parentNode.replaceChild(newInput, input);
+
+        newInput.addEventListener('input', () => {
+            if (qzLocked) return;
+            const val = newInput.value.trim().toLowerCase();
+            list.innerHTML = '';
+            acActiveIndex = -1;
+            if (!val) { list.style.display = 'none'; return; }
+
+            const rtl = typeof isRTL === 'function' && isRTL();
+            const matches = FLAG_CARDS.filter(c => {
+                if (c.name.toLowerCase().includes(val)) return true;
+                if (rtl && c.name_he && c.name_he.includes(newInput.value.trim())) return true;
+                return false;
+            });
+
+            if (matches.length === 0) { list.style.display = 'none'; return; }
+
+            list.style.display = 'block';
+            matches.slice(0, 15).forEach((card) => {
+                const displayName = rtl && card.name_he ? card.name_he : card.name;
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+
+                // Highlight matching part
+                const searchIn = displayName.toLowerCase();
+                const idx = searchIn.indexOf(val);
+                if (idx >= 0) {
+                    item.innerHTML = displayName.substring(0, idx) +
+                        '<span class="match">' + displayName.substring(idx, idx + val.length) + '</span>' +
+                        displayName.substring(idx + val.length);
+                } else {
+                    item.textContent = displayName;
+                }
+
+                item.addEventListener('click', () => submitQuizAnswer(card.name));
+                list.appendChild(item);
+            });
+            parseEmoji();
+        });
+
+        newInput.addEventListener('keydown', (e) => {
+            const items = list.querySelectorAll('.autocomplete-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                acActiveIndex = Math.min(acActiveIndex + 1, items.length - 1);
+                updateAcActive(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                acActiveIndex = Math.max(acActiveIndex - 1, 0);
+                updateAcActive(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (acActiveIndex >= 0 && items[acActiveIndex]) {
+                    // Find the card by the displayed name
+                    const displayText = items[acActiveIndex].textContent;
+                    const match = FLAG_CARDS.find(c => c.name === displayText || c.name_he === displayText);
+                    submitQuizAnswer(match ? match.name : displayText);
+                } else if (items.length === 1) {
+                    const displayText = items[0].textContent;
+                    const match = FLAG_CARDS.find(c => c.name === displayText || c.name_he === displayText);
+                    submitQuizAnswer(match ? match.name : displayText);
+                }
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.quiz-input-wrap')) {
+                list.style.display = 'none';
+            }
+        });
+    }
+
+    function updateAcActive(items) {
+        items.forEach((item, i) => item.classList.toggle('active', i === acActiveIndex));
+        if (items[acActiveIndex]) items[acActiveIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    function submitQuizAnswer(answer) {
+        if (qzLocked || !qzCurrentCard) return;
+        qzLocked = true;
+
+        const input = document.getElementById('qz-input');
+        const rtl = typeof isRTL === 'function' && isRTL();
+        input.value = rtl && qzCurrentCard.name_he ? qzCurrentCard.name_he : answer;
+        input.disabled = true;
+        document.getElementById('qz-autocomplete').style.display = 'none';
+
+        const correct = answer === qzCurrentCard.name;
+
+        if (correct) {
+            score++;
+            streak++;
+            if (streak > bestStreak) bestStreak = streak;
+            input.style.borderColor = '#51cf66';
+            showFeedback(true, qzCurrentCard);
+        } else {
+            streak = 0;
+            input.style.borderColor = '#ff6b6b';
+            showFeedback(false, qzCurrentCard);
+            const gameOver = loseLife('qz-lives');
+            if (gameOver) {
+                setTimeout(() => endGame(), 1800);
+                return;
+            }
+        }
+
+        updateScore('qz-score');
+        updateStreak('qz-streak');
+
+        setTimeout(() => nextQuizCard(), 1500);
+    }
+
+    // ===========================
+    // INIT
+    // ===========================
+    updateBestScores();
+    parseEmoji();
+    </script>
+</body>
+</html>
