@@ -55,6 +55,7 @@
             </div>
         </div>
         <button class="btn start-btn" id="start-btn" disabled onclick="startGame()" data-i18n="start_game">START GAME</button>
+        <a id="how-to-play-link" href="/how-to-play.html" style="display:block;text-align:center;margin-top:16px;color:rgba(255,255,255,0.5);font-size:0.95rem;text-decoration:none;" data-i18n="how_to_play">How to play?</a>
         <div class="or-divider" data-i18n="or">— or —</div>
         <a id="local-link" href="/local.html" class="btn btn-local" data-i18n="play_locally">PLAY LOCALLY (no phones)</a>
     </div>
@@ -96,6 +97,13 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
     <script src="i18n.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const lang = localStorage.getItem('pb_lang') || 'en';
+            const link = document.getElementById('how-to-play-link');
+            link.href = lang === 'he' ? '/how-to-play-he.html' : '/how-to-play.html';
+        });
+    </script>
     <script src="analytics.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="host.js"></script>

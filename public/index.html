@@ -129,23 +129,29 @@
 
             <button class="btn btn-host" onclick="hostGame()" data-i18n="host_new">HOST A NEW GAME</button>
 
-            <a href="/how-to-play.html" style="display:block;text-align:center;margin-top:20px;color:rgba(255,255,255,0.5);font-size:0.95rem;text-decoration:none;" data-i18n="how_to_play">How to play?</a>
+            <a id="how-to-play-link" href="/how-to-play.html" style="display:block;text-align:center;margin-top:20px;color:rgba(255,255,255,0.5);font-size:0.95rem;text-decoration:none;" data-i18n="how_to_play">How to play?</a>
         </div>
     </div>
 
     <script src="i18n.js"></script>
     <script src="analytics.js"></script>
     <script>
+        function updateHowToPlayLink(lang) {
+            const link = document.getElementById('how-to-play-link');
+            link.href = lang === 'he' ? '/how-to-play-he.html' : '/how-to-play.html';
+        }
         function switchLang(lang) {
             setLanguage(lang).then(() => {
                 document.getElementById('lang-en').classList.toggle('active', lang === 'en');
                 document.getElementById('lang-he').classList.toggle('active', lang === 'he');
+                updateHowToPlayLink(lang);
             });
         }
         // Set active button on load
         window.addEventListener('DOMContentLoaded', () => {
             const lang = localStorage.getItem('pb_lang') || 'en';
             document.getElementById('lang-' + lang).classList.add('active');
+            updateHowToPlayLink(lang);
         });
     </script>
     <script>

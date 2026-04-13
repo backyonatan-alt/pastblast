@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1b1464">
+    <title>PastBlast — איך משחקים</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <style>
+        .page {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px 20px 60px;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #ffd43b;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        h1 {
+            font-size: min(2.8rem, 10vw);
+            color: #ffd43b;
+            text-shadow: 3px 3px 0 #e8590c;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.5);
+            font-size: 1.1rem;
+            margin-bottom: 32px;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            color: #ffd43b;
+            margin: 32px 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid rgba(255,212,59,0.2);
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: #fff;
+            margin: 20px 0 8px;
+        }
+
+        p, li {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        ul, ol {
+            padding-right: 24px;
+            padding-left: 0;
+            margin: 10px 0;
+        }
+
+        li { margin-bottom: 8px; }
+
+        .emoji-step {
+            font-size: 1.5rem;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .game-mode-card {
+            background: rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin: 16px 0;
+        }
+
+        .game-mode-card h3 {
+            margin-top: 0;
+            font-size: 1.3rem;
+        }
+
+        .mode-emoji {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .tip-box {
+            background: rgba(255,212,59,0.08);
+            border-right: 4px solid #ffd43b;
+            border-left: none;
+            border-radius: 12px 0 0 12px;
+            padding: 14px 18px;
+            margin: 16px 0;
+        }
+
+        .tip-box strong { color: #ffd43b; }
+
+        .settings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+        }
+
+        .settings-table th {
+            text-align: right;
+            color: #ffd43b;
+            padding: 8px 12px;
+            border-bottom: 2px solid rgba(255,212,59,0.2);
+            font-size: 0.95rem;
+        }
+
+        .settings-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.75);
+            font-size: 0.95rem;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 20px;
+        }
+
+        .cta-section p {
+            margin-bottom: 16px;
+            font-size: 1.2rem;
+        }
+
+        .cta-section .btn {
+            display: inline-block;
+            width: auto;
+            padding: 14px 36px;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <a href="/" class="back-link">→ חזרה ל-PastBlast</a>
+
+        <h1>איך משחקים?</h1>
+        <p class="subtitle">כל מה שצריך לדעת כדי להתחיל</p>
+
+        <!-- סקירה -->
+        <h2>מה זה PastBlast?</h2>
+        <p>PastBlast הוא משחק מסיבות מרובה משתתפים על היסטוריה, אתרים מפורסמים ודגלים של מדינות. אדם אחד מארח את המשחק על מסך גדול, וכל השאר משחקים מהטלפון. תחשבו על Kahoot, אבל לחובבי גיאוגרפיה והיסטוריה!</p>
+
+        <!-- הגדרת משחק -->
+        <h2>הגדרת משחק</h2>
+        <ol>
+            <li><span class="emoji-step">💻</span> <strong>המארח</strong> פותח את PastBlast במחשב או טלוויזיה ולוחץ על <strong>״צור משחק חדש״</strong></li>
+            <li><span class="emoji-step">📱</span> <strong>השחקנים</strong> פותחים את PastBlast בטלפון ומכניסים את <strong>קוד החדר בן 4 האותיות</strong> שמוצג על מסך המארח (או סורקים את קוד ה-QR)</li>
+            <li><span class="emoji-step">✏️</span> כל שחקן מכניס את <strong>השם</strong> שלו ולוחץ <strong>״הצטרף למשחק״</strong></li>
+            <li><span class="emoji-step">⚙️</span> המארח בוחר את <strong>סוג המשחק</strong>, <strong>רמת הקושי</strong> ו<strong>אורך המשחק</strong></li>
+            <li><span class="emoji-step">🚀</span> המארח לוחץ <strong>״התחל משחק״</strong> ויאללה!</li>
+        </ol>
+
+        <!-- סוגי משחק -->
+        <h2>סוגי משחק</h2>
+
+        <div class="game-mode-card">
+            <div class="mode-emoji">🏛️</div>
+            <h3>ציר זמן</h3>
+            <p>מופיע קלף עם אירוע היסטורי או אתר מפורסם. צריך למקם אותו ב<strong>מיקום הנכון</strong> על ציר הזמן — האם זה קרה לפני או אחרי הקלפים שכבר שם?</p>
+            <ul>
+                <li>כל שחקן בונה את <strong>ציר הזמן שלו</strong></li>
+                <li>מיקום נכון = הקלף נשאר על ציר הזמן (+1 נקודה)</li>
+                <li>מיקום שגוי = הקלף נזרק</li>
+                <li>השחקן עם <strong>הכי הרבה קלפים</strong> על ציר הזמן מנצח!</li>
+            </ul>
+            <div class="tip-box">
+                <strong>טיפ:</strong> שימו לב לתוויות ״מוקדם יותר״ ו״מאוחר יותר״ בטלפון כדי להבין את הכיוון. לחצו על כפתור ״מקם כאן״ — אל תנסו לגרור!
+            </div>
+        </div>
+
+        <div class="game-mode-card">
+            <div class="mode-emoji">🏁</div>
+            <h3>חידון דגלים</h3>
+            <p>דגל מופיע על המסך. צריך <strong>לזהות את המדינה</strong> על ידי הקלדת שמה. התחילו להקליד ובחרו מההצעות שמופיעות.</p>
+            <ul>
+                <li>תשובה נכונה = +1 נקודה</li>
+                <li>יש לכם <strong>30 שניות</strong> לכל דגל</li>
+                <li>השחקן עם <strong>הכי הרבה תשובות נכונות</strong> מנצח!</li>
+            </ul>
+            <div class="tip-box">
+                <strong>טיפ:</strong> לא צריך להקליד את השם המלא — פשוט התחילו להקליד וההצעות יופיעו. למשל, הקלידו ״צר״ כדי למצוא צרפת.
+            </div>
+        </div>
+
+        <div class="game-mode-card">
+            <div class="mode-emoji">🗺️</div>
+            <h3>משחק מפה</h3>
+            <p>מופיעה תמונה של מקום מפורסם. צריך <strong>למצוא אותו על המפה</strong> על ידי גרירת המפה כך שהסיכה תנחת על המיקום הנכון. כולם משחקים בו-זמנית!</p>
+            <ul>
+                <li><strong>גררו את המפה</strong> כדי להזיז את הסיכה — הסיכה נשארת במרכז</li>
+                <li>לחצו <strong>״נעילה״</strong> כשאתם בטוחים בניחוש שלכם</li>
+                <li>ניקוד לפי <strong>מרחק</strong> (קרוב יותר = יותר נקודות) ו<strong>מהירות</strong> (מהר יותר = בונוס)</li>
+                <li>בתוך 300 ק״מ? מקבלים <strong>בונוס קרבה</strong> של 200+ נקודות!</li>
+                <li>אחרי כל סיבוב: רואים את הניחוש שלכם מול התשובה <strong>על המפה</strong> עם קו מרחק</li>
+                <li>מסך המארח מציג את <strong>הניחושים של כל השחקנים</strong> לרגע חשיפה מהנה</li>
+            </ul>
+            <div class="tip-box">
+                <strong>ניקוד:</strong> הנקודות תלויות במרחק:<br>
+                🎯 פחות מ-50 ק״מ = 1,000 נק׳ &nbsp; 🔥 50–300 ק״מ = 600–1,000 &nbsp; 👏 300–1,000 ק״מ = 200–600<br>
+                👍 1,000–2,000 ק״מ = 50–200 &nbsp; ❌ מעל 4,000 ק״מ = 0 נק׳<br>
+                בונוס מהירות (עד 500+) נספר רק אם אתם בתוך 2,000 ק״מ. בונוס קרבה (200+) עבור פחות מ-300 ק״מ. מקסימום לסיבוב: 1,700.
+            </div>
+        </div>
+
+        <!-- גניבה -->
+        <h2>גניבה</h2>
+        <p>כששחקן טועה בתשובה, לשאר השחקנים יש הזדמנות <strong>לגנוב</strong>!</p>
+        <ol>
+            <li>התשובה הנכונה <strong>עדיין לא נחשפת</strong></li>
+            <li>כל שחקן אחר מקבל תור לענות (עם טיימר של 15 שניות)</li>
+            <li>גניבה נכונה: <strong>+1 נקודה</strong> לכם!</li>
+            <li>גניבה שגויה: <strong>מינוס נקודה</strong></li>
+            <li>תמיד אפשר ללחוץ <strong>״ויתור״</strong> כדי לדלג בלי סיכון</li>
+            <li>התשובה נחשפת אחרי שכולם קיבלו הזדמנות</li>
+        </ol>
+        <div class="tip-box">
+            <strong>טיפ:</strong> גניבה זה מסוכן! תנסו רק אם אתם בטוחים. ויתור תמיד בטוח.
+        </div>
+
+        <!-- הגדרות -->
+        <h2>הגדרות משחק</h2>
+
+        <h3>רמת קושי</h3>
+        <table class="settings-table">
+            <tr><th>רמה</th><th>מה תקבלו</th></tr>
+            <tr><td>קל</td><td>אירועים ואתרים מוכרים (בעיקר אחרי 1900)</td></tr>
+            <tr><td>בינוני</td><td>שילוב של מוכרים ופחות מוכרים (אחרי 1500)</td></tr>
+            <tr><td>קשה</td><td>הכל — כולל היסטוריה עתיקה ואירועים פחות ידועים</td></tr>
+        </table>
+
+        <h3>אורך משחק</h3>
+        <table class="settings-table">
+            <tr><th>אורך</th><th>ציר זמן / חידון</th><th>משחק מפה</th><th>מתאים ל</th></tr>
+            <tr><td>קצר</td><td>10 סיבובים</td><td>5 סיבובים</td><td>משחקים מהירים, קבוצות גדולות</td></tr>
+            <tr><td>בינוני</td><td>20 סיבובים</td><td>10 סיבובים</td><td>משחק סטנדרטי</td></tr>
+            <tr><td>ארוך</td><td>30 סיבובים</td><td>15 סיבובים</td><td>משחקים עמוקים, קבוצות קטנות</td></tr>
+        </table>
+
+        <!-- משחק מקומי -->
+        <h2>משחק בלי טלפונים</h2>
+        <p>אין לכם טלפונים? אין בעיה! לחצו על <strong>״שחק מקומית״</strong> במסך המארח כדי לשחק על מכשיר אחד. בחרו את מספר השחקנים (1-6), והתחלפו בתורות על אותו מסך.</p>
+
+        <!-- טיפים -->
+        <h2>טיפים למקצוענים</h2>
+        <ul>
+            <li><strong>הקרינו!</strong> מסך המארח מעוצב למסכים גדולים ומקרנים — מושלם לכיתות או מסיבות</li>
+            <li><strong>קוד QR</strong> מאפשר הצטרפות מהירה — בלי להקליד את הכתובת</li>
+            <li><strong>גוונו</strong> — שחקו סיבוב של ציר זמן ואז עברו לחידון דגלים</li>
+            <li><strong>השתמשו בגניבה בחוכמה</strong> — אם אתם יודעים את התשובה, גנבו! אם לא, וותרו ושמרו על הנקודות</li>
+            <li><strong>רמה קשה</strong> באמת קשה — נסו קל קודם אם אתם חדשים בהיסטוריה</li>
+        </ul>
+
+        <!-- CTA -->
+        <div class="cta-section">
+            <p>מוכנים לשחק?</p>
+            <a href="/" class="btn">התחילו משחק</a>
+        </div>
+    </div>
+
+    <script src="analytics.js"></script>
+</body>
+</html>
