@@ -14,6 +14,10 @@
 <body>
     <!-- LOBBY -->
     <div id="lobby" class="screen">
+        <div class="lang-switcher">
+            <button class="lang-btn" onclick="switchLang('en')" id="lang-en">English</button>
+            <button class="lang-btn" onclick="switchLang('he')" id="lang-he">עברית</button>
+        </div>
         <h1 class="logo">PASTBLAST</h1>
         <p class="sub"><span data-i18n="join_at">Join at</span> <span id="join-url"></span></p>
         <div class="code-display" id="room-code">...</div>
@@ -98,8 +102,17 @@
     <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
     <script src="i18n.js"></script>
     <script>
+        function switchLang(lang) {
+            setLanguage(lang).then(() => {
+                document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+                document.getElementById('lang-he').classList.toggle('active', lang === 'he');
+                const link = document.getElementById('how-to-play-link');
+                link.href = lang === 'he' ? '/how-to-play-he.html' : '/how-to-play.html';
+            });
+        }
         window.addEventListener('DOMContentLoaded', () => {
             const lang = localStorage.getItem('pb_lang') || 'en';
+            document.getElementById('lang-' + lang).classList.add('active');
             const link = document.getElementById('how-to-play-link');
             link.href = lang === 'he' ? '/how-to-play-he.html' : '/how-to-play.html';
         });
