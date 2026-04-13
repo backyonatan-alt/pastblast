@@ -96,7 +96,7 @@ socket.on('game_started', ({ mode }) => {
     currentMode = mode;
     mapHistory = [];
     showScreen('wait-screen');
-    document.getElementById('wait-msg').textContent = 'Game starting...';
+    document.getElementById('wait-msg').textContent = t('game_starting');
     // Warn before leaving mid-game
     window.addEventListener('beforeunload', (e) => { e.preventDefault(); });
 });
@@ -128,7 +128,7 @@ socket.on('your_turn', ({ card, timeline, mode, timeLimit }) => {
 socket.on('wait', ({ activePlayerName, scores }) => {
     function doWait() {
         showScreen('wait-screen');
-        document.getElementById('wait-msg').textContent = `${activePlayerName} is playing...`;
+        document.getElementById('wait-msg').textContent = `${activePlayerName} ${t('is_playing')}`;
         renderWaitScores(scores);
     }
     if (resultLock) {
@@ -174,10 +174,10 @@ socket.on('round_result', ({ correct, card, playerName: pName, reveal, scores })
         document.getElementById('result-text').innerHTML = `${card.emoji} ${cardName(card)}${yearPart}`;
     } else if (pName) {
         document.getElementById('result-icon').textContent = '❌';
-        document.getElementById('result-text').innerHTML = `${esc(pName)} got it wrong...`;
+        document.getElementById('result-text').innerHTML = `${esc(pName)} ${t('got_it_wrong')}`;
     } else {
         document.getElementById('result-icon').textContent = correct ? '✅' : '❌';
-        document.getElementById('result-text').innerHTML = correct ? 'Correct!' : 'Wrong!';
+        document.getElementById('result-text').innerHTML = correct ? t('correct') : t('wrong');
     }
     setTimeout(() => { resultLock = false; }, 6000);
 
@@ -189,18 +189,17 @@ let resultCountdownTimer = null;
 function startResultCountdown(seconds) {
     clearInterval(resultCountdownTimer);
     const btn = document.getElementById('result-next-btn');
-    const span = document.getElementById('result-countdown');
-    if (!btn || !span) return;
+    if (!btn) return;
     btn.style.display = 'inline-block';
     let remaining = seconds;
-    span.textContent = `(${remaining})`;
+    btn.textContent = `${t('next')} (${remaining})`;
     resultCountdownTimer = setInterval(() => {
         remaining--;
         if (remaining <= 0) {
             clearInterval(resultCountdownTimer);
             dismissResult();
         } else {
-            span.textContent = `(${remaining})`;
+            btn.textContent = `${t('next')} (${remaining})`;
         }
     }, 1000);
 }
@@ -329,12 +328,12 @@ socket.on('steal_turn', ({ card, timeline, mode, timeLimit }) => {
 
     const inputArea = document.getElementById('steal-input-area');
     if (mode === 'timeline') {
-        inputArea.innerHTML = '<div class="p-instruction">Tap where it belongs!</div><div class="p-timeline" id="steal-timeline"></div>';
+        inputArea.innerHTML = `<div class="p-instruction">${t('tap_to_place')}</div><div class="p-timeline" id="steal-timeline"></div>`;
         renderStealTimeline(timeline, card);
     } else {
         inputArea.innerHTML = `
             <div class="p-input-wrap">
-                <input type="text" class="p-input" id="steal-quiz-input" placeholder="Type country name..." autocomplete="off">
+                <input type="text" class="p-input" id="steal-quiz-input" placeholder="${t('type_country')}" autocomplete="off">
                 <div class="p-autocomplete" id="steal-autocomplete"></div>
             </div>`;
         setupAutocomplete('steal-quiz-input', 'steal-autocomplete', true);
@@ -344,7 +343,7 @@ socket.on('steal_turn', ({ card, timeline, mode, timeLimit }) => {
 // --- STEAL WAIT (someone else is stealing) ---
 socket.on('steal_wait', ({ stealerName }) => {
     showScreen('steal-wait-screen');
-    document.getElementById('steal-wait-msg').textContent = `${stealerName} is trying to steal...`;
+    document.getElementById('steal-wait-msg').textContent = `${stealerName} ${t('trying_to_steal')}`;
 });
 
 socket.on('steal_result', ({ correct, stealerName, scores }) => {
@@ -388,7 +387,7 @@ socket.on('game_over', ({ scores, winner }) => {
     }
 
     document.getElementById('end-screen').innerHTML = `
-        <h1 class="p-logo">GAME OVER</h1>
+        <h1 class="p-logo">${t('game_over')}</h1>
         ${html}
         ${summaryMapHtml}
     `;
@@ -445,9 +444,9 @@ window.addEventListener('resize', alignCrosshair);
 socket.on('map_round', ({ wiki, emoji, type, round, totalRounds, timeLimit }) => {
     showScreen('map-screen');
     mapLocked = false;
-    document.getElementById('map-round-info').textContent = `Round ${round} / ${totalRounds}`;
+    document.getElementById('map-round-info').textContent = `${t('round')} ${round} / ${totalRounds}`;
     document.getElementById('map-lock-btn').disabled = false;
-    document.getElementById('map-lock-btn').textContent = 'LOCK IN';
+    document.getElementById('map-lock-btn').textContent = t('lock_in');
     document.getElementById('map-crosshair').style.display = 'block';
     document.getElementById('map-dot').style.display = 'block';
     document.getElementById('map-timer-fill').style.width = '100%';
@@ -536,7 +535,7 @@ socket.on('map_result', ({ card, results, scores }) => {
             ${me.speedBonus > 0 ? '<br><span style="color:#51cf66">' + (t('score_speed') || 'Speed') + ': +' + me.speedBonus + '</span>' : ''}
             ${me.countryBonus > 0 ? '<br><span style="color:#51cf66">' + (t('score_nearby') || 'Nearby') + ': +' + me.countryBonus + '</span>' : ''}
         </div>
-        <div style="margin-top:10px;font-size:0.9rem;color:rgba(255,255,255,0.5);">Total: ${me.totalScore} ${posText}</div>
+        <div style="margin-top:10px;font-size:0.9rem;color:rgba(255,255,255,0.5);">${t('total')}: ${me.totalScore} ${posText}</div>
     `;
     // Save to history for post-game summary
     mapHistory.push({ card, me, results });
@@ -605,7 +604,7 @@ function mapLockIn() {
     haptic(50);
     playLockIn();
     document.getElementById('map-lock-btn').disabled = true;
-    document.getElementById('map-lock-btn').textContent = '✓ LOCKED';
+    document.getElementById('map-lock-btn').textContent = t('locked');
     document.getElementById('map-crosshair').style.display = 'none';
     document.getElementById('map-dot').style.display = 'none';
 
@@ -626,7 +625,7 @@ function mapLockIn() {
 // Listen for lock-in progress from other players
 socket.on('map_player_locked', ({ lockedCount, totalPlayers }) => {
     const counter = document.getElementById('map-lock-counter');
-    if (counter) counter.textContent = `${lockedCount}/${totalPlayers} locked in`;
+    if (counter) counter.textContent = `${lockedCount}/${totalPlayers} ${t('locked_in')}`;
 });
 
 // --- PHOTO FALLBACK ---
@@ -634,7 +633,7 @@ function showPhotoFallback(emoji, type) {
     document.getElementById('map-photo').style.display = 'none';
     const fb = document.getElementById('map-photo-fallback');
     if (fb) {
-        const label = type === 'landmark' ? t('landmark') : type === 'city' ? 'City' : type === 'nature' ? 'Nature' : '?';
+        const label = type === 'landmark' ? t('landmark') : type === 'city' ? t('city') : type === 'nature' ? t('nature') : '?';
         fb.innerHTML = `<div style="font-size:3rem;">${emoji}</div><div style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:4px;">${label}</div>`;
         fb.style.display = 'flex';
     }
@@ -730,7 +729,7 @@ socket.on('host_left', () => {
 // Detect disconnect faster
 socket.on('disconnect', () => {
     // If we lose connection, show a reconnecting state
-    document.getElementById('wait-msg').textContent = 'Reconnecting…';
+    document.getElementById('wait-msg').textContent = t('reconnecting');
 });
 
 socket.on('connect', () => {
@@ -792,7 +791,7 @@ function renderPlayerTimeline(timeline) {
             submitLock = true;
             socket.emit('place_card', { slotIndex: i });
             showScreen('wait-screen');
-            document.getElementById('wait-msg').textContent = 'Placing…';
+            document.getElementById('wait-msg').textContent = t('placing');
         });
         drop.appendChild(dropBtn);
         el.appendChild(drop);
@@ -838,7 +837,7 @@ function renderStealTimeline(timeline, card) {
             submitLock = true;
             socket.emit('place_card', { slotIndex: i });
             showScreen('wait-screen');
-            document.getElementById('wait-msg').textContent = 'Stealing…';
+            document.getElementById('wait-msg').textContent = t('stealing');
         });
         drop.appendChild(dropBtn);
         el.appendChild(drop);
@@ -864,7 +863,7 @@ function passSteal() {
     trackEvent('steal_passed', { room_code: roomCode, game_mode: currentMode });
     socket.emit('pass_steal');
     showScreen('wait-screen');
-    document.getElementById('wait-msg').textContent = 'Passed...';
+    document.getElementById('wait-msg').textContent = t('passed');
 }
 
 function renderWaitScores(scores) {

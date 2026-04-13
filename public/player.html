@@ -41,7 +41,7 @@
     <!-- WAITING FOR OTHERS -->
     <div id="wait-screen" class="p-screen" style="display:none;">
         <div class="wait-emoji">👀</div>
-        <div class="wait-msg" id="wait-msg">Waiting...</div>
+        <div class="wait-msg" id="wait-msg" data-i18n="loading">Waiting...</div>
         <div class="wait-scores" id="wait-scores"></div>
     </div>
 
@@ -112,7 +112,7 @@
     <div id="map-result-screen" class="p-screen" style="display:none;">
         <div id="map-result-card" style="background:#1f1a5c;border-radius:20px;padding:20px 24px;max-width:320px;width:100%;border:3px solid rgba(255,255,255,0.1);text-align:center;">
         </div>
-        <button class="btn" style="max-width:280px;margin-top:16px;display:none;" id="map-next-btn">Waiting…</button>
+        <button class="btn" style="max-width:280px;margin-top:16px;display:none;" id="map-next-btn" data-i18n="loading">Waiting…</button>
     </div>
 
     <!-- RESULT FLASH -->
@@ -120,13 +120,13 @@
         <div style="background:#1f1a5c;border-radius:20px;padding:24px 32px;border:3px solid rgba(255,255,255,0.1);text-align:center;max-width:320px;width:100%;">
             <div class="result-icon" id="result-icon"></div>
             <div class="result-text" id="result-text"></div>
-            <button id="result-next-btn" onclick="dismissResult()" style="margin-top:16px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:2px solid rgba(255,255,255,0.2);border-radius:50px;padding:10px 28px;font-size:0.9rem;font-weight:700;font-family:'Fredoka',sans-serif;cursor:pointer;letter-spacing:1px;">NEXT <span id="result-countdown"></span></button>
+            <button id="result-next-btn" onclick="dismissResult()" style="margin-top:16px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border:2px solid rgba(255,255,255,0.2);border-radius:50px;padding:10px 28px;font-size:0.9rem;font-weight:700;font-family:'Fredoka',sans-serif;cursor:pointer;letter-spacing:1px;" data-i18n="next">NEXT</button>
         </div>
     </div>
 
     <!-- GAME OVER -->
     <div id="end-screen" class="p-screen" style="display:none;">
-        <h1 class="p-logo">GAME OVER</h1>
+        <h1 class="p-logo" data-i18n="game_over">GAME OVER</h1>
         <div class="end-rank" id="end-rank"></div>
         <div class="end-score" id="end-score"></div>
     </div>
@@ -134,8 +134,8 @@
     <!-- HOST LEFT -->
     <div id="host-left" class="p-screen" style="display:none;">
         <div class="wait-emoji">😢</div>
-        <div class="wait-msg">Host disconnected</div>
-        <a href="/" class="btn" style="max-width:200px;margin-top:20px;display:inline-block;">Back Home</a>
+        <div class="wait-msg" data-i18n="host_disconnected">Host disconnected</div>
+        <a href="/" class="btn" style="max-width:200px;margin-top:20px;display:inline-block;" data-i18n="back_home">Back Home</a>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

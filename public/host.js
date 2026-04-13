@@ -82,7 +82,7 @@ function playAgain() {
     trackEvent('play_again_clicked', { room_code: roomCode });
     // Disable button immediately to prevent double-click
     const btn = document.querySelector('.play-again-btn');
-    if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+    if (btn) { btn.disabled = true; btn.textContent = t('loading'); }
     socket.emit('play_again');
     // Fallback: if server doesn't respond in 2s, force back to lobby
     setTimeout(() => {
@@ -223,7 +223,7 @@ socket.on('steal_result', ({ correct, stealerName, scores }) => {
 // --- MAP GAME ---
 socket.on('map_round', ({ wiki, emoji, round, totalRounds, deckLeft, scores, timeLimit }) => {
     document.getElementById('steal-bar').style.display = 'none';
-    document.getElementById('turn-label').textContent = `Round ${round} / ${totalRounds}`;
+    document.getElementById('turn-label').textContent = `${t('round')} ${round} / ${totalRounds}`;
     document.getElementById('round-label').textContent = '';
     timerMax = timeLimit;
 
@@ -259,7 +259,7 @@ socket.on('map_round', ({ wiki, emoji, round, totalRounds, deckLeft, scores, tim
 
 socket.on('map_player_locked', ({ name, emoji, lockedCount, totalPlayers }) => {
     const label = document.getElementById('round-label');
-    label.innerHTML = `<span style="font-size:1.3rem;animation:pulse 1s infinite;">${lockedCount}/${totalPlayers} locked in</span>`;
+    label.innerHTML = `<span style="font-size:1.3rem;animation:pulse 1s infinite;">${lockedCount}/${totalPlayers} ${t('locked_in')}</span>`;
 });
 
 let hostResultMap = null;
