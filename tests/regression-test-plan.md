@@ -1,9 +1,10 @@
 # PastBlast - Full Regression Test Plan
-**Version:** 2.1
-**Date:** 2026-04-05
-**Total test cases:** 450
+**Version:** 3.0
+**Date:** 2026-04-15
+**Total test cases:** 556
 
 ## Changelog
+- v3.0 (2026-04-15): Added Solo Mode section (80 test cases: timeline survival, flag quiz survival, exit button, sticky card, font/flag sizing, language flicker fix, question content fix, game over, share, i18n)
 - v2.1 (2026-04-05): Added tiered map scoring system (20 test cases: distance tiers, speed bonus tiers, nearby bonus, emoji tiers, local parity, max score validation)
 - v2.0 (2026-04-05): Added crosshair alignment, popup centering, timeline fly animation (multiplayer + local), local Map Game, host-local integration, quiz color unification, /api/map-cards endpoint
 - v1.0 (2026-04-05): Initial test plan with 293 test cases
@@ -273,6 +274,13 @@
 | I18N-013 | RTL layout - player timeline | Play Timeline in Hebrew. | Earlier/Later labels have RTL arrows. "Place here" buttons aligned. Cards readable RTL. | [ ] |
 | I18N-014 | RTL layout - map UI | Play Map in Hebrew. | Timer, prompt, lock-in button, result card all RTL-aware. Mute button position correct. | [ ] |
 | I18N-015 | Language fallback on file load error | Corrupt language file scenario. | setLanguage catches error. If non-EN fails, falls back to en.json. | [ ] |
+| I18N-016 | i18n-cloak on solo.html | Set pb_lang=he. Load /solo.html. View source. | Sync script in head creates #i18n-cloak style with [data-i18n] { visibility: hidden }. Removed after setLanguage(). | [ ] |
+| I18N-017 | i18n-cloak on index.html | Set pb_lang=he. Load /index.html. View source. | Same sync cloak script. No English flash during load. | [ ] |
+| I18N-018 | i18n-cloak not injected for English | Set pb_lang=en. Load any page. | No #i18n-cloak element created. Elements visible immediately. | [ ] |
+| I18N-019 | exit key in en.json | Check /lang/en.json. | "exit": "✕" present. | [ ] |
+| I18N-020 | exit key in he.json | Check /lang/he.json. | "exit": "✕" present. | [ ] |
+| I18N-021 | confirm_exit key in en.json | Check /lang/en.json. | "confirm_exit": "Leave the game? Your progress will be lost." present. | [ ] |
+| I18N-022 | confirm_exit key in he.json | Check /lang/he.json. | "confirm_exit": "לעזוב את המשחק? ההתקדמות תאבד." present. | [ ] |
 
 ## 11. Cross-Browser & Mobile
 
@@ -579,4 +587,133 @@
 | SCORE-018 | How-to-play page scoring explanation matches implementation | Navigate to /how-to-play.html. Read Map Game scoring section. | Scoring explanation describes tiered system: distance tiers with km ranges, speed bonus tiers, nearby bonus. Matches actual implementation. | [ ] |
 | SCORE-019 | Max score per round is 1700 (1000 + 500 + 200) | Lock in instantly within 50km. | distPoints=1000 + speedBonus=500 + countryBonus=200 = 1700 total. No score exceeds 1700. | [ ] |
 | SCORE-020 | Random guess on wrong continent averages near 0 | Simulate multiple guesses >4000km away. | distPoints=0, speedBonus=0, countryBonus=0. Total round score = 0 for all far misses. | [ ] |
+
+## 25. Solo Mode — Mode Select & Navigation
+
+| Test ID | Test Case | Steps | Expected Result | Status |
+|---------|-----------|-------|-----------------|--------|
+| SOLO-001 | Solo page loads | Navigate to /solo.html. | Page renders with "PASTBLAST" logo, "SOLO MODE" subtitle, two mode cards (Timeline Survival, Flag Quiz Survival). | [ ] |
+| SOLO-002 | Language switcher - English | Click "English" button on solo page. | Page stays LTR. English button gets active class. All data-i18n elements show English. | [ ] |
+| SOLO-003 | Language switcher - Hebrew | Click Hebrew button on solo page. | Page switches to RTL. Hebrew button gets active class. All data-i18n elements show Hebrew. | [ ] |
+| SOLO-004 | Language persistence from home page | Switch to Hebrew on home page. Navigate to /solo.html. | Solo page loads in Hebrew immediately. No English flash. RTL layout from first paint. | [ ] |
+| SOLO-005 | i18n-cloak prevents language flicker | Set localStorage pb_lang=he. Hard-reload /solo.html. Observe first paint. | Sync script in head sets dir=rtl and lang=he. [data-i18n] elements hidden via visibility:hidden until translations load. No English text visible during load. | [ ] |
+| SOLO-006 | i18n-cloak removed after translations load | Set pb_lang=he. Load /solo.html. Inspect DOM after load. | #i18n-cloak style element removed by setLanguage(). All [data-i18n] elements visible with Hebrew text. | [ ] |
+| SOLO-007 | i18n-cloak not applied for English | Clear pb_lang or set to "en". Load /solo.html. | No #i18n-cloak style injected. Elements visible immediately with English fallback text. | [ ] |
+| SOLO-008 | Timeline Survival card click | Click Timeline Survival card. | startTimelineGame() called. Mode select hides. Timeline game area shows with top bar, current card, timeline. | [ ] |
+| SOLO-009 | Flag Quiz Survival card click | Click Flag Quiz Survival card. | startQuizGame() called. Mode select hides. Quiz game area shows with top bar, flag card, input field. | [ ] |
+| SOLO-010 | Best score display - no previous | Clear localStorage pb_solo_best_timeline and pb_solo_best_quiz. Load solo page. | Best score areas are empty. No "Best: X" text shown. | [ ] |
+| SOLO-011 | Best score display - with previous | Set localStorage pb_solo_best_timeline=15. Load solo page. | Timeline card shows "Best: 15" with score in gold. | [ ] |
+| SOLO-012 | Back to Home link | Click "Back to Home" link on mode select. | Navigates to / (home page). | [ ] |
+| SOLO-013 | Made by link | Click "Made by Yonatan Back" link. | Opens LinkedIn profile in new tab. | [ ] |
+
+## 26. Solo Mode — Timeline Survival
+
+| Test ID | Test Case | Steps | Expected Result | Status |
+|---------|-----------|-------|-----------------|--------|
+| SOLO-TL-001 | Game initializes correctly | Start Timeline Survival. | Lives = 3 hearts. Score = 0. Streak empty. One starter card on timeline. Current card drawn from deck. | [ ] |
+| SOLO-TL-002 | Top bar displays correctly | Start Timeline game. Observe top bar. | Shows: exit button (✕), 3 heart emojis, "Score" label with "0", streak area (empty initially). Sticky at top. | [ ] |
+| SOLO-TL-003 | Current card - flag type | Draw a flag card. | Shows: "Flag" category badge, large flag emoji (8rem desktop / 6rem mobile), "When was this country founded?" hint. No country name revealed. | [ ] |
+| SOLO-TL-004 | Current card - history type | Draw a history card. | Shows: "History" category badge, emoji, card name (localized), description text. | [ ] |
+| SOLO-TL-005 | Current card - landmark type | Draw a landmark card. | Shows: "Landmark" category badge, emoji, card name (localized), description text. | [ ] |
+| SOLO-TL-006 | Current card is sticky | Scroll down through a long timeline. | Current card stays visible at top (position: sticky, top: 70px). Does not scroll off screen. Player can always see what they're placing. | [ ] |
+| SOLO-TL-007 | "TAP TO PLACE" instruction is sticky | Scroll down through timeline. | Instruction text stays visible below the sticky card (position: sticky, top: 250px). | [ ] |
+| SOLO-TL-008 | Timeline renders with drop zones | Start game with starter card. | Timeline shows: "Earlier" label, drop zone, starter card with emoji+name+year, drop zone, "Later" label. | [ ] |
+| SOLO-TL-009 | Timeline vertical on mobile | Open on mobile (<600px). | Timeline switches to vertical (flex-direction: column). Red line becomes vertical center line. | [ ] |
+| SOLO-TL-010 | Correct placement - score +1 | Place card in correct chronological position. | Card added to timeline. Score increments by 1. Streak increments. Green feedback popup with checkmark, name, year. | [ ] |
+| SOLO-TL-011 | Wrong placement - lose a life | Place card in wrong position. | Life lost (heart turns black). Streak resets to 0. Red feedback popup with X, name, year. Card NOT added to timeline. | [ ] |
+| SOLO-TL-012 | Streak display at 3 | Get 3 correct in a row. | Streak shows "🔥 x3". | [ ] |
+| SOLO-TL-013 | Streak display at 5 | Get 5 correct in a row. | Streak shows "🔥🔥 x5". | [ ] |
+| SOLO-TL-014 | Streak display at 10 | Get 10 correct in a row. | Streak shows "🔥🔥🔥 x10". | [ ] |
+| SOLO-TL-015 | Game over at 0 lives | Lose all 3 lives. | Game ends after 1.8s delay. Game over screen appears with confetti. | [ ] |
+| SOLO-TL-016 | Heart break animation | Lose a life. | Lives container gets heart-break animation (scale 1 -> 1.3 -> 0.8 -> 1, 0.5s). | [ ] |
+| SOLO-TL-017 | Deck reshuffles when exhausted | Play through entire deck. | When deck empty, fresh cards shuffled (excluding cards already on timeline). Game continues. | [ ] |
+| SOLO-TL-018 | Drop zones grow with timeline | Place 10 cards correctly. | Timeline grows with more cards and drop zones. All positions tappable. Scrollable on mobile. | [ ] |
+| SOLO-TL-019 | Year display - BCE dates | Draw card with year < 0. | Displays as "500 BCE" (formatYear). Both on current card reveal and timeline. | [ ] |
+| SOLO-TL-020 | Card names localized in Hebrew | Switch to Hebrew, play Timeline. | Card names use name_he. Descriptions use desc_he. Falls back to English if no Hebrew available. | [ ] |
+| SOLO-TL-021 | Twemoji renders flag emojis | Start game. Observe flag emojis. | parseEmoji() called. Flag emojis rendered as twemoji SVG images, not native text. | [ ] |
+| SOLO-TL-022 | Analytics event on game start | Start Timeline game. Check trackEvent calls. | trackEvent("solo_game_start", { mode: "timeline" }) called. | [ ] |
+| SOLO-TL-023 | "Wall Street Crash" question text | Play until "Wall Street Crash" card appears. | Card name is "Wall Street Crash" (not "Stock Market Crash 1929"). Year 1929 not revealed in name. | [ ] |
+
+## 27. Solo Mode — Flag Quiz Survival
+
+| Test ID | Test Case | Steps | Expected Result | Status |
+|---------|-----------|-------|-----------------|--------|
+| SOLO-FQ-001 | Game initializes correctly | Start Flag Quiz Survival. | Lives = 3 hearts. Score = 0. Streak empty. First flag card drawn. Input field focused. | [ ] |
+| SOLO-FQ-002 | Top bar displays correctly | Start Flag Quiz game. Observe top bar. | Shows: exit button (✕), 3 hearts, "Score" label with "0", streak area. Sticky at top. | [ ] |
+| SOLO-FQ-003 | Flag emoji display - large | Observe flag card. | Flag emoji rendered at 10rem (desktop) / 8rem (mobile). Inside quiz-card with min-height 160px. Centered via flexbox. | [ ] |
+| SOLO-FQ-004 | Flag card layout stable | Answer a question and wait for next card. | Card transitions smoothly. No layout jumping. Score/flag don't move up or down unexpectedly. Page stays scrolled to top. | [ ] |
+| SOLO-FQ-005 | preventScroll on input focus | Next card loads. Observe scroll behavior. | input.focus({ preventScroll: true }) called. window.scrollTo(0,0) called. Page does not jump when new card appears. | [ ] |
+| SOLO-FQ-006 | Quiz game content overflow hidden | Inspect #solo-quiz .game-content computed styles. | overflow: hidden. justify-content: flex-start. Prevents layout shifts from causing scroll. | [ ] |
+| SOLO-FQ-007 | Input field - placeholder | Observe input in English. | Placeholder: "Type country name..." (from data-i18n). | [ ] |
+| SOLO-FQ-008 | Input field - Hebrew placeholder | Switch to Hebrew. Start quiz. | Placeholder shows Hebrew: "...הקלד שם מדינה". | [ ] |
+| SOLO-FQ-009 | Autocomplete - English search | Type "uni". | Dropdown shows: United States, United Kingdom, etc. Matching text highlighted in gold (#ffd43b). | [ ] |
+| SOLO-FQ-010 | Autocomplete - Hebrew search | Switch to Hebrew, type Hebrew text. | Searches both name and name_he. Hebrew names shown in dropdown. | [ ] |
+| SOLO-FQ-011 | Autocomplete - max 15 results | Type "a" (many matches). | Dropdown shows at most 15 items (.slice(0, 15)). | [ ] |
+| SOLO-FQ-012 | Autocomplete - click to submit | Click an autocomplete item. | submitQuizAnswer() called with card.name. Input disabled. Dropdown closes. | [ ] |
+| SOLO-FQ-013 | Autocomplete - keyboard arrows | Press ArrowDown/ArrowUp in dropdown. | Active item highlighted. scrollIntoView({ block: 'nearest' }) called. | [ ] |
+| SOLO-FQ-014 | Autocomplete - Enter to submit | Navigate to item with arrows, press Enter. | Selected item submitted. Matches by textContent against FLAG_CARDS. | [ ] |
+| SOLO-FQ-015 | Autocomplete - Enter with single result | Type until 1 result remains, press Enter. | Single item auto-submitted without needing to arrow-select. | [ ] |
+| SOLO-FQ-016 | Autocomplete - click outside closes | Click outside the input/dropdown area. | Dropdown hides (display: none). | [ ] |
+| SOLO-FQ-017 | Correct answer - green border + score | Submit correct country. | Input border turns green (#51cf66). Score +1. Streak +1. Green feedback popup. | [ ] |
+| SOLO-FQ-018 | Wrong answer - red border + life lost | Submit wrong country. | Input border turns red (#ff6b6b). Streak reset. Life lost. Red feedback popup. | [ ] |
+| SOLO-FQ-019 | Input shows correct answer on wrong | Submit wrong answer. | Input value set to correct country name (Hebrew name_he if RTL). | [ ] |
+| SOLO-FQ-020 | Next card after 1.5s delay | Answer a question. | Next card appears after 1500ms setTimeout. Input cleared, enabled, refocused. | [ ] |
+| SOLO-FQ-021 | Locked state prevents double submit | Submit answer, then quickly try to type/submit again. | qzLocked = true after first submit. Input disabled. No double scoring. | [ ] |
+| SOLO-FQ-022 | Deck reshuffles when exhausted | Play through all flag cards. | When deck empty, full FLAG_CARDS reshuffled. Game continues indefinitely until lives run out. | [ ] |
+| SOLO-FQ-023 | Well-known flags first | Start quiz game. Note first ~40 cards. | First 40 are from well-known set (shuffled). Harder flags come after. | [ ] |
+| SOLO-FQ-024 | Game over at 0 lives | Lose all 3 lives. | Game ends after 1.8s delay. Game over screen with confetti. | [ ] |
+| SOLO-FQ-025 | Analytics event on game start | Start Flag Quiz. Check trackEvent calls. | trackEvent("solo_game_start", { mode: "quiz" }) called. | [ ] |
+| SOLO-FQ-026 | Font sizes readable | Observe quiz card and input. | Quiz input font: 1.4rem. Autocomplete items: 1.2rem with 12px padding. All legible on mobile. | [ ] |
+
+## 28. Solo Mode — Exit Button
+
+| Test ID | Test Case | Steps | Expected Result | Status |
+|---------|-----------|-------|-----------------|--------|
+| SOLO-EXIT-001 | Exit button visible in Timeline game | Start Timeline Survival. Observe top bar. | ✕ button visible in top-bar-left, before hearts. Styled with semi-transparent background, rounded corners. | [ ] |
+| SOLO-EXIT-002 | Exit button visible in Flag Quiz game | Start Flag Quiz Survival. Observe top bar. | Same ✕ button visible in top-bar-left, before hearts. | [ ] |
+| SOLO-EXIT-003 | Exit shows confirmation dialog | Click ✕ button during gameplay. | Browser confirm() dialog: "Leave the game? Your progress will be lost." (or Hebrew equivalent). | [ ] |
+| SOLO-EXIT-004 | Confirm exit returns to mode select | Click ✕, then confirm (OK). | Returns to solo mode select screen. Best scores updated. Game state cleared. | [ ] |
+| SOLO-EXIT-005 | Cancel exit continues game | Click ✕, then cancel. | Dialog dismissed. Game continues from where it was. Score/lives/timeline preserved. | [ ] |
+| SOLO-EXIT-006 | Exit confirmation in Hebrew | Switch to Hebrew. Click ✕ during game. | Confirm dialog shows Hebrew: "לעזוב את המשחק? ההתקדמות תאבד." | [ ] |
+| SOLO-EXIT-007 | Exit button hover state | Hover over ✕ button (desktop). | Background brightens (rgba 0.2), border brightens, text color turns white. | [ ] |
+| SOLO-EXIT-008 | Exit during flag quiz clears input state | Start flag quiz, type partial answer, click ✕ and confirm. | Returns to mode select cleanly. No stale input state when starting new game. | [ ] |
+
+## 29. Solo Mode — Game Over & Share
+
+| Test ID | Test Case | Steps | Expected Result | Status |
+|---------|-----------|-------|-----------------|--------|
+| SOLO-END-001 | Game over screen displays | Lose all lives. | "GAME OVER!" title, final score (large gold text), best streak stat, Play Again / Share / Change Mode buttons, Back to Home link. | [ ] |
+| SOLO-END-002 | New best score | Score higher than previous best. | "NEW BEST!" text shown with popInStay animation. localStorage updated. | [ ] |
+| SOLO-END-003 | Not a new best | Score lower than previous best. | No "NEW BEST!" shown. localStorage unchanged. | [ ] |
+| SOLO-END-004 | Play Again - Timeline | Finish Timeline game. Click PLAY AGAIN. | New Timeline game starts. Scores reset. Fresh deck. 3 lives. | [ ] |
+| SOLO-END-005 | Play Again - Flag Quiz | Finish Quiz game. Click PLAY AGAIN. | New Quiz game starts. Scores reset. Fresh deck. 3 lives. Input focused. | [ ] |
+| SOLO-END-006 | Change Mode button | Click Change Mode on game over. | Returns to solo mode select screen. Can choose different mode. | [ ] |
+| SOLO-END-007 | Share - Web Share API (mobile) | Click SHARE on mobile with Web Share API. | navigator.share() called with score text, mode name, and app URL. | [ ] |
+| SOLO-END-008 | Share - clipboard fallback (desktop) | Click SHARE on desktop. | Text copied to clipboard. Button text changes to "✓ Copied!" for 2s with green styling. | [ ] |
+| SOLO-END-009 | Share text format | Click SHARE. Inspect shared text. | Format: "PastBlast [Mode Name]\n🏆 [score] points[streak emojis]\n\nCan you beat my score?\n[URL]". | [ ] |
+| SOLO-END-010 | Confetti on game over | Game ends. | 35 confetti elements spawned (random flag emojis). Fall animation. Removed after 4s. | [ ] |
+| SOLO-END-011 | Analytics on game over | Game ends. Check trackEvent. | trackEvent("solo_game_over", { mode, score, best_streak, new_best }) called. | [ ] |
+| SOLO-END-012 | Analytics on share | Click SHARE. | trackEvent("solo_share", { mode, score }) called. | [ ] |
+| SOLO-END-013 | Back to Home from game over | Click "Back to Home" link. | Navigates to / (home page). | [ ] |
+
+## 30. Solo Mode — i18n & Visual Polish
+
+| Test ID | Test Case | Steps | Expected Result | Status |
+|---------|-----------|-------|-----------------|--------|
+| SOLO-I18N-001 | All solo strings in en.json | Review /lang/en.json. | Keys present: solo_mode, timeline_survival, flag_survival, timeline_desc, flag_quiz_desc, how_far, best_score, new_best, best_streak, change_mode, share, exit, confirm_exit. | [ ] |
+| SOLO-I18N-002 | All solo strings in he.json | Review /lang/he.json. | Same keys present with Hebrew translations. exit="✕", confirm_exit="לעזוב את המשחק? ההתקדמות תאבד." | [ ] |
+| SOLO-I18N-003 | Mode select in Hebrew | Switch to Hebrew on solo page. | "מצב יחיד" subtitle, "הישרדות ציר זמן", "הישרדות חידון דגלים", "?כמה רחוק תגיעו" tagline. | [ ] |
+| SOLO-I18N-004 | Game top bar in Hebrew | Play either mode in Hebrew. | "ניקוד" label, hearts render correctly, exit button works. | [ ] |
+| SOLO-I18N-005 | Timeline labels in Hebrew | Play Timeline in Hebrew. | "מוקדם יותר ↑" / "מאוחר יותר ↓" direction labels. "לחץ למקם" instruction. | [ ] |
+| SOLO-I18N-006 | Flag quiz placeholder in Hebrew | Play Flag Quiz in Hebrew. | Input placeholder: "...הקלד שם מדינה". | [ ] |
+| SOLO-I18N-007 | Game over in Hebrew | Finish game in Hebrew. | "!המשחק נגמר" title, "שחק שוב", "שתפו", "החלף מצב", "חזרה הביתה" buttons/links. | [ ] |
+| SOLO-I18N-008 | RTL layout - solo mode select | Open solo in Hebrew. | Mode cards, tagline, links all right-aligned. Lang switcher stays LTR (direction:ltr). | [ ] |
+| SOLO-I18N-009 | RTL layout - timeline game | Play Timeline in Hebrew. | Cards, drop zones, direction labels, top bar all RTL-aware. | [ ] |
+| SOLO-I18N-010 | RTL layout - flag quiz game | Play Flag Quiz in Hebrew. | Input right-aligned. Autocomplete dropdown right-aligned. Top bar mirrors. | [ ] |
+| SOLO-VIS-001 | Font sizes - card title | Observe current card title. | font-size: 1.7rem. Bold. White color. | [ ] |
+| SOLO-VIS-002 | Font sizes - card description | Observe current card description. | font-size: 1.3rem. Muted white. line-height 1.5. | [ ] |
+| SOLO-VIS-003 | Font sizes - card hint | Observe "When was this country founded?" | font-size: 1.3rem. Muted color. | [ ] |
+| SOLO-VIS-004 | Font sizes - placed card text | Observe placed cards on timeline. | card-name: 1rem. card-year: 1.25rem (gold). | [ ] |
+| SOLO-VIS-005 | Font sizes - mode card description | Observe mode cards on select screen. | font-size: 1.05rem. Muted color. | [ ] |
+| SOLO-VIS-006 | Reduced motion preference | Enable prefers-reduced-motion. Play solo mode. | Card bounce, confetti, popIn, heart break all disabled. No animations. | [ ] |
 
