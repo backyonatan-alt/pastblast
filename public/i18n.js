@@ -37,6 +37,10 @@ async function setLanguage(lang) {
             }
         }
     });
+
+    // Remove i18n cloak if it was applied to prevent flash
+    const cloak = document.getElementById('i18n-cloak');
+    if (cloak) cloak.remove();
 }
 
 function t(key, fallback) {

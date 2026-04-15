@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1b1464">
     <title>PastBlast</title>
+    <script>
+        (function() {
+            var lang = localStorage.getItem('pb_lang');
+            if (lang && lang !== 'en') {
+                document.documentElement.lang = lang;
+                document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+                var style = document.createElement('style');
+                style.id = 'i18n-cloak';
+                style.textContent = '[data-i18n] { visibility: hidden; }';
+                document.head.appendChild(style);
+            }
+        })();
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="rtl.css">

@@ -424,7 +424,7 @@ const ALL_CARDS = [
         { name: "Boston Tea Party", name_he: "מסיבת התה של בוסטון", emoji: "🍵", year: 1773, type: "history", desc: "American colonists protest taxes", desc_he: "מתיישבים אמריקנים מוחים נגד מסים", difficulty: 1 },
         { name: "Battle of Waterloo", name_he: "קרב ווטרלו", emoji: "⚔️", year: 1815, type: "history", desc: "Napoleon's final defeat", desc_he: "תבוסתו האחרונה של נפוליאון", difficulty: 2 },
         { name: "Treaty of Versailles", name_he: "חוזה ורסאי", emoji: "📜", year: 1919, type: "history", desc: "Ended World War I officially", desc_he: "סיים רשמית את מלחה״ע הראשונה", difficulty: 1 },
-        { name: "Stock Market Crash 1929", name_he: "קריסת שוק המניות 1929", emoji: "📉", year: 1929, type: "history", desc: "Wall Street crash starts Depression", desc_he: "קריסת וול סטריט פותחת את השפל", difficulty: 1 },
+        { name: "Wall Street Crash", name_he: "קריסת וול סטריט", emoji: "📉", year: 1929, type: "history", desc: "Stock market crash starts the Great Depression", desc_he: "קריסת שוק המניות פותחת את השפל הגדול", difficulty: 1 },
         { name: "Pearl Harbor Attack", name_he: "התקפת פרל הארבור", emoji: "💥", year: 1941, type: "history", desc: "Japan bombs US naval base", desc_he: "יפן מפציצה בסיס ימי אמריקני", difficulty: 1 },
         { name: "D-Day Normandy Invasion", name_he: "פלישת יום D לנורמנדי", emoji: "⚔️", year: 1944, type: "history", desc: "Allied invasion of Nazi Europe", desc_he: "פלישת בעלות הברית לאירופה", difficulty: 1 },
         { name: "Korean War Begins", name_he: "פרוץ מלחמת קוריאה", emoji: "💣", year: 1950, type: "history", desc: "North Korea invades the South", desc_he: "צפון קוריאה פולשת לדרום", difficulty: 2 },

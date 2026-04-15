@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#1b1464">
     <title>PastBlast — Solo Mode</title>
+    <script>
+        // Set lang/dir synchronously to prevent English flash when Hebrew is saved
+        (function() {
+            var lang = localStorage.getItem('pb_lang');
+            if (lang && lang !== 'en') {
+                document.documentElement.lang = lang;
+                document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+                // Hide translatable text until i18n loads to prevent English flash
+                var style = document.createElement('style');
+                style.id = 'i18n-cloak';
+                style.textContent = '[data-i18n] { visibility: hidden; }';
+                document.head.appendChild(style);
+            }
+        })();
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="shared.css">
     <link rel="stylesheet" href="rtl.css">
@@ -97,7 +112,7 @@
         }
 
         .mode-card-desc {
-            font-size: 0.95rem;
+            font-size: 1.05rem;
             color: rgba(255,255,255,0.55);
             line-height: 1.4;
             margin-bottom: 10px;
@@ -132,6 +147,21 @@
             align-items: center;
             gap: 8px;
         }
+
+        .exit-btn {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            transition: background 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+        .exit-btn:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.4); color: #fff; }
 
         .lives {
             font-size: 1.6rem;
@@ -169,6 +199,9 @@
             width: 100%;
             box-shadow: 0 6px 0 #e8590c, 0 12px 30px rgba(0,0,0,0.3);
             animation: cardBounce 0.4s ease;
+            position: sticky;
+            top: 70px;
+            z-index: 50;
         }
 
         .current-card .category {
@@ -185,26 +218,26 @@
         }
 
         .current-card .flag-display {
-            font-size: 7rem;
+            font-size: 8rem;
             line-height: 1.1;
             margin: 8px 0;
         }
 
         .current-card .hint {
-            font-size: 1.15rem;
+            font-size: 1.3rem;
             color: rgba(255,255,255,0.5);
             margin-top: 6px;
         }
 
         .current-card .card-title {
-            font-size: 1.5rem;
+            font-size: 1.7rem;
             font-weight: 700;
             color: #fff;
             margin-bottom: 6px;
         }
 
         .current-card .description {
-            font-size: 1.15rem;
+            font-size: 1.3rem;
             color: rgba(255,255,255,0.55);
             line-height: 1.5;
             margin-top: 8px;
@@ -215,6 +248,9 @@
             font-size: 1.2rem;
             color: #ffd43b;
             font-weight: 600;
+            position: sticky;
+            top: 250px;
+            z-index: 49;
         }
 
         /* Timeline */
@@ -314,8 +350,8 @@
         }
 
         .placed-card .card-emoji { font-size: 2.4rem; }
-        .placed-card .card-name { font-size: 0.85rem; font-weight: 700; margin: 4px 0; }
-        .placed-card .card-year { font-size: 1.15rem; color: #ffd43b; font-weight: 700; }
+        .placed-card .card-name { font-size: 1rem; font-weight: 700; margin: 4px 0; }
+        .placed-card .card-year { font-size: 1.25rem; color: #ffd43b; font-weight: 700; }
 
         /* Quiz styles */
         .quiz-card {
@@ -331,9 +367,13 @@
         }
 
         .quiz-card .quiz-flag {
-            font-size: 8rem;
+            font-size: 10rem;
             line-height: 1.1;
             margin: 10px 0 20px;
+            min-height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .quiz-input-wrap {
@@ -344,7 +384,7 @@
         .quiz-input {
             width: 100%;
             padding: 14px 18px;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             font-family: 'Fredoka', sans-serif;
             border-radius: 14px;
             border: 3px solid rgba(255,255,255,0.2);
@@ -371,8 +411,8 @@
         }
 
         .autocomplete-item {
-            padding: 10px 18px;
-            font-size: 1.1rem;
+            padding: 12px 18px;
+            font-size: 1.2rem;
             cursor: pointer;
             font-family: 'Fredoka', sans-serif;
             border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -406,6 +446,12 @@
             padding: 20px;
             width: 100%;
             flex: 1;
+        }
+
+        /* Prevent quiz layout from jumping */
+        #solo-quiz .game-content {
+            justify-content: flex-start;
+            overflow: hidden;
         }
 
         /* Game over */
@@ -532,8 +578,8 @@
         /* Responsive */
         @media (max-width: 600px) {
             .current-card { padding: 20px; }
-            .current-card .flag-display { font-size: 5rem; }
-            .quiz-card .quiz-flag { font-size: 6rem; }
+            .current-card .flag-display { font-size: 6rem; }
+            .quiz-card .quiz-flag { font-size: 8rem; }
 
             .timeline-container { overflow-x: visible; padding: 10px 16px 30px; }
 
@@ -624,6 +670,7 @@
     <div id="solo-timeline" class="game-area">
         <div class="top-bar">
             <div class="top-bar-left">
+                <button class="exit-btn" onclick="confirmExit()" data-i18n="exit">✕</button>
                 <div class="lives" id="tl-lives"></div>
             </div>
             <div class="top-bar-center">
@@ -647,6 +694,7 @@
     <div id="solo-quiz" class="game-area">
         <div class="top-bar">
             <div class="top-bar-left">
+                <button class="exit-btn" onclick="confirmExit()" data-i18n="exit">✕</button>
                 <div class="lives" id="qz-lives"></div>
             </div>
             <div class="top-bar-center">
@@ -1022,7 +1070,7 @@ const ALL_CARDS = [
 {name:"Boston Tea Party",name_he:"מסיבת התה של בוסטון",emoji:"🍵",year:1773,type:"history",desc:"American colonists protest taxes",desc_he:"מתיישבים אמריקנים מוחים נגד מסים",difficulty:1},
 {name:"Battle of Waterloo",name_he:"קרב ווטרלו",emoji:"⚔️",year:1815,type:"history",desc:"Napoleon's final defeat",desc_he:"תבוסתו האחרונה של נפוליאון",difficulty:2},
 {name:"Treaty of Versailles",name_he:"חוזה ורסאי",emoji:"📜",year:1919,type:"history",desc:"Ended World War I officially",desc_he:"סיים רשמית את מלחה״ע הראשונה",difficulty:1},
-{name:"Stock Market Crash 1929",name_he:"קריסת שוק המניות 1929",emoji:"📉",year:1929,type:"history",desc:"Wall Street crash starts Depression",desc_he:"קריסת וול סטריט פותחת את השפל",difficulty:1},
+{name:"Wall Street Crash",name_he:"קריסת וול סטריט",emoji:"📉",year:1929,type:"history",desc:"Stock market crash starts the Great Depression",desc_he:"קריסת שוק המניות פותחת את השפל הגדול",difficulty:1},
 {name:"Pearl Harbor Attack",name_he:"התקפת פרל הארבור",emoji:"💥",year:1941,type:"history",desc:"Japan bombs US naval base",desc_he:"יפן מפציצה בסיס ימי אמריקני",difficulty:1},
 {name:"D-Day Normandy Invasion",name_he:"פלישת יום D לנורמנדי",emoji:"⚔️",year:1944,type:"history",desc:"Allied invasion of Nazi Europe",desc_he:"פלישת בעלות הברית לאירופה",difficulty:1},
 {name:"Korean War Begins",name_he:"פרוץ מלחמת קוריאה",emoji:"💣",year:1950,type:"history",desc:"North Korea invades the South",desc_he:"צפון קוריאה פולשת לדרום",difficulty:2},
@@ -1125,6 +1173,12 @@ const ALL_CARDS = [
         showScreen('solo-start');
         updateBestScores();
         parseEmoji();
+    }
+
+    function confirmExit() {
+        if (confirm(t('confirm_exit', 'Leave the game? Your progress will be lost.'))) {
+            showModeSelect();
+        }
     }
 
     function updateBestScores() {
@@ -1486,7 +1540,8 @@ const ALL_CARDS = [
         input.value = '';
         input.style.borderColor = 'rgba(255,255,255,0.2)';
         input.disabled = false;
-        input.focus();
+        input.focus({ preventScroll: true });
+        window.scrollTo(0, 0);
         document.getElementById('qz-autocomplete').style.display = 'none';
 
         parseEmoji();
